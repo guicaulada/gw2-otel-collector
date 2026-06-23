@@ -43,7 +43,12 @@ services:
       GW2_INTERVAL_UNLOCKS: ${GW2_INTERVAL_UNLOCKS:-120s}
       GW2_INTERVAL_GUILD: ${GW2_INTERVAL_GUILD:-60s}
       GW2_INTERVAL_PVP: ${GW2_INTERVAL_PVP:-60s}
+      GW2_INTERVAL_TRANSACTIONS: ${GW2_INTERVAL_TRANSACTIONS:-60s}
       GW2_EXPORT_INTERVAL: ${GW2_EXPORT_INTERVAL:-15s}
+      GW2_STATE_PATH: /data/state.db
+    volumes:
+      - gw2-state:/data
 
 volumes:
   lgtm-data:
+  gw2-state:

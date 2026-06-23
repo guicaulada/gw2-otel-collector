@@ -62,6 +62,16 @@ type Currency struct {
 	Name string `json:"name"`
 }
 
+// Transaction is one entry of /v2/commerce/transactions/history/{buys,sells}.
+type Transaction struct {
+	ID        int64  `json:"id"`
+	ItemID    int    `json:"item_id"`
+	Price     int64  `json:"price"`
+	Quantity  int64  `json:"quantity"`
+	Created   string `json:"created"`
+	Purchased string `json:"purchased"`
+}
+
 // Exchange is the response of /v2/commerce/exchange/{coins,gems}.
 type Exchange struct {
 	CoinsPerGem int64 `json:"coins_per_gem"`

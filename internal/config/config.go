@@ -33,21 +33,25 @@ type Config struct {
 	ServiceInstance string
 	ExportInterval  time.Duration
 
+	// StatePath is the bbolt file for event watermarks and diff state.
+	StatePath string
+
 	// Per-family poll intervals (kept >= the server's documented cache TTL).
 	Intervals Intervals
 }
 
 // Intervals controls how often each endpoint family is polled.
 type Intervals struct {
-	Account     time.Duration
-	Wallet      time.Duration
-	Characters  time.Duration
-	Commerce    time.Duration
-	Progression time.Duration
-	Storage     time.Duration
-	Unlocks     time.Duration
-	Guild       time.Duration
-	PvP         time.Duration
+	Account      time.Duration
+	Wallet       time.Duration
+	Characters   time.Duration
+	Commerce     time.Duration
+	Progression  time.Duration
+	Storage      time.Duration
+	Unlocks      time.Duration
+	Guild        time.Duration
+	PvP          time.Duration
+	Transactions time.Duration
 	// Reference is how often the game build number is checked to invalidate
 	// static reference data (id→name tables). Reference data changes only on a
 	// game patch, so this can be infrequent.
@@ -82,18 +86,20 @@ func FromEnv() (*Config, error) {
 		ServiceVersion:  env("GW2_COLLECTOR_VERSION", "0.1.0"),
 		ServiceInstance: env("OTEL_SERVICE_INSTANCE_ID", fmt.Sprintf("%s-%d", host, os.Getpid())),
 		ExportInterval:  envDuration("GW2_EXPORT_INTERVAL", 30*time.Second),
+		StatePath:       env("GW2_STATE_PATH", "state.db"),
 
 		Intervals: Intervals{
-			Account:     envDuration("GW2_INTERVAL_ACCOUNT", 5*time.Minute),
-			Wallet:      envDuration("GW2_INTERVAL_WALLET", 5*time.Minute),
-			Characters:  envDuration("GW2_INTERVAL_CHARACTERS", 5*time.Minute),
-			Commerce:    envDuration("GW2_INTERVAL_COMMERCE", 5*time.Minute),
-			Progression: envDuration("GW2_INTERVAL_PROGRESSION", 10*time.Minute),
-			Storage:     envDuration("GW2_INTERVAL_STORAGE", 15*time.Minute),
-			Unlocks:     envDuration("GW2_INTERVAL_UNLOCKS", 15*time.Minute),
-			Guild:       envDuration("GW2_INTERVAL_GUILD", 10*time.Minute),
-			PvP:         envDuration("GW2_INTERVAL_PVP", 10*time.Minute),
-			Reference:   envDuration("GW2_INTERVAL_REFERENCE", time.Hour),
+			Account:      envDuration("GW2_INTERVAL_ACCOUNT", 5*time.Minute),
+			Wallet:       envDuration("GW2_INTERVAL_WALLET", 5*time.Minute),
+			Characters:   envDuration("GW2_INTERVAL_CHARACTERS", 5*time.Minute),
+			Commerce:     envDuration("GW2_INTERVAL_COMMERCE", 5*time.Minute),
+			Progression:  envDuration("GW2_INTERVAL_PROGRESSION", 10*time.Minute),
+			Storage:      envDuration("GW2_INTERVAL_STORAGE", 15*time.Minute),
+			Unlocks:      envDuration("GW2_INTERVAL_UNLOCKS", 15*time.Minute),
+			Guild:        envDuration("GW2_INTERVAL_GUILD", 10*time.Minute),
+			PvP:          envDuration("GW2_INTERVAL_PVP", 10*time.Minute),
+			Transactions: envDuration("GW2_INTERVAL_TRANSACTIONS", 5*time.Minute),
+			Reference:    envDuration("GW2_INTERVAL_REFERENCE", time.Hour),
 		},
 	}, nil
 }

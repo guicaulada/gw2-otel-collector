@@ -21,18 +21,28 @@ const (
 	exchangeGemsQuantity  = 100    // 100 gems -> coins received per gem
 )
 
+// Emitter receives fresh snapshots so it can diff them and emit domain events.
+// It is implemented by internal/events.Emitter.
+type Emitter interface {
+	OnAccount(ctx context.Context, a *gw2.Account)
+	OnCharacters(ctx context.Context, chars []gw2.Character)
+	OnUnlocks(ctx context.Context, counts map[string]int)
+	OnTransactions(ctx context.Context, txs []gw2.Transaction, side string)
+}
+
 // Poller drives scheduled polling of the GW2 API.
 type Poller struct {
 	client    *gw2.Client
 	store     *store.Store
+	emitter   Emitter
 	intervals config.Intervals
 	log       *slog.Logger
 	wg        sync.WaitGroup
 }
 
-// New returns a Poller.
-func New(client *gw2.Client, st *store.Store, intervals config.Intervals, log *slog.Logger) *Poller {
-	return &Poller{client: client, store: st, intervals: intervals, log: log}
+// New returns a Poller. emitter may be nil to disable event emission.
+func New(client *gw2.Client, st *store.Store, emitter Emitter, intervals config.Intervals, log *slog.Logger) *Poller {
+	return &Poller{client: client, store: st, emitter: emitter, intervals: intervals, log: log}
 }
 
 // Start launches one goroutine per family. It returns immediately; call Wait to
@@ -44,6 +54,9 @@ func (p *Poller) Start(ctx context.Context) {
 			return err
 		}
 		p.store.SetAccount(a, time.Now())
+		if p.emitter != nil {
+			p.emitter.OnAccount(ctx, a)
+		}
 		return nil
 	})
 
@@ -62,6 +75,9 @@ func (p *Poller) Start(ctx context.Context) {
 			return err
 		}
 		p.store.SetCharacters(ch, time.Now())
+		if p.emitter != nil {
+			p.emitter.OnCharacters(ctx, ch)
+		}
 		return nil
 	})
 
@@ -165,6 +181,23 @@ func (p *Poller) Start(ctx context.Context) {
 			counts[col.Name] = n
 		}
 		p.store.SetUnlocks(counts, time.Now())
+		if p.emitter != nil {
+			p.emitter.OnUnlocks(ctx, counts)
+		}
+		return nil
+	})
+
+	p.run(ctx, "transactions", p.intervals.Transactions, func(ctx context.Context) error {
+		if p.emitter == nil {
+			return nil
+		}
+		for _, side := range []string{"buys", "sells"} {
+			txs, err := p.client.TransactionHistory(ctx, side)
+			if err != nil {
+				return err
+			}
+			p.emitter.OnTransactions(ctx, txs, side)
+		}
 		return nil
 	})
 

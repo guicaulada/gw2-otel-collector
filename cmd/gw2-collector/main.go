@@ -11,10 +11,12 @@ import (
 	"time"
 
 	"github.com/guicaulada/gw2-otel-collector/internal/config"
+	"github.com/guicaulada/gw2-otel-collector/internal/events"
 	"github.com/guicaulada/gw2-otel-collector/internal/gw2"
 	"github.com/guicaulada/gw2-otel-collector/internal/metrics"
 	"github.com/guicaulada/gw2-otel-collector/internal/poller"
 	"github.com/guicaulada/gw2-otel-collector/internal/reference"
+	"github.com/guicaulada/gw2-otel-collector/internal/state"
 	"github.com/guicaulada/gw2-otel-collector/internal/store"
 	"github.com/guicaulada/gw2-otel-collector/internal/telemetry"
 )
@@ -65,6 +67,14 @@ func run(log *slog.Logger) error {
 
 	st := store.New()
 
+	// Persistent state for the event machinery (diff baselines + seen-set).
+	stateStore, err := state.Open(cfg.StatePath)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = stateStore.Close() }()
+	emitter := events.New(stateStore, log)
+
 	// Reference data (id→name) — refresh once synchronously so currency names
 	// are present from the first metric export, then keep it fresh in the
 	// background (gated on the game build number).
@@ -82,7 +92,7 @@ func run(log *slog.Logger) error {
 	}
 	defer func() { _ = reg.Unregister() }()
 
-	p := poller.New(client, st, cfg.Intervals, log)
+	p := poller.New(client, st, emitter, cfg.Intervals, log)
 	p.Start(ctx)
 
 	log.Info("gw2-collector started",

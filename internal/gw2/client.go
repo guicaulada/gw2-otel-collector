@@ -231,6 +231,19 @@ func (c *Client) GuildUpgradesCompleted(ctx context.Context, id string) (int, er
 	return c.CountIDs(ctx, "guild/"+id+"/upgrades", "guild/:id/upgrades")
 }
 
+// TransactionHistory fetches a page of completed transactions for the given side
+// ("buys" or "sells"): /v2/commerce/transactions/history/{side}. Requires the
+// tradingpost scope.
+func (c *Client) TransactionHistory(ctx context.Context, side string) ([]Transaction, error) {
+	var txs []Transaction
+	path := "commerce/transactions/history/" + side
+	params := url.Values{"page": {"0"}, "page_size": {"200"}}
+	if err := c.get(ctx, path, "commerce/transactions/history", params, &txs); err != nil {
+		return nil, err
+	}
+	return txs, nil
+}
+
 // PvPStats fetches /v2/pvp/stats.
 func (c *Client) PvPStats(ctx context.Context) (*PvPStats, error) {
 	var s PvPStats
