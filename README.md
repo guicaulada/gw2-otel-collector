@@ -59,7 +59,32 @@ with these permissions (the project assumes all of them):
 > `progression`; public WvW match data needs no key at all. Guild sub-resources require
 > a key belonging to the **guild leader**. See [`docs/collector-design.md`](docs/collector-design.md).
 
+## Quick start (local dev)
+
+Requires Go 1.26+ and Docker.
+
+```sh
+cp .env.example .env        # add your GW2_API_KEY
+make build                  # build the binary
+make test && make vet       # checks
+
+# Run the full local stack (Grafana LGTM) + collector:
+GW2_API_KEY=<key> make dev
+# Grafana → http://localhost:3000 (metrics arrive within ~15s)
+
+# …or run the collector alone against an existing OTLP endpoint:
+GW2_API_KEY=<key> OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 ./gw2-collector
+```
+
+Switching dev → Alloy → Grafana Cloud is config-only: point
+`OTEL_EXPORTER_OTLP_ENDPOINT` (and `OTEL_EXPORTER_OTLP_HEADERS` for auth) at the target.
+
 ## Status
 
-Research and design phase. No collector implementation yet — the `docs/` directory is
-the current deliverable.
+**v1 scaffold (implemented):** a Go daemon that polls `account`, `account/wallet`, and
+`characters?ids=all` on independent intervals, caches snapshots in memory, and exports
+them as OpenTelemetry observable metrics over OTLP. Verified end-to-end against the live
+API. See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the layout.
+
+**Next:** more endpoint families, the snapshot-diff → event/log machinery with `bbolt`
+watermarks, reference-data (id→name) enrichment, traces, and as-code dashboards.

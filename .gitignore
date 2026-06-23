@@ -1,0 +1,13 @@
+# Binaries
+/gw2-collector
+/bin/
+*.exe
+
+# Local env / secrets
+.env
+
+# Local state (bbolt, caches) — added in a later slice
+/data/
+
+# OS / editor
+.DS_Store

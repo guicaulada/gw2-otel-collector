@@ -1,0 +1,228 @@
+// Package gw2 is a rate-limited, schema-pinned client for the Guild Wars 2 API v2.
+//
+// All requests share one process-wide token-bucket limiter (the API limit is
+// per-IP). The client retries 429/5xx with jittered backoff and records its own
+// request metrics. See docs/collector-design.md.
+package gw2
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"math/rand/v2"
+	"net/http"
+	"net/url"
+	"time"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+	"golang.org/x/time/rate"
+)
+
+// Client talks to the GW2 API v2.
+type Client struct {
+	http       *http.Client
+	baseURL    string
+	apiKey     string
+	schema     string
+	maxRetries int
+
+	reqDuration metric.Float64Histogram
+	reqCount    metric.Int64Counter
+}
+
+// Options configures a Client.
+type Options struct {
+	BaseURL         string
+	APIKey          string
+	SchemaVersion   string
+	RateLimitPerSec float64
+	RateBurst       int
+	MaxRetries      int
+	RequestTimeout  time.Duration
+}
+
+// rateLimitedTransport blocks each request on the shared limiter before sending,
+// so that retried attempts also consume tokens and cannot burst past the limit.
+type rateLimitedTransport struct {
+	base    http.RoundTripper
+	limiter *rate.Limiter
+}
+
+func (t *rateLimitedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if err := t.limiter.Wait(req.Context()); err != nil {
+		return nil, err
+	}
+	return t.base.RoundTrip(req)
+}
+
+// NewClient builds a Client with a shared rate limiter and self-observability
+// instruments created from the global meter provider.
+func NewClient(opts Options) (*Client, error) {
+	limiter := rate.NewLimiter(rate.Limit(opts.RateLimitPerSec), opts.RateBurst)
+	httpClient := &http.Client{
+		Timeout:   opts.RequestTimeout,
+		Transport: &rateLimitedTransport{base: http.DefaultTransport, limiter: limiter},
+	}
+
+	meter := otel.Meter("github.com/guicaulada/gw2-otel-collector/internal/gw2")
+	reqDuration, err := meter.Float64Histogram(
+		"gw2.api.request.duration",
+		metric.WithUnit("s"),
+		metric.WithDescription("Duration of GW2 API requests"),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("create request duration histogram: %w", err)
+	}
+	reqCount, err := meter.Int64Counter(
+		"gw2.api.requests",
+		metric.WithUnit("{request}"),
+		metric.WithDescription("Count of GW2 API requests by endpoint and status"),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("create request counter: %w", err)
+	}
+
+	return &Client{
+		http:        httpClient,
+		baseURL:     opts.BaseURL,
+		apiKey:      opts.APIKey,
+		schema:      opts.SchemaVersion,
+		maxRetries:  opts.MaxRetries,
+		reqDuration: reqDuration,
+		reqCount:    reqCount,
+	}, nil
+}
+
+// Account fetches /v2/account.
+func (c *Client) Account(ctx context.Context) (*Account, error) {
+	var a Account
+	if err := c.get(ctx, "account", "account", nil, &a); err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
+// Wallet fetches /v2/account/wallet.
+func (c *Client) Wallet(ctx context.Context) ([]CurrencyAmount, error) {
+	var w []CurrencyAmount
+	if err := c.get(ctx, "account/wallet", "account/wallet", nil, &w); err != nil {
+		return nil, err
+	}
+	return w, nil
+}
+
+// Characters fetches all character overviews in one request (/v2/characters?ids=all).
+func (c *Client) Characters(ctx context.Context) ([]Character, error) {
+	var ch []Character
+	params := url.Values{"ids": {"all"}}
+	if err := c.get(ctx, "characters", "characters", params, &ch); err != nil {
+		return nil, err
+	}
+	return ch, nil
+}
+
+// get fetches a path, retrying 429/5xx with jittered backoff, and decodes JSON
+// into dest. endpoint is the low-cardinality label used for self-obs metrics.
+func (c *Client) get(ctx context.Context, path, endpoint string, params url.Values, dest any) error {
+	var lastErr error
+	for attempt := 0; attempt <= c.maxRetries; attempt++ {
+		if attempt > 0 {
+			if err := sleepWithBackoff(ctx, attempt); err != nil {
+				return err
+			}
+		}
+
+		status, body, err := c.do(ctx, path, endpoint, params)
+		if err != nil {
+			lastErr = err
+			continue // network/transport error — retry
+		}
+		if status == http.StatusTooManyRequests || status >= 500 {
+			lastErr = fmt.Errorf("%s: retryable status %d", endpoint, status)
+			continue
+		}
+		if status >= 400 {
+			return fmt.Errorf("%s: status %d: %s", endpoint, status, truncate(body, 200))
+		}
+		if err := json.Unmarshal(body, dest); err != nil {
+			return fmt.Errorf("%s: decode response: %w", endpoint, err)
+		}
+		return nil
+	}
+	return fmt.Errorf("%s: exhausted retries: %w", endpoint, lastErr)
+}
+
+// do performs a single request and records self-observability metrics.
+func (c *Client) do(ctx context.Context, path, endpoint string, params url.Values) (int, []byte, error) {
+	q := url.Values{}
+	for k, v := range params {
+		q[k] = v
+	}
+	q.Set("v", c.schema)
+	u := fmt.Sprintf("%s/%s?%s", c.baseURL, path, q.Encode())
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return 0, nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	req.Header.Set("Accept", "application/json")
+
+	start := time.Now()
+	resp, err := c.http.Do(req)
+	elapsed := time.Since(start).Seconds()
+
+	if err != nil {
+		c.reqDuration.Record(ctx, elapsed, metric.WithAttributes(
+			attribute.String("gw2.endpoint", endpoint),
+			attribute.String("error.type", "transport"),
+		))
+		c.reqCount.Add(ctx, 1, metric.WithAttributes(
+			attribute.String("gw2.endpoint", endpoint),
+			attribute.String("error.type", "transport"),
+		))
+		return 0, nil, err
+	}
+	defer resp.Body.Close()
+
+	attrs := metric.WithAttributes(
+		attribute.String("gw2.endpoint", endpoint),
+		attribute.Int("http.response.status_code", resp.StatusCode),
+	)
+	c.reqDuration.Record(ctx, elapsed, attrs)
+	c.reqCount.Add(ctx, 1, attrs)
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return resp.StatusCode, nil, err
+	}
+	return resp.StatusCode, body, nil
+}
+
+// sleepWithBackoff waits for a full-jitter exponential backoff, capped at 30s,
+// or returns early if the context is cancelled.
+func sleepWithBackoff(ctx context.Context, attempt int) error {
+	const base = 500 * time.Millisecond
+	const cap = 30 * time.Second
+	backoff := base * time.Duration(1<<uint(attempt-1))
+	if backoff > cap {
+		backoff = cap
+	}
+	jittered := time.Duration(rand.Int64N(int64(backoff)))
+	select {
+	case <-time.After(jittered):
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func truncate(b []byte, n int) string {
+	if len(b) > n {
+		return string(b[:n])
+	}
+	return string(b)
+}

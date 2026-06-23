@@ -1,0 +1,40 @@
+# Local development stack: the full Grafana LGTM stack (Mimir/Loki/Tempo/Grafana)
+# plus the collector, wired with direct OTLP export.
+#
+#   GW2_API_KEY=<key> docker compose -f deploy/docker-compose.yaml up --build
+#
+# Grafana:  http://localhost:3000  (anonymous admin)
+# OTLP in:  http://otel-lgtm:4318  (from inside the compose network)
+#
+# The prod path (app -> Alloy -> Grafana Cloud) is a separate compose profile;
+# the collector itself is unchanged — only OTEL_EXPORTER_OTLP_ENDPOINT differs.
+services:
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: gw2-otel-lgtm
+    ports:
+      - "3000:3000" # Grafana UI
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    volumes:
+      - lgtm-data:/data
+
+  collector:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: gw2-collector
+    depends_on:
+      - otel-lgtm
+    environment:
+      GW2_API_KEY: ${GW2_API_KEY:?set GW2_API_KEY in your environment or .env}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+      GW2_LOG_LEVEL: ${GW2_LOG_LEVEL:-info}
+      # Faster intervals for a snappy dev loop; raise toward 5m for real use.
+      GW2_INTERVAL_ACCOUNT: ${GW2_INTERVAL_ACCOUNT:-60s}
+      GW2_INTERVAL_WALLET: ${GW2_INTERVAL_WALLET:-60s}
+      GW2_INTERVAL_CHARACTERS: ${GW2_INTERVAL_CHARACTERS:-60s}
+      GW2_EXPORT_INTERVAL: ${GW2_EXPORT_INTERVAL:-15s}
+
+volumes:
+  lgtm-data:
