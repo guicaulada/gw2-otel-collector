@@ -25,6 +25,12 @@ type CurrencyAmount struct {
 	Value int64 `json:"value"`
 }
 
+// Currency is one entry of the static /v2/currencies reference endpoint.
+type Currency struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 // Character is the subset of a /v2/characters?ids=all overview object the
 // collector uses. The bulk overview embeds far more (equipment, tabs, recipes,
 // ...) — later slices will read those from the same response.

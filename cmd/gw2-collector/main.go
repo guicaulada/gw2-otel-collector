@@ -14,6 +14,7 @@ import (
 	"github.com/guicaulada/gw2-otel-collector/internal/gw2"
 	"github.com/guicaulada/gw2-otel-collector/internal/metrics"
 	"github.com/guicaulada/gw2-otel-collector/internal/poller"
+	"github.com/guicaulada/gw2-otel-collector/internal/reference"
 	"github.com/guicaulada/gw2-otel-collector/internal/store"
 	"github.com/guicaulada/gw2-otel-collector/internal/telemetry"
 )
@@ -64,7 +65,18 @@ func run(log *slog.Logger) error {
 
 	st := store.New()
 
-	reg, err := metrics.Register(st)
+	// Reference data (id→name) — refresh once synchronously so currency names
+	// are present from the first metric export, then keep it fresh in the
+	// background (gated on the game build number).
+	ref := reference.New(client, log)
+	refCtx, refCancel := context.WithTimeout(ctx, 30*time.Second)
+	if err := ref.Refresh(refCtx); err != nil {
+		log.Warn("initial reference refresh failed; names unavailable until next refresh", "error", err)
+	}
+	refCancel()
+	ref.Start(ctx, cfg.Intervals.Reference)
+
+	reg, err := metrics.Register(st, ref)
 	if err != nil {
 		return err
 	}

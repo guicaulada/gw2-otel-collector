@@ -17,10 +17,16 @@ import (
 	"github.com/guicaulada/gw2-otel-collector/internal/store"
 )
 
+// CurrencyNamer resolves a currency id to a human-readable name. The reference
+// cache implements it; a nil namer simply omits the name attribute.
+type CurrencyNamer interface {
+	CurrencyName(id int) (string, bool)
+}
+
 // Register creates the gw2.* observable instruments and wires a single callback
 // that observes them from the store. It returns the registration so the caller
-// can unregister on shutdown.
-func Register(st *store.Store) (metric.Registration, error) {
+// can unregister on shutdown. namer enriches wallet series with currency names.
+func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error) {
 	meter := otel.Meter("github.com/guicaulada/gw2-otel-collector/internal/metrics")
 
 	accountAge, err := meter.Int64ObservableCounter(
@@ -101,8 +107,13 @@ func Register(st *store.Store) (metric.Registration, error) {
 
 		if w := st.Wallet(); w != nil {
 			for _, c := range w {
-				o.ObserveInt64(walletBalance, c.Value,
-					metric.WithAttributes(attribute.Int("gw2.currency.id", c.ID)))
+				attrs := []attribute.KeyValue{attribute.Int("gw2.currency.id", c.ID)}
+				if namer != nil {
+					if name, ok := namer.CurrencyName(c.ID); ok {
+						attrs = append(attrs, attribute.String("gw2.currency.name", name))
+					}
+				}
+				o.ObserveInt64(walletBalance, c.Value, metric.WithAttributes(attrs...))
 			}
 		}
 

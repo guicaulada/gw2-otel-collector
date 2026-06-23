@@ -124,6 +124,29 @@ func (c *Client) Characters(ctx context.Context) ([]Character, error) {
 	return ch, nil
 }
 
+// Build fetches the current game build number (/v2/build). Public endpoint; used
+// as the cache-invalidation signal for static reference data.
+func (c *Client) Build(ctx context.Context) (int, error) {
+	var b struct {
+		ID int `json:"id"`
+	}
+	if err := c.get(ctx, "build", "build", nil, &b); err != nil {
+		return 0, err
+	}
+	return b.ID, nil
+}
+
+// Currencies fetches all currency definitions (/v2/currencies?ids=all). Public,
+// static reference data.
+func (c *Client) Currencies(ctx context.Context) ([]Currency, error) {
+	var out []Currency
+	params := url.Values{"ids": {"all"}}
+	if err := c.get(ctx, "currencies", "currencies", params, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // get fetches a path, retrying 429/5xx with jittered backoff, and decodes JSON
 // into dest. endpoint is the low-cardinality label used for self-obs metrics.
 func (c *Client) get(ctx context.Context, path, endpoint string, params url.Values, dest any) error {
