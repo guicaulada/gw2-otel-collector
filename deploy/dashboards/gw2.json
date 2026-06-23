@@ -1370,6 +1370,69 @@
         "kind": "Panel",
         "spec": {
           "id": 22,
+          "title": "Tracked item movers (24h sell-price change %)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "(max by (gw2_item_name) (gw2_commerce_item_price{gw2_side=\"sell\"}) / max by (gw2_item_name) (gw2_commerce_item_price{gw2_side=\"sell\"} offset 24h) - 1) * 100",
+                        "legendFormat": "{{gw2_item_name}}"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "calcs": [
+                    "lastNotNull"
+                  ]
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "custom": {
+                    "fillOpacity": 15,
+                    "showPoints": "never"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-23": {
+        "kind": "Panel",
+        "spec": {
+          "id": 23,
           "title": "Material storage value by category (gold)",
           "description": "",
           "links": [],
@@ -1428,10 +1491,10 @@
           }
         }
       },
-      "panel-23": {
+      "panel-24": {
         "kind": "Panel",
         "spec": {
-          "id": 23,
+          "id": 24,
           "title": "Daily AP",
           "description": "",
           "links": [],
@@ -1487,10 +1550,10 @@
           }
         }
       },
-      "panel-24": {
+      "panel-25": {
         "kind": "Panel",
         "spec": {
-          "id": 24,
+          "id": 25,
           "title": "Monthly AP",
           "description": "",
           "links": [],
@@ -1546,10 +1609,10 @@
           }
         }
       },
-      "panel-25": {
+      "panel-26": {
         "kind": "Panel",
         "spec": {
-          "id": 25,
+          "id": 26,
           "title": "Magic Find %",
           "description": "",
           "links": [],
@@ -1606,10 +1669,10 @@
           }
         }
       },
-      "panel-26": {
+      "panel-27": {
         "kind": "Panel",
         "spec": {
-          "id": 26,
+          "id": 27,
           "title": "Fractal level",
           "description": "",
           "links": [],
@@ -1665,10 +1728,10 @@
           }
         }
       },
-      "panel-27": {
+      "panel-28": {
         "kind": "Panel",
         "spec": {
-          "id": 27,
+          "id": 28,
           "title": "Masteries unlocked",
           "description": "",
           "links": [],
@@ -1724,10 +1787,10 @@
           }
         }
       },
-      "panel-28": {
+      "panel-29": {
         "kind": "Panel",
         "spec": {
-          "id": 28,
+          "id": 29,
           "title": "Played (days, /age)",
           "description": "",
           "links": [],
@@ -1784,10 +1847,10 @@
           }
         }
       },
-      "panel-29": {
+      "panel-30": {
         "kind": "Panel",
         "spec": {
-          "id": 29,
+          "id": 30,
           "title": "Total AP (computed)",
           "description": "",
           "links": [],
@@ -1843,10 +1906,10 @@
           }
         }
       },
-      "panel-30": {
+      "panel-31": {
         "kind": "Panel",
         "spec": {
-          "id": 30,
+          "id": 31,
           "title": "Achievements done",
           "description": "",
           "links": [],
@@ -1902,10 +1965,10 @@
           }
         }
       },
-      "panel-31": {
+      "panel-32": {
         "kind": "Panel",
         "spec": {
-          "id": 31,
+          "id": 32,
           "title": "Achievements %",
           "description": "",
           "links": [],
@@ -1962,10 +2025,10 @@
           }
         }
       },
-      "panel-32": {
+      "panel-33": {
         "kind": "Panel",
         "spec": {
-          "id": 32,
+          "id": 33,
           "title": "Legendaries owned",
           "description": "",
           "links": [],
@@ -2021,10 +2084,10 @@
           }
         }
       },
-      "panel-33": {
+      "panel-34": {
         "kind": "Panel",
         "spec": {
-          "id": 33,
+          "id": 34,
           "title": "Legendaries available",
           "description": "",
           "links": [],
@@ -2080,10 +2143,10 @@
           }
         }
       },
-      "panel-34": {
+      "panel-35": {
         "kind": "Panel",
         "spec": {
-          "id": 34,
+          "id": 35,
           "title": "Luck consumed",
           "description": "",
           "links": [],
@@ -2143,10 +2206,10 @@
           }
         }
       },
-      "panel-35": {
+      "panel-36": {
         "kind": "Panel",
         "spec": {
-          "id": 35,
+          "id": 36,
           "title": "Wizard's Vault objectives completed",
           "description": "",
           "links": [],
@@ -2206,10 +2269,10 @@
           }
         }
       },
-      "panel-36": {
+      "panel-37": {
         "kind": "Panel",
         "spec": {
-          "id": 36,
+          "id": 37,
           "title": "Story completion % by season",
           "description": "",
           "links": [],
@@ -2270,10 +2333,10 @@
           }
         }
       },
-      "panel-37": {
+      "panel-38": {
         "kind": "Panel",
         "spec": {
-          "id": 37,
+          "id": 38,
           "title": "Mastery points by region",
           "description": "",
           "links": [],
@@ -2344,10 +2407,10 @@
           }
         }
       },
-      "panel-38": {
+      "panel-39": {
         "kind": "Panel",
         "spec": {
-          "id": 38,
+          "id": 39,
           "title": "Reset-cycle completions (since reset)",
           "description": "",
           "links": [],
@@ -2407,10 +2470,10 @@
           }
         }
       },
-      "panel-39": {
+      "panel-40": {
         "kind": "Panel",
         "spec": {
-          "id": 39,
+          "id": 40,
           "title": "Collection completion %",
           "description": "",
           "links": [],
@@ -2471,10 +2534,10 @@
           }
         }
       },
-      "panel-40": {
+      "panel-41": {
         "kind": "Panel",
         "spec": {
-          "id": 40,
+          "id": 41,
           "title": "Owned / total per collection",
           "description": "",
           "links": [],
@@ -2545,10 +2608,10 @@
           }
         }
       },
-      "panel-41": {
+      "panel-42": {
         "kind": "Panel",
         "spec": {
-          "id": 41,
+          "id": 42,
           "title": "Characters",
           "description": "",
           "links": [],
@@ -2604,10 +2667,10 @@
           }
         }
       },
-      "panel-42": {
+      "panel-43": {
         "kind": "Panel",
         "spec": {
-          "id": 42,
+          "id": 43,
           "title": "Total playtime (h)",
           "description": "",
           "links": [],
@@ -2664,10 +2727,10 @@
           }
         }
       },
-      "panel-43": {
+      "panel-44": {
         "kind": "Panel",
         "spec": {
-          "id": 43,
+          "id": 44,
           "title": "Total deaths",
           "description": "",
           "links": [],
@@ -2723,10 +2786,10 @@
           }
         }
       },
-      "panel-44": {
+      "panel-45": {
         "kind": "Panel",
         "spec": {
-          "id": 44,
+          "id": 45,
           "title": "Level by character",
           "description": "",
           "links": [],
@@ -2787,10 +2850,10 @@
           }
         }
       },
-      "panel-45": {
+      "panel-46": {
         "kind": "Panel",
         "spec": {
-          "id": 45,
+          "id": 46,
           "title": "Playtime by character (h)",
           "description": "",
           "links": [],
@@ -2849,10 +2912,10 @@
           }
         }
       },
-      "panel-46": {
+      "panel-47": {
         "kind": "Panel",
         "spec": {
-          "id": 46,
+          "id": 47,
           "title": "Deaths by character",
           "description": "",
           "links": [],
@@ -2911,10 +2974,10 @@
           }
         }
       },
-      "panel-47": {
+      "panel-48": {
         "kind": "Panel",
         "spec": {
-          "id": 47,
+          "id": 48,
           "title": "Crafting rating (top disciplines)",
           "description": "",
           "links": [],
@@ -2975,10 +3038,10 @@
           }
         }
       },
-      "panel-48": {
+      "panel-49": {
         "kind": "Panel",
         "spec": {
-          "id": 48,
+          "id": 49,
           "title": "Inventory slots used by character",
           "description": "",
           "links": [],
@@ -3037,10 +3100,10 @@
           }
         }
       },
-      "panel-49": {
+      "panel-50": {
         "kind": "Panel",
         "spec": {
-          "id": 49,
+          "id": 50,
           "title": "Inventory capacity by character",
           "description": "",
           "links": [],
@@ -3099,10 +3162,10 @@
           }
         }
       },
-      "panel-50": {
+      "panel-51": {
         "kind": "Panel",
         "spec": {
-          "id": 50,
+          "id": 51,
           "title": "PvP rank",
           "description": "",
           "links": [],
@@ -3158,10 +3221,10 @@
           }
         }
       },
-      "panel-51": {
+      "panel-52": {
         "kind": "Panel",
         "spec": {
-          "id": 51,
+          "id": 52,
           "title": "Rank points",
           "description": "",
           "links": [],
@@ -3217,10 +3280,10 @@
           }
         }
       },
-      "panel-52": {
+      "panel-53": {
         "kind": "Panel",
         "spec": {
-          "id": 52,
+          "id": 53,
           "title": "Wins",
           "description": "",
           "links": [],
@@ -3276,10 +3339,10 @@
           }
         }
       },
-      "panel-53": {
+      "panel-54": {
         "kind": "Panel",
         "spec": {
-          "id": 53,
+          "id": 54,
           "title": "Losses",
           "description": "",
           "links": [],
@@ -3335,10 +3398,10 @@
           }
         }
       },
-      "panel-54": {
+      "panel-55": {
         "kind": "Panel",
         "spec": {
-          "id": 54,
+          "id": 55,
           "title": "Win rate %",
           "description": "",
           "links": [],
@@ -3395,10 +3458,10 @@
           }
         }
       },
-      "panel-55": {
+      "panel-56": {
         "kind": "Panel",
         "spec": {
-          "id": 55,
+          "id": 56,
           "title": "PvP matches by outcome",
           "description": "",
           "links": [],
@@ -3458,10 +3521,10 @@
           }
         }
       },
-      "panel-56": {
+      "panel-57": {
         "kind": "Panel",
         "spec": {
-          "id": 56,
+          "id": 57,
           "title": "PvP wins by profession & ladder",
           "description": "",
           "links": [],
@@ -3540,10 +3603,10 @@
           }
         }
       },
-      "panel-57": {
+      "panel-58": {
         "kind": "Panel",
         "spec": {
-          "id": 57,
+          "id": 58,
           "title": "API request rate (req/s) by endpoint",
           "description": "",
           "links": [],
@@ -3603,10 +3666,10 @@
           }
         }
       },
-      "panel-58": {
+      "panel-59": {
         "kind": "Panel",
         "spec": {
-          "id": 58,
+          "id": 59,
           "title": "API request p95 latency (s)",
           "description": "",
           "links": [],
@@ -3666,10 +3729,10 @@
           }
         }
       },
-      "panel-59": {
+      "panel-60": {
         "kind": "Panel",
         "spec": {
-          "id": 59,
+          "id": 60,
           "title": "Seconds since last successful poll",
           "description": "",
           "links": [],
@@ -3719,10 +3782,10 @@
           }
         }
       },
-      "panel-60": {
+      "panel-61": {
         "kind": "Panel",
         "spec": {
-          "id": 60,
+          "id": 61,
           "title": "Recent events",
           "description": "",
           "links": [],
@@ -3771,10 +3834,10 @@
           }
         }
       },
-      "panel-61": {
+      "panel-62": {
         "kind": "Panel",
         "spec": {
-          "id": 61,
+          "id": 62,
           "title": "Home team",
           "description": "",
           "links": [],
@@ -3830,10 +3893,10 @@
           }
         }
       },
-      "panel-62": {
+      "panel-63": {
         "kind": "Panel",
         "spec": {
-          "id": 62,
+          "id": 63,
           "title": "Our score",
           "description": "",
           "links": [],
@@ -3889,10 +3952,10 @@
           }
         }
       },
-      "panel-63": {
+      "panel-64": {
         "kind": "Panel",
         "spec": {
-          "id": 63,
+          "id": 64,
           "title": "Our PPT",
           "description": "",
           "links": [],
@@ -3948,10 +4011,10 @@
           }
         }
       },
-      "panel-64": {
+      "panel-65": {
         "kind": "Panel",
         "spec": {
-          "id": 64,
+          "id": 65,
           "title": "Our objectives",
           "description": "",
           "links": [],
@@ -4007,10 +4070,10 @@
           }
         }
       },
-      "panel-65": {
+      "panel-66": {
         "kind": "Panel",
         "spec": {
-          "id": 65,
+          "id": 66,
           "title": "War score by team",
           "description": "",
           "links": [],
@@ -4070,10 +4133,10 @@
           }
         }
       },
-      "panel-66": {
+      "panel-67": {
         "kind": "Panel",
         "spec": {
-          "id": 66,
+          "id": 67,
           "title": "Victory points by team",
           "description": "",
           "links": [],
@@ -4133,10 +4196,10 @@
           }
         }
       },
-      "panel-67": {
+      "panel-68": {
         "kind": "Panel",
         "spec": {
-          "id": 67,
+          "id": 68,
           "title": "Kills by team",
           "description": "",
           "links": [],
@@ -4196,10 +4259,10 @@
           }
         }
       },
-      "panel-68": {
+      "panel-69": {
         "kind": "Panel",
         "spec": {
-          "id": 68,
+          "id": 69,
           "title": "KDR by team",
           "description": "",
           "links": [],
@@ -4259,10 +4322,10 @@
           }
         }
       },
-      "panel-69": {
+      "panel-70": {
         "kind": "Panel",
         "spec": {
-          "id": 69,
+          "id": 70,
           "title": "PPT by team",
           "description": "",
           "links": [],
@@ -4322,10 +4385,10 @@
           }
         }
       },
-      "panel-70": {
+      "panel-71": {
         "kind": "Panel",
         "spec": {
-          "id": 70,
+          "id": 71,
           "title": "Objectives held by team & type",
           "description": "",
           "links": [],
@@ -4384,10 +4447,10 @@
           }
         }
       },
-      "panel-71": {
+      "panel-72": {
         "kind": "Panel",
         "spec": {
-          "id": 71,
+          "id": 72,
           "title": "Per-map score (Center = EBG)",
           "description": "",
           "links": [],
@@ -4447,10 +4510,10 @@
           }
         }
       },
-      "panel-72": {
+      "panel-73": {
         "kind": "Panel",
         "spec": {
-          "id": 72,
+          "id": 73,
           "title": "Per-map kills",
           "description": "",
           "links": [],
@@ -4821,6 +4884,19 @@
                           "name": "panel-22"
                         }
                       }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 44,
+                        "width": 24,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-23"
+                        }
+                      }
                     }
                   ]
                 }
@@ -4844,7 +4920,7 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-23"
+                          "name": "panel-24"
                         }
                       }
                     },
@@ -4857,7 +4933,7 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-24"
+                          "name": "panel-25"
                         }
                       }
                     },
@@ -4870,19 +4946,6 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-25"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 12,
-                        "y": 0,
-                        "width": 4,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
                           "name": "panel-26"
                         }
                       }
@@ -4890,7 +4953,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 16,
+                        "x": 12,
                         "y": 0,
                         "width": 4,
                         "height": 4,
@@ -4903,7 +4966,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 20,
+                        "x": 16,
                         "y": 0,
                         "width": 4,
                         "height": 4,
@@ -4916,9 +4979,9 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 4,
-                        "width": 5,
+                        "x": 20,
+                        "y": 0,
+                        "width": 4,
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
@@ -4929,7 +4992,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 5,
+                        "x": 0,
                         "y": 4,
                         "width": 5,
                         "height": 4,
@@ -4942,13 +5005,26 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
+                        "x": 5,
+                        "y": 4,
+                        "width": 5,
+                        "height": 4,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-31"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
                         "x": 10,
                         "y": 4,
                         "width": 4,
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-31"
+                          "name": "panel-32"
                         }
                       }
                     },
@@ -4961,7 +5037,7 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-32"
+                          "name": "panel-33"
                         }
                       }
                     },
@@ -4974,19 +5050,6 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-33"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 0,
-                        "y": 8,
-                        "width": 12,
-                        "height": 8,
-                        "element": {
-                          "kind": "ElementReference",
                           "name": "panel-34"
                         }
                       }
@@ -4994,7 +5057,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
+                        "x": 0,
                         "y": 8,
                         "width": 12,
                         "height": 8,
@@ -5007,10 +5070,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 16,
+                        "x": 12,
+                        "y": 8,
                         "width": 12,
-                        "height": 9,
+                        "height": 8,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-36"
@@ -5020,7 +5083,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
+                        "x": 0,
                         "y": 16,
                         "width": 12,
                         "height": 9,
@@ -5033,13 +5096,26 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
+                        "x": 12,
+                        "y": 16,
+                        "width": 12,
+                        "height": 9,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-38"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
                         "x": 0,
                         "y": 25,
                         "width": 24,
                         "height": 7,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-38"
+                          "name": "panel-39"
                         }
                       }
                     }
@@ -5065,7 +5141,7 @@
                         "height": 12,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-39"
+                          "name": "panel-40"
                         }
                       }
                     },
@@ -5078,7 +5154,7 @@
                         "height": 12,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-40"
+                          "name": "panel-41"
                         }
                       }
                     }
@@ -5104,19 +5180,6 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-41"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 8,
-                        "y": 0,
-                        "width": 8,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
                           "name": "panel-42"
                         }
                       }
@@ -5124,7 +5187,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 16,
+                        "x": 8,
                         "y": 0,
                         "width": 8,
                         "height": 4,
@@ -5137,10 +5200,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 4,
+                        "x": 16,
+                        "y": 0,
                         "width": 8,
-                        "height": 10,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-44"
@@ -5150,7 +5213,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 8,
+                        "x": 0,
                         "y": 4,
                         "width": 8,
                         "height": 10,
@@ -5163,7 +5226,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 16,
+                        "x": 8,
                         "y": 4,
                         "width": 8,
                         "height": 10,
@@ -5176,13 +5239,26 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
+                        "x": 16,
+                        "y": 4,
+                        "width": 8,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-47"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
                         "x": 0,
                         "y": 14,
                         "width": 24,
                         "height": 10,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-47"
+                          "name": "panel-48"
                         }
                       }
                     },
@@ -5195,7 +5271,7 @@
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-48"
+                          "name": "panel-49"
                         }
                       }
                     },
@@ -5208,7 +5284,7 @@
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-49"
+                          "name": "panel-50"
                         }
                       }
                     }
@@ -5234,7 +5310,7 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-50"
+                          "name": "panel-51"
                         }
                       }
                     },
@@ -5247,19 +5323,6 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-51"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 8,
-                        "y": 0,
-                        "width": 4,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
                           "name": "panel-52"
                         }
                       }
@@ -5267,7 +5330,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
+                        "x": 8,
                         "y": 0,
                         "width": 4,
                         "height": 4,
@@ -5280,9 +5343,9 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 16,
+                        "x": 12,
                         "y": 0,
-                        "width": 8,
+                        "width": 4,
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
@@ -5293,10 +5356,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 4,
-                        "width": 12,
-                        "height": 7,
+                        "x": 16,
+                        "y": 0,
+                        "width": 8,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-55"
@@ -5306,7 +5369,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
+                        "x": 0,
                         "y": 4,
                         "width": 12,
                         "height": 7,
@@ -5319,10 +5382,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 11,
+                        "x": 12,
+                        "y": 4,
                         "width": 12,
-                        "height": 8,
+                        "height": 7,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-57"
@@ -5332,7 +5395,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
+                        "x": 0,
                         "y": 11,
                         "width": 12,
                         "height": 8,
@@ -5345,13 +5408,26 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
+                        "x": 12,
+                        "y": 11,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-59"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
                         "x": 0,
                         "y": 19,
                         "width": 8,
                         "height": 9,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-59"
+                          "name": "panel-60"
                         }
                       }
                     },
@@ -5364,7 +5440,7 @@
                         "height": 9,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-60"
+                          "name": "panel-61"
                         }
                       }
                     }
@@ -5390,7 +5466,7 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-61"
+                          "name": "panel-62"
                         }
                       }
                     },
@@ -5403,19 +5479,6 @@
                         "height": 4,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-62"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 12,
-                        "y": 0,
-                        "width": 6,
-                        "height": 4,
-                        "element": {
-                          "kind": "ElementReference",
                           "name": "panel-63"
                         }
                       }
@@ -5423,7 +5486,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 18,
+                        "x": 12,
                         "y": 0,
                         "width": 6,
                         "height": 4,
@@ -5436,10 +5499,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 4,
-                        "width": 12,
-                        "height": 8,
+                        "x": 18,
+                        "y": 0,
+                        "width": 6,
+                        "height": 4,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-65"
@@ -5449,7 +5512,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
+                        "x": 0,
                         "y": 4,
                         "width": 12,
                         "height": 8,
@@ -5462,9 +5525,9 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 12,
-                        "width": 8,
+                        "x": 12,
+                        "y": 4,
+                        "width": 12,
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
@@ -5475,7 +5538,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 8,
+                        "x": 0,
                         "y": 12,
                         "width": 8,
                         "height": 8,
@@ -5488,7 +5551,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 16,
+                        "x": 8,
                         "y": 12,
                         "width": 8,
                         "height": 8,
@@ -5501,13 +5564,26 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
+                        "x": 16,
+                        "y": 12,
+                        "width": 8,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-70"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
                         "x": 0,
                         "y": 20,
                         "width": 24,
                         "height": 10,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-70"
+                          "name": "panel-71"
                         }
                       }
                     },
@@ -5520,7 +5596,7 @@
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-71"
+                          "name": "panel-72"
                         }
                       }
                     },
@@ -5533,7 +5609,7 @@
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-72"
+                          "name": "panel-73"
                         }
                       }
                     }

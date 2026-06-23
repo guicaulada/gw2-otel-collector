@@ -154,6 +154,11 @@ def wealth():
                       {"refId": "B", "datasource": PROM, "legendFormat": "demand {{gw2_item_name}}",
                        "expr": 'max by (gw2_item_name) (gw2_commerce_item_demand)'}]), 12, 8)
     g.row()
+    g.add(timeseries("Tracked item movers (24h sell-price change %)",
+                     [target('(max by (gw2_item_name) (gw2_commerce_item_price{gw2_side="sell"}) / '
+                             'max by (gw2_item_name) (gw2_commerce_item_price{gw2_side="sell"} offset 24h) - 1) * 100',
+                             "{{gw2_item_name}}")], unit="percent"), 24, 8)
+    g.row()
     g.add(bargauge("Material storage value by category (gold)",
                    "gw2_account_material_value / 10000", "{{gw2_material_category_name}}", unit="none"), 24, 8)
     return dashboard("gw2-wealth", "GW2 Wealth & Economy", g)
