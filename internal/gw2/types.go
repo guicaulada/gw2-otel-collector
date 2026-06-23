@@ -332,6 +332,20 @@ type CraftingDiscipline struct {
 	Active     bool   `json:"active"`
 }
 
+// PvPGame is one entry of /v2/pvp/games — the account's last ~10 PvP matches.
+// This is one of the few history windows the API exposes (see project memory).
+type PvPGame struct {
+	ID           string `json:"id"`
+	MapID        int    `json:"map_id"`
+	Started      string `json:"started"`
+	Ended        string `json:"ended"`
+	Result       string `json:"result"` // Victory / Defeat
+	Team         string `json:"team"`   // Red / Blue
+	Profession   string `json:"profession"`
+	RatingType   string `json:"rating_type"` // Ranked / Unranked
+	RatingChange int    `json:"rating_change"`
+}
+
 // AccountAchievement is one entry of /v2/account/achievements.
 type AccountAchievement struct {
 	ID       int   `json:"id"`

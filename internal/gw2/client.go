@@ -403,6 +403,17 @@ func (c *Client) PvPStandings(ctx context.Context) ([]PvPStanding, error) {
 	return out, nil
 }
 
+// PvPGames fetches /v2/pvp/games?ids=all — the account's last ~10 matches as
+// full objects (the list is small enough to request all at once).
+func (c *Client) PvPGames(ctx context.Context) ([]PvPGame, error) {
+	var out []PvPGame
+	params := url.Values{"ids": {"all"}}
+	if err := c.get(ctx, "pvp/games", "pvp/games", params, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CountIDs fetches an endpoint that returns a JSON array and returns its length.
 // Works for account unlock lists (id or object arrays) and reference index lists.
 func (c *Client) CountIDs(ctx context.Context, path, label string) (int, error) {

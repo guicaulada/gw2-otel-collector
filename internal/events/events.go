@@ -154,6 +154,31 @@ func (e *Emitter) OnGuildLog(ctx context.Context, guildID string, entries []gw2.
 	}
 }
 
+// OnPvPGames emits one event per PvP match id not seen before. The API keeps
+// only the last ~10 games, so the seen-set both backfills on first run and
+// dedupes as the window rotates.
+func (e *Emitter) OnPvPGames(ctx context.Context, games []gw2.PvPGame) {
+	for _, g := range games {
+		key := "pvpgame:" + g.ID
+		if e.state.HasSeen(key) {
+			continue
+		}
+		e.emit(ctx, "gw2.pvp.game",
+			fmt.Sprintf("%s %s as %s (%+d rating)", g.RatingType, g.Result, g.Profession, g.RatingChange),
+			log.String("gw2.pvp.game.id", g.ID),
+			log.String("gw2.pvp.result", g.Result),
+			log.String("gw2.pvp.team", g.Team),
+			log.String("gw2.pvp.profession", g.Profession),
+			log.String("gw2.pvp.rating_type", g.RatingType),
+			log.Int64("gw2.pvp.rating_change", int64(g.RatingChange)),
+			log.Int64("gw2.pvp.map_id", int64(g.MapID)),
+			log.String("gw2.pvp.ended", g.Ended))
+		if err := e.state.MarkSeen(key); err != nil {
+			e.log.Warn("state MarkSeen failed", "key", key, "error", err)
+		}
+	}
+}
+
 // OnTransactions emits one event per completed transaction id not seen before.
 func (e *Emitter) OnTransactions(ctx context.Context, txs []gw2.Transaction, side string) {
 	for _, t := range txs {

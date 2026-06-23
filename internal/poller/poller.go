@@ -35,6 +35,7 @@ type Emitter interface {
 	OnTransactions(ctx context.Context, txs []gw2.Transaction, side string)
 	OnGuildLog(ctx context.Context, guildID string, entries []gw2.GuildLogEntry)
 	OnResets(ctx context.Context, kind string, count int)
+	OnPvPGames(ctx context.Context, games []gw2.PvPGame)
 }
 
 // resetFamilies maps reset-cycle metric kinds to their account endpoints.
@@ -477,6 +478,13 @@ func (p *Poller) Start(ctx context.Context) {
 			return err
 		}
 		p.store.SetPvPStandings(standings, time.Now())
+		if p.emitter != nil {
+			games, err := p.client.PvPGames(ctx)
+			if err != nil {
+				return err
+			}
+			p.emitter.OnPvPGames(ctx, games)
+		}
 		return nil
 	})
 
