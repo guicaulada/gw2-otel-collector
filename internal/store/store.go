@@ -30,9 +30,20 @@ type MasteryRegionPoints struct {
 
 // Progression is the derived progression snapshot.
 type Progression struct {
-	Luck           int64
-	MasteriesCount int
-	PointsByRegion map[string]MasteryRegionPoints
+	Luck               int64
+	MasteriesCount     int
+	PointsByRegion     map[string]MasteryRegionPoints
+	FractalAugments    map[string]int64 // progression id -> value (non-luck)
+	LegendaryOwned     int              // distinct legendaries owned
+	LegendaryCopies    int64            // total copies owned
+	LegendaryAvailable int              // distinct legendaries in the armory (denominator)
+}
+
+// Achievements is the derived achievement summary.
+type Achievements struct {
+	TotalAP int64
+	Done    int
+	Total   int
 }
 
 // Storage is the derived bank/material/shared-inventory snapshot.
@@ -58,6 +69,7 @@ type Store struct {
 	wizardsvault   []WizardsVaultPeriod
 	storyCompleted []int
 	accountValue   *value.Account
+	achievements   *Achievements
 	lastSuccess    map[string]time.Time
 }
 
@@ -282,6 +294,21 @@ func (s *Store) AccountValue() *value.Account {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.accountValue
+}
+
+// SetAchievements stores the latest achievement summary.
+func (s *Store) SetAchievements(a *Achievements, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.achievements = a
+	s.lastSuccess["achievements"] = at
+}
+
+// Achievements returns the latest achievement summary.
+func (s *Store) Achievements() *Achievements {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.achievements
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

@@ -59,6 +59,7 @@ type Intervals struct {
 	WizardsVault time.Duration
 	Story        time.Duration
 	Value        time.Duration
+	Achievements time.Duration
 	// Reference is how often the game build number is checked to invalidate
 	// static reference data (id→name tables). Reference data changes only on a
 	// game patch, so this can be infrequent.
@@ -110,6 +111,7 @@ func FromEnv() (*Config, error) {
 			WizardsVault: envDuration("GW2_INTERVAL_WIZARDSVAULT", 10*time.Minute),
 			Story:        envDuration("GW2_INTERVAL_STORY", 30*time.Minute),
 			Value:        envDuration("GW2_INTERVAL_VALUE", 15*time.Minute),
+			Achievements: envDuration("GW2_INTERVAL_ACHIEVEMENTS", 15*time.Minute),
 			Reference:    envDuration("GW2_INTERVAL_REFERENCE", time.Hour),
 		},
 	}, nil

@@ -320,6 +320,46 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.story.quests.total", err)
 	}
+	craftingRating, err := meter.Int64ObservableGauge("gw2.character.crafting.rating",
+		metric.WithDescription("Per-character crafting discipline rating (0-500)"))
+	if err != nil {
+		return nil, wrap("gw2.character.crafting.rating", err)
+	}
+	achievementsTotalAP, err := meter.Int64ObservableGauge("gw2.account.achievement.points.total",
+		metric.WithDescription("Computed total achievement points (tier-point sum)"))
+	if err != nil {
+		return nil, wrap("gw2.account.achievement.points.total", err)
+	}
+	achievementsDone, err := meter.Int64ObservableGauge("gw2.account.achievements.done",
+		metric.WithUnit("{achievement}"), metric.WithDescription("Achievements completed"))
+	if err != nil {
+		return nil, wrap("gw2.account.achievements.done", err)
+	}
+	achievementsTracked, err := meter.Int64ObservableGauge("gw2.account.achievements.tracked",
+		metric.WithUnit("{achievement}"), metric.WithDescription("Achievements with account progress"))
+	if err != nil {
+		return nil, wrap("gw2.account.achievements.tracked", err)
+	}
+	fractalAugment, err := meter.Int64ObservableGauge("gw2.account.fractal.augmentation",
+		metric.WithDescription("Fractal augmentation level, by type"))
+	if err != nil {
+		return nil, wrap("gw2.account.fractal.augmentation", err)
+	}
+	legendaryOwned, err := meter.Int64ObservableGauge("gw2.account.legendary_armory.owned",
+		metric.WithDescription("Distinct legendaries unlocked in the armory"))
+	if err != nil {
+		return nil, wrap("gw2.account.legendary_armory.owned", err)
+	}
+	legendaryCopies, err := meter.Int64ObservableGauge("gw2.account.legendary_armory.copies",
+		metric.WithDescription("Total legendary copies owned"))
+	if err != nil {
+		return nil, wrap("gw2.account.legendary_armory.copies", err)
+	}
+	legendaryAvailable, err := meter.Int64ObservableGauge("gw2.account.legendary_armory.available",
+		metric.WithDescription("Distinct legendaries in the armory (denominator)"))
+	if err != nil {
+		return nil, wrap("gw2.account.legendary_armory.available", err)
+	}
 	accountValue, err := meter.Int64ObservableGauge("gw2.account.value",
 		metric.WithUnit("{copper}"),
 		metric.WithDescription("Liquid account value in copper, by component and price basis"))
@@ -354,6 +394,19 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 				o.ObserveInt64(masteryEarned, pts.Earned, attrs)
 				o.ObserveInt64(masterySpent, pts.Spent, attrs)
 			}
+			for kind, val := range p.FractalAugments {
+				o.ObserveInt64(fractalAugment, val,
+					metric.WithAttributes(attribute.String("gw2.augmentation", kind)))
+			}
+			o.ObserveInt64(legendaryOwned, int64(p.LegendaryOwned))
+			o.ObserveInt64(legendaryCopies, p.LegendaryCopies)
+			o.ObserveInt64(legendaryAvailable, int64(p.LegendaryAvailable))
+		}
+
+		if a := st.Achievements(); a != nil {
+			o.ObserveInt64(achievementsTotalAP, a.TotalAP)
+			o.ObserveInt64(achievementsDone, int64(a.Done))
+			o.ObserveInt64(achievementsTracked, int64(a.Total))
 		}
 
 		if s := st.Storage(); s != nil {
@@ -390,6 +443,11 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 				o.ObserveInt64(charPlaytime, c.Age, attrs)
 				o.ObserveInt64(charDeaths, c.Deaths, attrs)
 				o.ObserveInt64(charLevel, int64(c.Level), attrs)
+				for _, cr := range c.Crafting {
+					o.ObserveInt64(craftingRating, int64(cr.Rating), metric.WithAttributes(
+						attribute.String("gw2.character.name", c.Name),
+						attribute.String("gw2.discipline", cr.Discipline)))
+				}
 			}
 		}
 
@@ -536,7 +594,10 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		pvpRank, pvpRankPoints, pvpMatches,
 		itemPrice, itemSpread, itemFlipMargin,
 		wvMetaProgress, wvMetaTarget, wvObjectives, wvCompleted, wvUnclaimed,
-		storyCompleted, storyTotal, accountValue, lastSuccess,
+		storyCompleted, storyTotal, accountValue,
+		craftingRating, achievementsTotalAP, achievementsDone, achievementsTracked,
+		fractalAugment, legendaryOwned, legendaryCopies, legendaryAvailable,
+		lastSuccess,
 	)
 }
 

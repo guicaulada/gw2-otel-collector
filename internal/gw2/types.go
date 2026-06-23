@@ -243,15 +243,16 @@ type Slot struct {
 // collector uses. The bulk overview embeds far more (equipment, tabs, recipes,
 // ...) — later slices will read those from the same response.
 type Character struct {
-	Name       string          `json:"name"`
-	Race       string          `json:"race"`
-	Gender     string          `json:"gender"`
-	Profession string          `json:"profession"`
-	Level      int             `json:"level"`
-	Age        int64           `json:"age"`    // playtime in seconds (monotonic)
-	Deaths     int64           `json:"deaths"` // lifetime deaths (monotonic)
-	Created    string          `json:"created"`
-	Bags       []*CharacterBag `json:"bags"` // present in the ?ids=all overview
+	Name       string               `json:"name"`
+	Race       string               `json:"race"`
+	Gender     string               `json:"gender"`
+	Profession string               `json:"profession"`
+	Level      int                  `json:"level"`
+	Age        int64                `json:"age"`    // playtime in seconds (monotonic)
+	Deaths     int64                `json:"deaths"` // lifetime deaths (monotonic)
+	Created    string               `json:"created"`
+	Bags       []*CharacterBag      `json:"bags"`     // present in the ?ids=all overview
+	Crafting   []CraftingDiscipline `json:"crafting"` // present in the ?ids=all overview
 }
 
 // CharacterBag is one equipped bag with its slots (null slots = empty).
@@ -259,4 +260,49 @@ type CharacterBag struct {
 	ID        int     `json:"id"`
 	Size      int     `json:"size"`
 	Inventory []*Slot `json:"inventory"`
+}
+
+// CraftingDiscipline is one entry of a character's crafting list.
+type CraftingDiscipline struct {
+	Discipline string `json:"discipline"`
+	Rating     int    `json:"rating"`
+	Active     bool   `json:"active"`
+}
+
+// AccountAchievement is one entry of /v2/account/achievements.
+type AccountAchievement struct {
+	ID       int   `json:"id"`
+	Current  int   `json:"current"`
+	Max      int   `json:"max"`
+	Done     bool  `json:"done"`
+	Repeated int64 `json:"repeated"`
+}
+
+// AchievementDef is the subset of /v2/achievements used to compute AP.
+type AchievementDef struct {
+	ID    int      `json:"id"`
+	Flags []string `json:"flags"`
+	Tiers []struct {
+		Count  int   `json:"count"`
+		Points int64 `json:"points"`
+	} `json:"tiers"`
+	PointCap int64 `json:"point_cap"`
+}
+
+// ProgressionEntry is one entry of /v2/account/progression (luck + fractal augments).
+type ProgressionEntry struct {
+	ID    string `json:"id"`
+	Value int64  `json:"value"`
+}
+
+// LegendaryArmoryEntry is one entry of /v2/account/legendaryarmory.
+type LegendaryArmoryEntry struct {
+	ID    int   `json:"id"`
+	Count int64 `json:"count"`
+}
+
+// LegendaryArmoryDef is one entry of /v2/legendaryarmory (max copies per item).
+type LegendaryArmoryDef struct {
+	ID       int   `json:"id"`
+	MaxCount int64 `json:"max_count"`
 }

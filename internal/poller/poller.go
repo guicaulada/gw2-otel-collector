@@ -104,11 +104,76 @@ func (p *Poller) Start(ctx context.Context) {
 		for _, t := range points.Totals {
 			byRegion[t.Region] = store.MasteryRegionPoints{Earned: t.Earned, Spent: t.Spent}
 		}
+
+		// Fractal augmentations (progression entries other than luck).
+		prog, err := p.client.AccountProgression(ctx)
+		if err != nil {
+			return err
+		}
+		augments := map[string]int64{}
+		for _, e := range prog {
+			if e.ID != "luck" {
+				augments[e.ID] = e.Value
+			}
+		}
+
+		// Legendary armory: owned copies vs available.
+		owned, err := p.client.AccountLegendaryArmory(ctx)
+		if err != nil {
+			return err
+		}
+		available, err := p.client.LegendaryArmory(ctx)
+		if err != nil {
+			return err
+		}
+		var copies int64
+		for _, o := range owned {
+			copies += o.Count
+		}
+
 		p.store.SetProgression(&store.Progression{
-			Luck:           luck,
-			MasteriesCount: len(masteries),
-			PointsByRegion: byRegion,
+			Luck:               luck,
+			MasteriesCount:     len(masteries),
+			PointsByRegion:     byRegion,
+			FractalAugments:    augments,
+			LegendaryOwned:     len(owned),
+			LegendaryCopies:    copies,
+			LegendaryAvailable: len(available),
 		}, time.Now())
+		return nil
+	})
+
+	// Achievement points: account achievements joined to cached definitions.
+	achDefs := map[int]gw2.AchievementDef{} // id -> def (lazy, process-lifetime cache)
+	p.run(ctx, "achievements", p.intervals.Achievements, func(ctx context.Context) error {
+		accAch, err := p.client.AccountAchievements(ctx)
+		if err != nil {
+			return err
+		}
+		var missing []int
+		for _, a := range accAch {
+			if _, ok := achDefs[a.ID]; !ok {
+				missing = append(missing, a.ID)
+			}
+		}
+		if len(missing) > 0 {
+			defs, err := p.client.AchievementsByIDs(ctx, missing)
+			if err != nil {
+				return err
+			}
+			for _, d := range defs {
+				achDefs[d.ID] = d
+			}
+		}
+		var totalAP int64
+		done := 0
+		for _, a := range accAch {
+			if a.Done {
+				done++
+			}
+			totalAP += achievementPoints(achDefs[a.ID], a)
+		}
+		p.store.SetAchievements(&store.Achievements{TotalAP: totalAP, Done: done, Total: len(accAch)}, time.Now())
 		return nil
 	})
 
@@ -386,6 +451,28 @@ func (p *Poller) Start(ctx context.Context) {
 
 // Wait blocks until all polling goroutines have exited.
 func (p *Poller) Wait() { p.wg.Wait() }
+
+// achievementPoints computes AP earned for one achievement: tier points for
+// every tier reached (all tiers when done), plus repeatable completions capped
+// at point_cap. Approximates gw2efficiency's total (ignores the global daily-AP
+// cap).
+func achievementPoints(def gw2.AchievementDef, acc gw2.AccountAchievement) int64 {
+	var reached, all int64
+	for _, t := range def.Tiers {
+		all += t.Points
+		if acc.Done || acc.Current >= t.Count {
+			reached += t.Points
+		}
+	}
+	total := reached
+	if acc.Repeated > 0 {
+		total += acc.Repeated * all
+		if def.PointCap > 0 && total > def.PointCap {
+			total = def.PointCap
+		}
+	}
+	return total
+}
 
 // contains reports whether s is in the slice.
 func contains(slice []string, s string) bool {

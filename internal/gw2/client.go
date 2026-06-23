@@ -172,6 +172,62 @@ func (c *Client) WizardsVault(ctx context.Context, period string) (*WizardsVault
 	return &wv, nil
 }
 
+// AccountAchievements fetches /v2/account/achievements.
+func (c *Client) AccountAchievements(ctx context.Context) ([]AccountAchievement, error) {
+	var out []AccountAchievement
+	if err := c.get(ctx, "account/achievements", "account/achievements", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AchievementsByIDs fetches achievement definitions for the given ids, batched
+// 200 at a time (no ids=all support on this endpoint). Public, static.
+func (c *Client) AchievementsByIDs(ctx context.Context, ids []int) ([]AchievementDef, error) {
+	var out []AchievementDef
+	const batch = 200
+	for i := 0; i < len(ids); i += batch {
+		end := i + batch
+		if end > len(ids) {
+			end = len(ids)
+		}
+		var defs []AchievementDef
+		params := url.Values{"ids": {joinInts(ids[i:end])}}
+		if err := c.get(ctx, "achievements", "achievements", params, &defs); err != nil {
+			return nil, err
+		}
+		out = append(out, defs...)
+	}
+	return out, nil
+}
+
+// AccountProgression fetches /v2/account/progression (luck + fractal augmentations).
+func (c *Client) AccountProgression(ctx context.Context) ([]ProgressionEntry, error) {
+	var out []ProgressionEntry
+	if err := c.get(ctx, "account/progression", "account/progression", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AccountLegendaryArmory fetches /v2/account/legendaryarmory (owned copies).
+func (c *Client) AccountLegendaryArmory(ctx context.Context) ([]LegendaryArmoryEntry, error) {
+	var out []LegendaryArmoryEntry
+	if err := c.get(ctx, "account/legendaryarmory", "account/legendaryarmory", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// LegendaryArmory fetches /v2/legendaryarmory (max copies per item). Public, static.
+func (c *Client) LegendaryArmory(ctx context.Context) ([]LegendaryArmoryDef, error) {
+	var out []LegendaryArmoryDef
+	if err := c.get(ctx, "legendaryarmory", "legendaryarmory", url.Values{"ids": {"all"}}, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Masteries fetches /v2/account/masteries (trained mastery tracks).
 func (c *Client) Masteries(ctx context.Context) ([]Mastery, error) {
 	var m []Mastery
