@@ -258,6 +258,31 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.commerce.item.flip_margin", err)
 	}
+	wvMetaProgress, err := meter.Int64ObservableGauge("gw2.wizardsvault.meta.progress",
+		metric.WithDescription("Wizard's Vault meta-reward progress, by period"))
+	if err != nil {
+		return nil, wrap("gw2.wizardsvault.meta.progress", err)
+	}
+	wvMetaTarget, err := meter.Int64ObservableGauge("gw2.wizardsvault.meta.target",
+		metric.WithDescription("Wizard's Vault meta-reward target, by period"))
+	if err != nil {
+		return nil, wrap("gw2.wizardsvault.meta.target", err)
+	}
+	wvObjectives, err := meter.Int64ObservableGauge("gw2.wizardsvault.objectives",
+		metric.WithUnit("{objective}"), metric.WithDescription("Wizard's Vault objectives, by period"))
+	if err != nil {
+		return nil, wrap("gw2.wizardsvault.objectives", err)
+	}
+	wvCompleted, err := meter.Int64ObservableGauge("gw2.wizardsvault.objectives.completed",
+		metric.WithUnit("{objective}"), metric.WithDescription("Completed Wizard's Vault objectives, by period"))
+	if err != nil {
+		return nil, wrap("gw2.wizardsvault.objectives.completed", err)
+	}
+	wvUnclaimed, err := meter.Int64ObservableGauge("gw2.wizardsvault.acclaim.unclaimed",
+		metric.WithDescription("Unclaimed Astral Acclaim from completed objectives, by period"))
+	if err != nil {
+		return nil, wrap("gw2.wizardsvault.acclaim.unclaimed", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -383,6 +408,17 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			}
 		}
 
+		for _, wv := range st.WizardsVault() {
+			attrs := metric.WithAttributes(attribute.String("gw2.period", wv.Period))
+			if wv.HasMeta {
+				o.ObserveInt64(wvMetaProgress, wv.MetaCurrent, attrs)
+				o.ObserveInt64(wvMetaTarget, wv.MetaComplete, attrs)
+			}
+			o.ObserveInt64(wvObjectives, int64(wv.Objectives), attrs)
+			o.ObserveInt64(wvCompleted, int64(wv.Completed), attrs)
+			o.ObserveInt64(wvUnclaimed, wv.UnclaimedAcclaim, attrs)
+		}
+
 		for _, p := range st.Prices() {
 			base := []attribute.KeyValue{attribute.Int("gw2.item.id", p.ID)}
 			if resolver != nil {
@@ -417,7 +453,9 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		unlocksCount, unlocksTotal,
 		guildLevel, guildMembers, guildCapacity, guildCurrency, guildUpgrades,
 		pvpRank, pvpRankPoints, pvpMatches,
-		itemPrice, itemSpread, itemFlipMargin, lastSuccess,
+		itemPrice, itemSpread, itemFlipMargin,
+		wvMetaProgress, wvMetaTarget, wvObjectives, wvCompleted, wvUnclaimed,
+		lastSuccess,
 	)
 }
 

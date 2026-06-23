@@ -133,6 +133,21 @@ var Collections = []Collection{
 	{"skiffs", "account/skiffs", "skiffs"},
 }
 
+// WizardsVault is /v2/account/wizardsvault/{daily,weekly,special}. The meta_*
+// fields are present for daily/weekly and absent (zero) for special.
+type WizardsVault struct {
+	MetaProgressCurrent  int64 `json:"meta_progress_current"`
+	MetaProgressComplete int64 `json:"meta_progress_complete"`
+	MetaRewardClaimed    bool  `json:"meta_reward_claimed"`
+	Objectives           []struct {
+		ID               int   `json:"id"`
+		Acclaim          int64 `json:"acclaim"`
+		ProgressCurrent  int64 `json:"progress_current"`
+		ProgressComplete int64 `json:"progress_complete"`
+		Claimed          bool  `json:"claimed"`
+	} `json:"objectives"`
+}
+
 // Mastery is one entry of /v2/account/masteries.
 type Mastery struct {
 	ID    int `json:"id"`

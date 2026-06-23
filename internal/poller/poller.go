@@ -137,6 +137,37 @@ func (p *Poller) Start(ctx context.Context) {
 		return nil
 	})
 
+	p.run(ctx, "wizardsvault", p.intervals.WizardsVault, func(ctx context.Context) error {
+		var periods []store.WizardsVaultPeriod
+		for _, period := range []string{"daily", "weekly", "special"} {
+			wv, err := p.client.WizardsVault(ctx, period)
+			if err != nil {
+				return err
+			}
+			var completed int
+			var unclaimed int64
+			for _, o := range wv.Objectives {
+				if o.ProgressComplete > 0 && o.ProgressCurrent >= o.ProgressComplete {
+					completed++
+					if !o.Claimed {
+						unclaimed += o.Acclaim
+					}
+				}
+			}
+			periods = append(periods, store.WizardsVaultPeriod{
+				Period:           period,
+				HasMeta:          period != "special",
+				MetaCurrent:      wv.MetaProgressCurrent,
+				MetaComplete:     wv.MetaProgressComplete,
+				Objectives:       len(wv.Objectives),
+				Completed:        completed,
+				UnclaimedAcclaim: unclaimed,
+			})
+		}
+		p.store.SetWizardsVault(periods, time.Now())
+		return nil
+	})
+
 	p.run(ctx, "guild", p.intervals.Guild, func(ctx context.Context) error {
 		acc := p.store.Account()
 		if acc == nil { // store not populated yet (startup race) — fetch directly

@@ -56,6 +56,7 @@ type Intervals struct {
 	Guild        time.Duration
 	PvP          time.Duration
 	Transactions time.Duration
+	WizardsVault time.Duration
 	// Reference is how often the game build number is checked to invalidate
 	// static reference data (id→name tables). Reference data changes only on a
 	// game patch, so this can be infrequent.
@@ -104,6 +105,7 @@ func FromEnv() (*Config, error) {
 			Guild:        envDuration("GW2_INTERVAL_GUILD", 10*time.Minute),
 			PvP:          envDuration("GW2_INTERVAL_PVP", 10*time.Minute),
 			Transactions: envDuration("GW2_INTERVAL_TRANSACTIONS", 5*time.Minute),
+			WizardsVault: envDuration("GW2_INTERVAL_WIZARDSVAULT", 10*time.Minute),
 			Reference:    envDuration("GW2_INTERVAL_REFERENCE", time.Hour),
 		},
 	}, nil

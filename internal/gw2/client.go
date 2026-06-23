@@ -162,6 +162,16 @@ func (c *Client) Delivery(ctx context.Context) (*Delivery, error) {
 	return &d, nil
 }
 
+// WizardsVault fetches /v2/account/wizardsvault/{period} where period is
+// "daily", "weekly", or "special".
+func (c *Client) WizardsVault(ctx context.Context, period string) (*WizardsVault, error) {
+	var wv WizardsVault
+	if err := c.get(ctx, "account/wizardsvault/"+period, "account/wizardsvault", nil, &wv); err != nil {
+		return nil, err
+	}
+	return &wv, nil
+}
+
 // Masteries fetches /v2/account/masteries (trained mastery tracks).
 func (c *Client) Masteries(ctx context.Context) ([]Mastery, error) {
 	var m []Mastery

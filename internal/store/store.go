@@ -43,18 +43,30 @@ type Storage struct {
 
 // Store is a concurrency-safe cache of the latest snapshot per family.
 type Store struct {
-	mu          sync.RWMutex
-	account     *gw2.Account
-	wallet      []gw2.CurrencyAmount
-	characters  []gw2.Character
-	commerce    *Commerce
-	progression *Progression
-	storage     *Storage
-	unlocks     map[string]int
-	guilds      []GuildInfo
-	pvp         *gw2.PvPStats
-	prices      []gw2.ItemPrice
-	lastSuccess map[string]time.Time
+	mu           sync.RWMutex
+	account      *gw2.Account
+	wallet       []gw2.CurrencyAmount
+	characters   []gw2.Character
+	commerce     *Commerce
+	progression  *Progression
+	storage      *Storage
+	unlocks      map[string]int
+	guilds       []GuildInfo
+	pvp          *gw2.PvPStats
+	prices       []gw2.ItemPrice
+	wizardsvault []WizardsVaultPeriod
+	lastSuccess  map[string]time.Time
+}
+
+// WizardsVaultPeriod is the derived Wizard's Vault snapshot for one period.
+type WizardsVaultPeriod struct {
+	Period           string
+	HasMeta          bool
+	MetaCurrent      int64
+	MetaComplete     int64
+	Objectives       int
+	Completed        int
+	UnclaimedAcclaim int64
 }
 
 // GuildInfo bundles a guild's detail with its completed-upgrade count
@@ -217,6 +229,21 @@ func (s *Store) Prices() []gw2.ItemPrice {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.prices
+}
+
+// SetWizardsVault stores the latest Wizard's Vault snapshot.
+func (s *Store) SetWizardsVault(wv []WizardsVaultPeriod, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.wizardsvault = wv
+	s.lastSuccess["wizardsvault"] = at
+}
+
+// WizardsVault returns the latest Wizard's Vault snapshot.
+func (s *Store) WizardsVault() []WizardsVaultPeriod {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.wizardsvault
 }
 
 // LastSuccess returns the time of the last successful poll for each family.
