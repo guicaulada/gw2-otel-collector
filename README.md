@@ -72,9 +72,15 @@ make test && make vet       # checks
 GW2_API_KEY=<key> make dev
 # Grafana → http://localhost:3000 (metrics arrive within ~15s)
 
-# …or run the collector alone against an existing OTLP endpoint:
-GW2_API_KEY=<key> OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318 ./gw2-collector
+# …or run the collector alone against an existing OTLP endpoint, e.g. a local
+# Alloy on the default :4318, or the LGTM stack exposed on host :14318:
+GW2_API_KEY=<key> OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:14318 ./gw2-collector
 ```
+
+> The local LGTM stack exposes OTLP on host ports **14317/14318** (not the
+> standard 4317/4318) to avoid colliding with a local Grafana Alloy. The
+> collector's own default endpoint stays `http://localhost:4318`, so running the
+> binary with no override targets a local Alloy.
 
 Switching dev → Alloy → Grafana Cloud is config-only: point
 `OTEL_EXPORTER_OTLP_ENDPOINT` (and `OTEL_EXPORTER_OTLP_HEADERS` for auth) at the target.

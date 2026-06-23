@@ -12,10 +12,13 @@ services:
   otel-lgtm:
     image: grafana/otel-lgtm:latest
     container_name: gw2-otel-lgtm
+    # Host ports use the 14xxx range to avoid colliding with a local Alloy
+    # (which commonly binds 4317/4318). The in-compose collector still reaches
+    # this container at otel-lgtm:4318 over the internal network.
     ports:
-      - "3000:3000" # Grafana UI
-      - "4317:4317" # OTLP gRPC
-      - "4318:4318" # OTLP HTTP
+      - "3000:3000"   # Grafana UI
+      - "14317:4317"  # OTLP gRPC  (host 14317 -> container 4317)
+      - "14318:4318"  # OTLP HTTP  (host 14318 -> container 4318)
     volumes:
       - lgtm-data:/data
 
