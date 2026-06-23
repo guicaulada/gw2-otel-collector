@@ -153,6 +153,9 @@ def wealth():
                      [target('max by (gw2_item_name) (gw2_commerce_item_supply)', "supply {{gw2_item_name}}"),
                       {"refId": "B", "datasource": PROM, "legendFormat": "demand {{gw2_item_name}}",
                        "expr": 'max by (gw2_item_name) (gw2_commerce_item_demand)'}]), 12, 8)
+    g.row()
+    g.add(bargauge("Material storage value by category (gold)",
+                   "gw2_account_material_value / 10000", "category {{gw2_material_category}}", unit="none"), 24, 8)
     return dashboard("gw2-wealth", "GW2 Wealth & Economy", g)
 
 
@@ -278,24 +281,97 @@ def wvw():
     g.add(bargauge("Objectives held by team & type",
                    "max by (gw2_team, gw2_objective_type) (gw2_wvw_objectives_held)",
                    "{{gw2_team}} {{gw2_objective_type}}"), 24, 10)
+    g.row()
+    g.add(timeseries("Per-map score (Center = EBG)",
+                     [target("max by (gw2_map, gw2_team) (gw2_wvw_map_score)", "{{gw2_map}} {{gw2_team}}")]), 12, 8)
+    g.add(timeseries("Per-map kills",
+                     [target("max by (gw2_map, gw2_team) (gw2_wvw_map_kills)", "{{gw2_map}} {{gw2_team}}")]), 12, 8)
     return dashboard("gw2-wvw", "GW2 WvW Matchup", g)
 
 
-def main():
-    boards = {
-        "gw2-overview.json": overview(),
-        "gw2-wealth.json": wealth(),
-        "gw2-progression.json": progression(),
-        "gw2-collections.json": collections(),
-        "gw2-characters.json": characters(),
-        "gw2-pvp-ops.json": pvp_ops(),
-        "gw2-wvw.json": wvw(),
+# ---------------------------------------------------------------- v2 tabbed model
+# Grafana 12+ schema v2: panels live in an `elements` map and the layout
+# (TabsLayout) references them. We reuse the classic panel builders above as tab
+# content and convert each panel to a v2 Panel element + GridLayoutItem.
+
+def panel_to_element(panel, pid):
+    queries = []
+    for i, t in enumerate(panel.get("targets", [])):
+        ds = (t.get("datasource") or {}).get("uid", "prometheus")
+        qspec = {"expr": t["expr"]}
+        if "legendFormat" in t:
+            qspec["legendFormat"] = t["legendFormat"]
+        if t.get("instant"):
+            qspec["instant"], qspec["range"] = True, False
+        if t.get("format"):
+            qspec["format"] = t["format"]
+        queries.append({"kind": "PanelQuery", "spec": {
+            "query": {"kind": "DataQuery", "group": "loki" if ds == "loki" else "prometheus",
+                      "version": "v0", "datasource": {"name": ds}, "spec": qspec},
+            "refId": t.get("refId", chr(65 + i)), "hidden": False}})
+    return {"kind": "Panel", "spec": {
+        "id": pid, "title": panel["title"], "description": "", "links": [],
+        "data": {"kind": "QueryGroup", "spec": {"queries": queries, "transformations": [], "queryOptions": {}}},
+        "vizConfig": {"kind": "VizConfig", "group": panel["type"], "version": "", "spec": {
+            "options": panel.get("options", {}),
+            "fieldConfig": panel.get("fieldConfig", {"defaults": {}, "overrides": []})}}}}
+
+
+def tabbed_dashboard(uid, title, tabs):
+    elements, tab_specs, pid = {}, [], 0
+    for tab_title, grid in tabs:
+        items = []
+        for p in grid.panels:
+            pid += 1
+            name = f"panel-{pid}"
+            elements[name] = panel_to_element(p, pid)
+            gp = p["gridPos"]
+            items.append({"kind": "GridLayoutItem", "spec": {
+                "x": gp["x"], "y": gp["y"], "width": gp["w"], "height": gp["h"],
+                "element": {"kind": "ElementReference", "name": name}}})
+        tab_specs.append({"kind": "TabsLayoutTab", "spec": {
+            "title": tab_title, "layout": {"kind": "GridLayout", "spec": {"items": items}}}})
+    spec = {
+        "title": title, "tags": ["gw2"], "editable": True, "preload": False,
+        "liveNow": False, "cursorSync": "Off", "links": [], "annotations": [], "variables": [],
+        "timeSettings": {"from": "now-24h", "to": "now", "autoRefresh": "30s",
+                         "autoRefreshIntervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+                         "hideTimepicker": False, "timezone": "browser", "fiscalYearStartMonth": 0},
+        "elements": elements,
+        "layout": {"kind": "TabsLayout", "spec": {"tabs": tab_specs}},
     }
-    for fname, board in boards.items():
-        with open(os.path.join(HERE, fname), "w") as f:
-            json.dump(board, f, indent=2)
-            f.write("\n")
-        print(f"wrote {fname} ({len(board['panels'])} panels)")
+    return {"apiVersion": "dashboard.grafana.app/v2beta1", "kind": "Dashboard",
+            "metadata": {"name": uid, "namespace": "default"}, "spec": spec}
+
+
+def main():
+    # Each section builder returns a classic dashboard dict; we wrap its Grid as a tab.
+    # (overview/wealth/... build a Grid `g`; we re-run them and read g via panels.)
+    tabs = [
+        ("Overview", _grid(overview())),
+        ("Wealth", _grid(wealth())),
+        ("Progression", _grid(progression())),
+        ("Collections", _grid(collections())),
+        ("Characters", _grid(characters())),
+        ("PvP & Health", _grid(pvp_ops())),
+        ("WvW", _grid(wvw())),
+    ]
+    board = tabbed_dashboard("gw2", "GW2 Account", tabs)
+    with open(os.path.join(HERE, "gw2.json"), "w") as f:
+        json.dump(board, f, indent=2)
+        f.write("\n")
+    npanels = len(board["spec"]["elements"])
+    print(f"wrote gw2.json ({len(tabs)} tabs, {npanels} panels)")
+
+
+class _GridView:
+    """Adapts a classic dashboard dict (with panels[]) to a .panels accessor."""
+    def __init__(self, panels):
+        self.panels = panels
+
+
+def _grid(board):
+    return _GridView(board["panels"])
 
 
 if __name__ == "__main__":

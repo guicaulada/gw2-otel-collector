@@ -129,8 +129,10 @@ See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the
 - **WvW match data** — per-team score / VP / kills / deaths / KDR / PPT, objectives held.
 - **PvP depth** — per-profession & per-ladder W/L, season standings; character inventory.
 - **Market depth** — item supply/demand, open-order value.
-- **7 focused dashboards** generated as code (`deploy/dashboards/generate.py`): Overview,
-  Wealth, Progression, Collections, Characters, PvP & Health, WvW.
+- **One tabbed dashboard** (Grafana 12+ schema-v2 `TabsLayout`, generated as code in
+  `deploy/dashboards/generate.py`) with 7 tabs: Overview, Wealth, Progression, Collections,
+  Characters, PvP & Health, WvW — auto-provisioned via the file provider.
+- Plus material-storage value by category, and WvW per-map (EBG + 3 borderlands) breakdown.
 
 See [`docs/feature-coverage.md`](docs/feature-coverage.md) for the full parity matrix.
 
