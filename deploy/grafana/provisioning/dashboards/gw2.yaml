@@ -1,0 +1,11 @@
+apiVersion: 1
+providers:
+  - name: gw2
+    type: file
+    folder: GW2
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards/gw2
+      foldersFromFilesStructure: false

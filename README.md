@@ -70,7 +70,8 @@ make test && make vet       # checks
 
 # Run the full local stack (Grafana LGTM) + collector:
 GW2_API_KEY=<key> make dev
-# Grafana → http://localhost:3000 (metrics arrive within ~15s)
+# Grafana → http://localhost:3000 — the "GW2 Account Overview" dashboard
+# auto-provisions; metrics/logs arrive within ~15s.
 
 # …or run the collector alone against an existing OTLP endpoint, e.g. a local
 # Alloy on the default :4318, or the LGTM stack exposed on host :14318:
@@ -87,10 +88,25 @@ Switching dev → Alloy → Grafana Cloud is config-only: point
 
 ## Status
 
-**v1 scaffold (implemented):** a Go daemon that polls `account`, `account/wallet`, and
-`characters?ids=all` on independent intervals, caches snapshots in memory, and exports
-them as OpenTelemetry observable metrics over OTLP. Verified end-to-end against the live
-API. See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the layout.
+**v1 implemented and validated end-to-end against the live API + Grafana stack:**
 
-**Next:** more endpoint families, the snapshot-diff → event/log machinery with `bbolt`
-watermarks, reference-data (id→name) enrichment, traces, and as-code dashboards.
+- **Metrics** (OTel observable instruments → OTLP): account (age, fractal level, WvW rank,
+  AP), wallet (per-currency, with names), characters (playtime, deaths, level, crafting),
+  progression (luck, mastery points by region, masteries), storage (bank/shared slots,
+  materials by category), unlocks (14 collections + completion totals), commerce (gem/coin
+  exchange rate, delivery box), guild (level/members/currency/upgrades), pvp (rank, W/L),
+  plus collector self-observability (request duration/count, last-success timestamps).
+- **Logs / events** (snapshot diff → OTel logs → Loki): level-ups, deaths,
+  collection unlocks, expansion changes, and trading-post transactions — with `bbolt`
+  persistence (diff baselines + seen-set) for at-least-once, restart-safe emission.
+- **Reference cache**: id→name (currencies) and collection totals, refreshed only on
+  `/v2/build` change via a lock-free atomic-pointer swap.
+- **Dashboard**: a 9-panel "GW2 Account Overview" auto-provisioned into the dev stack.
+- **Tests**: client (retry/decode/auth), state (persistence), config, reference (build-gating).
+
+See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the layout and
+[`docs/api-empirical-findings.md`](docs/api-empirical-findings.md) for verified API shapes.
+
+**Possible next steps:** traces (CLIENT spans + exemplars), per-item commerce price tracking
+with a configurable allowlist, Wizard's Vault, richer guild metrics (treasury/stash/log
+events) once leading a guild, PvP leaderboards, and story-completion tracking.

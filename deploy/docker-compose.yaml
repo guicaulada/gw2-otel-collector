@@ -21,6 +21,9 @@ services:
       - "14318:4318"  # OTLP HTTP  (host 14318 -> container 4318)
     volumes:
       - lgtm-data:/data
+      # As-code dashboard: provider config + dashboard JSON, auto-loaded on start.
+      - ./grafana/provisioning/dashboards/gw2.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/gw2.yaml:ro
+      - ./dashboards:/var/lib/grafana/dashboards/gw2:ro
 
   collector:
     build:

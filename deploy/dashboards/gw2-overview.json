@@ -1,0 +1,75 @@
+{
+  "uid": "gw2-overview",
+  "title": "GW2 Account Overview",
+  "tags": ["gw2"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "Gold",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "decimals": 2, "unit": "none" }, "overrides": [] },
+      "targets": [ { "refId": "A", "expr": "gw2_account_wallet_balance{gw2_currency_name=\"Coin\"} / 10000" } ]
+    },
+    {
+      "id": 2, "type": "stat", "title": "Characters",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "max(gw2_account_characters)" } ]
+    },
+    {
+      "id": 3, "type": "stat", "title": "Total Playtime (hours)",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "decimals": 1, "unit": "none" }, "overrides": [] },
+      "targets": [ { "refId": "A", "expr": "sum(gw2_character_playtime_seconds_total) / 3600" } ]
+    },
+    {
+      "id": 4, "type": "stat", "title": "Luck consumed",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "max(gw2_account_luck_total)" } ]
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "Gem / Coin exchange rate (copper per gem)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "gw2_commerce_exchange_coins_per_gem", "legendFormat": "{{gw2_direction}}" } ]
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Wallet balances",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "topk(8, gw2_account_wallet_balance)", "legendFormat": "{{gw2_currency_name}}" } ]
+    },
+    {
+      "id": 7, "type": "bargauge", "title": "Collection completion %",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 }, "overrides": [] },
+      "options": { "orientation": "horizontal", "displayMode": "gradient" },
+      "targets": [ { "refId": "A", "instant": true, "expr": "100 * gw2_account_unlocks_count / gw2_account_unlocks_total", "legendFormat": "{{gw2_collection}}" } ]
+    },
+    {
+      "id": 8, "type": "table", "title": "Mastery points by region",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "earned", "format": "table", "instant": true, "expr": "gw2_account_mastery_points_earned_total" },
+        { "refId": "spent", "format": "table", "instant": true, "expr": "gw2_account_mastery_points_spent" }
+      ]
+    },
+    {
+      "id": 9, "type": "logs", "title": "Recent events",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": { "showTime": true, "sortOrder": "Descending", "wrapLogMessage": true },
+      "targets": [ { "refId": "A", "expr": "{service_name=\"gw2-otel-collector\"}" } ]
+    }
+  ]
+}
