@@ -71,7 +71,20 @@ type Store struct {
 	accountValue   *value.Account
 	achievements   *Achievements
 	resets         map[string]int // reset kind -> count completed since reset
+	wvw            *WvW
 	lastSuccess    map[string]time.Time
+}
+
+// WvW is the derived WvW matchup snapshot, keyed by team color.
+type WvW struct {
+	MatchID        string
+	HomeColor      string                    // our world's team color in this match
+	Score          map[string]int64          // color -> war score
+	VictoryPoints  map[string]int64          // color -> victory points
+	Kills          map[string]int64          // color -> kills
+	Deaths         map[string]int64          // color -> deaths
+	PPT            map[string]int64          // color -> points-per-tick (derived)
+	ObjectivesHeld map[string]map[string]int // color -> objective type -> count
 }
 
 // WizardsVaultPeriod is the derived Wizard's Vault snapshot for one period.
@@ -325,6 +338,21 @@ func (s *Store) Resets() map[string]int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.resets
+}
+
+// SetWvW stores the latest WvW matchup snapshot.
+func (s *Store) SetWvW(w *WvW, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.wvw = w
+	s.lastSuccess["wvw"] = at
+}
+
+// WvW returns the latest WvW matchup snapshot.
+func (s *Store) WvW() *WvW {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.wvw
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

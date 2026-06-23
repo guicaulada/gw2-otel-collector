@@ -74,6 +74,27 @@ type GuildLogEntry struct {
 	OldRank   string `json:"old_rank"`
 }
 
+// WvWMatch is the subset of /v2/wvw/matches the collector tracks. The score-like
+// objects are keyed by team color ("red"/"blue"/"green").
+type WvWMatch struct {
+	ID            string           `json:"id"`
+	Scores        map[string]int64 `json:"scores"`
+	VictoryPoints map[string]int64 `json:"victory_points"`
+	Kills         map[string]int64 `json:"kills"`
+	Deaths        map[string]int64 `json:"deaths"`
+	Worlds        map[string]int   `json:"worlds"`
+	AllWorlds     map[string][]int `json:"all_worlds"`
+	Maps          []struct {
+		Type       string `json:"type"`
+		Objectives []struct {
+			Type          string `json:"type"`
+			Owner         string `json:"owner"` // Red/Blue/Green/Neutral
+			PointsTick    int64  `json:"points_tick"`
+			YaksDelivered int64  `json:"yaks_delivered"`
+		} `json:"objectives"`
+	} `json:"maps"`
+}
+
 // PvPStats is the subset of /v2/pvp/stats the collector tracks.
 type PvPStats struct {
 	PvPRank       int `json:"pvp_rank"`

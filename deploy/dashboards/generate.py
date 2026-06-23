@@ -238,6 +238,27 @@ def pvp_ops():
     return dashboard("gw2-pvp-ops", "GW2 PvP & Collector Health", g)
 
 
+# ---------------------------------------------------------------- WvW
+def wvw():
+    g = Grid()
+    g.add(stat("Home team", "gw2_wvw_home_team", color="none"), 6, 4)  # shows team color as series name
+    g.add(stat("Our score", "max(gw2_wvw_match_score * on(gw2_team) group_left gw2_wvw_home_team)"), 6, 4)
+    g.add(stat("Our PPT", "max(gw2_wvw_match_ppt * on(gw2_team) group_left gw2_wvw_home_team)"), 6, 4)
+    g.add(stat("Our objectives", "sum(gw2_wvw_objectives_held * on(gw2_team) group_left gw2_wvw_home_team)"), 6, 4)
+    g.row()
+    g.add(timeseries("War score by team", [target("max by (gw2_team) (gw2_wvw_match_score)", "{{gw2_team}}")]), 12, 8)
+    g.add(timeseries("Victory points by team", [target("max by (gw2_team) (gw2_wvw_match_victory_points)", "{{gw2_team}}")]), 12, 8)
+    g.row()
+    g.add(timeseries("Kills by team", [target("max by (gw2_team) (gw2_wvw_match_kills)", "{{gw2_team}}")]), 8, 8)
+    g.add(timeseries("KDR by team", [target("max by (gw2_team) (gw2_wvw_match_kills) / max by (gw2_team) (gw2_wvw_match_deaths)", "{{gw2_team}}")]), 8, 8)
+    g.add(timeseries("PPT by team", [target("max by (gw2_team) (gw2_wvw_match_ppt)", "{{gw2_team}}")]), 8, 8)
+    g.row()
+    g.add(bargauge("Objectives held by team & type",
+                   "max by (gw2_team, gw2_objective_type) (gw2_wvw_objectives_held)",
+                   "{{gw2_team}} {{gw2_objective_type}}"), 24, 10)
+    return dashboard("gw2-wvw", "GW2 WvW Matchup", g)
+
+
 def main():
     boards = {
         "gw2-overview.json": overview(),
@@ -246,6 +267,7 @@ def main():
         "gw2-collections.json": collections(),
         "gw2-characters.json": characters(),
         "gw2-pvp-ops.json": pvp_ops(),
+        "gw2-wvw.json": wvw(),
     }
     for fname, board in boards.items():
         with open(os.path.join(HERE, fname), "w") as f:

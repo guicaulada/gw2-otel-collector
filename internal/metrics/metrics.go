@@ -360,6 +360,41 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.account.legendary_armory.available", err)
 	}
+	wvwScore, err := meter.Int64ObservableGauge("gw2.wvw.match.score",
+		metric.WithDescription("WvW war score, by team color"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.match.score", err)
+	}
+	wvwVP, err := meter.Int64ObservableGauge("gw2.wvw.match.victory_points",
+		metric.WithDescription("WvW victory points, by team color"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.match.victory_points", err)
+	}
+	wvwKills, err := meter.Int64ObservableGauge("gw2.wvw.match.kills",
+		metric.WithDescription("WvW kills this matchup, by team color"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.match.kills", err)
+	}
+	wvwDeaths, err := meter.Int64ObservableGauge("gw2.wvw.match.deaths",
+		metric.WithDescription("WvW deaths this matchup, by team color"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.match.deaths", err)
+	}
+	wvwPPT, err := meter.Int64ObservableGauge("gw2.wvw.match.ppt",
+		metric.WithDescription("WvW points-per-tick, by team color (derived)"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.match.ppt", err)
+	}
+	wvwObjectives, err := meter.Int64ObservableGauge("gw2.wvw.objectives.held",
+		metric.WithUnit("{objective}"), metric.WithDescription("WvW objectives held, by team color and type"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.objectives.held", err)
+	}
+	wvwHome, err := meter.Int64ObservableGauge("gw2.wvw.home_team",
+		metric.WithDescription("Which team color is the account's home world (value 1)"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.home_team", err)
+	}
 	resetCompleted, err := meter.Int64ObservableGauge("gw2.account.reset.completed",
 		metric.WithDescription("Reset-cycle completions since the last reset, by kind (worldbosses/dungeons/raids/mapchests/dailycrafting)"))
 	if err != nil {
@@ -417,6 +452,28 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		for kind, n := range st.Resets() {
 			o.ObserveInt64(resetCompleted, int64(n),
 				metric.WithAttributes(attribute.String("gw2.kind", kind)))
+		}
+
+		if w := st.WvW(); w != nil {
+			obs := func(inst metric.Int64Observable, m map[string]int64) {
+				for color, v := range m {
+					o.ObserveInt64(inst, v, metric.WithAttributes(attribute.String("gw2.team", color)))
+				}
+			}
+			obs(wvwScore, w.Score)
+			obs(wvwVP, w.VictoryPoints)
+			obs(wvwKills, w.Kills)
+			obs(wvwDeaths, w.Deaths)
+			obs(wvwPPT, w.PPT)
+			for color, byType := range w.ObjectivesHeld {
+				for typ, n := range byType {
+					o.ObserveInt64(wvwObjectives, int64(n), metric.WithAttributes(
+						attribute.String("gw2.team", color), attribute.String("gw2.objective_type", typ)))
+				}
+			}
+			if w.HomeColor != "" {
+				o.ObserveInt64(wvwHome, 1, metric.WithAttributes(attribute.String("gw2.team", w.HomeColor)))
+			}
 		}
 
 		if s := st.Storage(); s != nil {
@@ -607,7 +664,9 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		storyCompleted, storyTotal, accountValue,
 		craftingRating, achievementsTotalAP, achievementsDone, achievementsTracked,
 		fractalAugment, legendaryOwned, legendaryCopies, legendaryAvailable,
-		resetCompleted, lastSuccess,
+		resetCompleted,
+		wvwScore, wvwVP, wvwKills, wvwDeaths, wvwPPT, wvwObjectives, wvwHome,
+		lastSuccess,
 	)
 }
 

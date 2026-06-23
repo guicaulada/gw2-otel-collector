@@ -362,6 +362,17 @@ func (c *Client) GuildLog(ctx context.Context, id string) ([]GuildLogEntry, erro
 	return out, nil
 }
 
+// WvWMatchByWorld fetches the current WvW matchup for a world
+// (/v2/wvw/matches?world=<id>). Public, no auth.
+func (c *Client) WvWMatchByWorld(ctx context.Context, world int) (*WvWMatch, error) {
+	var m WvWMatch
+	params := url.Values{"world": {strconv.Itoa(world)}}
+	if err := c.get(ctx, "wvw/matches", "wvw/matches", params, &m); err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
 // PvPStats fetches /v2/pvp/stats.
 func (c *Client) PvPStats(ctx context.Context) (*PvPStats, error) {
 	var s PvPStats

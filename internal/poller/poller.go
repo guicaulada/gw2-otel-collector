@@ -6,6 +6,7 @@ package poller
 import (
 	"context"
 	"log/slog"
+	"strings"
 	"sync"
 	"time"
 
@@ -402,6 +403,51 @@ func (p *Poller) Start(ctx context.Context) {
 			completed = append(completed, id)
 		}
 		p.store.SetStoryCompleted(completed, time.Now())
+		return nil
+	})
+
+	p.run(ctx, "wvw", p.intervals.WvW, func(ctx context.Context) error {
+		acc := p.store.Account()
+		if acc == nil {
+			var err error
+			if acc, err = p.client.Account(ctx); err != nil {
+				return err
+			}
+		}
+		if acc.World == 0 {
+			return nil
+		}
+		m, err := p.client.WvWMatchByWorld(ctx, acc.World)
+		if err != nil {
+			return err
+		}
+		w := &store.WvW{
+			MatchID: m.ID, Score: m.Scores, VictoryPoints: m.VictoryPoints,
+			Kills: m.Kills, Deaths: m.Deaths,
+			PPT:            map[string]int64{},
+			ObjectivesHeld: map[string]map[string]int{},
+		}
+		for color, worlds := range m.AllWorlds {
+			for _, wid := range worlds {
+				if wid == acc.World {
+					w.HomeColor = color
+				}
+			}
+		}
+		for _, mp := range m.Maps {
+			for _, o := range mp.Objectives {
+				color := strings.ToLower(o.Owner)
+				if color == "neutral" || color == "" {
+					continue
+				}
+				w.PPT[color] += o.PointsTick
+				if w.ObjectivesHeld[color] == nil {
+					w.ObjectivesHeld[color] = map[string]int{}
+				}
+				w.ObjectivesHeld[color][o.Type]++
+			}
+		}
+		p.store.SetWvW(w, time.Now())
 		return nil
 	})
 
