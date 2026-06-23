@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/guicaulada/gw2-otel-collector/internal/gw2"
+	"github.com/guicaulada/gw2-otel-collector/internal/value"
 )
 
 // Commerce is the derived commerce snapshot the collector tracks as gauges.
@@ -56,6 +57,7 @@ type Store struct {
 	prices         []gw2.ItemPrice
 	wizardsvault   []WizardsVaultPeriod
 	storyCompleted []int
+	accountValue   *value.Account
 	lastSuccess    map[string]time.Time
 }
 
@@ -265,6 +267,21 @@ func (s *Store) StoryCompleted() []int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.storyCompleted
+}
+
+// SetAccountValue stores the latest computed account value breakdown.
+func (s *Store) SetAccountValue(v *value.Account, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.accountValue = v
+	s.lastSuccess["value"] = at
+}
+
+// AccountValue returns the latest computed account value breakdown.
+func (s *Store) AccountValue() *value.Account {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.accountValue
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

@@ -343,6 +343,27 @@ func (c *Client) Items(ctx context.Context, ids []int) ([]Item, error) {
 	return out, nil
 }
 
+// PricesBatched fetches prices for many item ids in batches of 200 (the API
+// cap) and returns them keyed by item id. Unpriced/untradable ids are absent.
+func (c *Client) PricesBatched(ctx context.Context, ids []int) (map[int]ItemPrice, error) {
+	out := make(map[int]ItemPrice, len(ids))
+	const batch = 200
+	for i := 0; i < len(ids); i += batch {
+		end := i + batch
+		if end > len(ids) {
+			end = len(ids)
+		}
+		prices, err := c.Prices(ctx, ids[i:end])
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range prices {
+			out[p.ID] = p
+		}
+	}
+	return out, nil
+}
+
 func joinInts(ids []int) string {
 	parts := make([]string, len(ids))
 	for i, id := range ids {

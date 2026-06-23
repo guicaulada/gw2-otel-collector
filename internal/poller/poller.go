@@ -15,6 +15,7 @@ import (
 	"github.com/guicaulada/gw2-otel-collector/internal/config"
 	"github.com/guicaulada/gw2-otel-collector/internal/gw2"
 	"github.com/guicaulada/gw2-otel-collector/internal/store"
+	"github.com/guicaulada/gw2-otel-collector/internal/value"
 )
 
 // Fixed quantities used to price the gem/coin exchange, so the rate is
@@ -212,6 +213,78 @@ func (p *Poller) Start(ctx context.Context) {
 			infos = append(infos, info)
 		}
 		p.store.SetGuilds(infos, time.Now())
+		return nil
+	})
+
+	p.run(ctx, "value", p.intervals.Value, func(ctx context.Context) error {
+		bank, err := p.client.Bank(ctx)
+		if err != nil {
+			return err
+		}
+		materials, err := p.client.Materials(ctx)
+		if err != nil {
+			return err
+		}
+		shared, err := p.client.SharedInventory(ctx)
+		if err != nil {
+			return err
+		}
+		chars, err := p.client.Characters(ctx)
+		if err != nil {
+			return err
+		}
+		wallet, err := p.client.Wallet(ctx)
+		if err != nil {
+			return err
+		}
+		gemRate, err := p.client.ExchangeGems(ctx, exchangeGemsQuantity)
+		if err != nil {
+			return err
+		}
+
+		// Distinct tradable item ids across all owned-item sources.
+		idSet := map[int]struct{}{}
+		addSlots := func(slots []*gw2.Slot) {
+			for _, s := range slots {
+				if s != nil {
+					idSet[s.ID] = struct{}{}
+				}
+			}
+		}
+		addSlots(bank)
+		addSlots(shared)
+		for _, m := range materials {
+			idSet[m.ID] = struct{}{}
+		}
+		for _, c := range chars {
+			for _, bag := range c.Bags {
+				if bag != nil {
+					addSlots(bag.Inventory)
+				}
+			}
+		}
+		ids := make([]int, 0, len(idSet))
+		for id := range idSet {
+			ids = append(ids, id)
+		}
+		prices, err := p.client.PricesBatched(ctx, ids)
+		if err != nil {
+			return err
+		}
+
+		var coin, gems int64
+		for _, c := range wallet {
+			switch c.ID {
+			case 1:
+				coin = c.Value
+			case 4:
+				gems = c.Value
+			}
+		}
+		walletCopper := coin + gems*gemRate.CoinsPerGem
+
+		acc := value.Compute(bank, materials, shared, chars, walletCopper, prices)
+		p.store.SetAccountValue(&acc, time.Now())
 		return nil
 	})
 

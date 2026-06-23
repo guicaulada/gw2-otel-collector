@@ -320,6 +320,12 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.story.quests.total", err)
 	}
+	accountValue, err := meter.Int64ObservableGauge("gw2.account.value",
+		metric.WithUnit("{copper}"),
+		metric.WithDescription("Liquid account value in copper, by component and price basis"))
+	if err != nil {
+		return nil, wrap("gw2.account.value", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -498,6 +504,19 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			}
 		}
 
+		if v := st.AccountValue(); v != nil {
+			for component, copper := range v.Buy {
+				o.ObserveInt64(accountValue, copper, metric.WithAttributes(
+					attribute.String("gw2.component", component),
+					attribute.String("gw2.basis", "buy")))
+			}
+			for component, copper := range v.Sell {
+				o.ObserveInt64(accountValue, copper, metric.WithAttributes(
+					attribute.String("gw2.component", component),
+					attribute.String("gw2.basis", "sell")))
+			}
+		}
+
 		for family, ts := range st.LastSuccess() {
 			o.ObserveFloat64(lastSuccess, float64(ts.Unix()),
 				metric.WithAttributes(attribute.String("gw2.family", family)))
@@ -517,7 +536,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		pvpRank, pvpRankPoints, pvpMatches,
 		itemPrice, itemSpread, itemFlipMargin,
 		wvMetaProgress, wvMetaTarget, wvObjectives, wvCompleted, wvUnclaimed,
-		storyCompleted, storyTotal, lastSuccess,
+		storyCompleted, storyTotal, accountValue, lastSuccess,
 	)
 }
 

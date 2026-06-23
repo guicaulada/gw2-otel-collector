@@ -243,12 +243,20 @@ type Slot struct {
 // collector uses. The bulk overview embeds far more (equipment, tabs, recipes,
 // ...) — later slices will read those from the same response.
 type Character struct {
-	Name       string `json:"name"`
-	Race       string `json:"race"`
-	Gender     string `json:"gender"`
-	Profession string `json:"profession"`
-	Level      int    `json:"level"`
-	Age        int64  `json:"age"`    // playtime in seconds (monotonic)
-	Deaths     int64  `json:"deaths"` // lifetime deaths (monotonic)
-	Created    string `json:"created"`
+	Name       string          `json:"name"`
+	Race       string          `json:"race"`
+	Gender     string          `json:"gender"`
+	Profession string          `json:"profession"`
+	Level      int             `json:"level"`
+	Age        int64           `json:"age"`    // playtime in seconds (monotonic)
+	Deaths     int64           `json:"deaths"` // lifetime deaths (monotonic)
+	Created    string          `json:"created"`
+	Bags       []*CharacterBag `json:"bags"` // present in the ?ids=all overview
+}
+
+// CharacterBag is one equipped bag with its slots (null slots = empty).
+type CharacterBag struct {
+	ID        int     `json:"id"`
+	Size      int     `json:"size"`
+	Inventory []*Slot `json:"inventory"`
 }
