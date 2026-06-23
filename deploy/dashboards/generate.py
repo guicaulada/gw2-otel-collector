@@ -146,6 +146,13 @@ def wealth():
                    "max by (gw2_item_name) (gw2_commerce_item_flip_margin)", "{{gw2_item_name}}"), 12, 8)
     g.add(timeseries("Tracked item prices (copper)",
                      [target('max by (gw2_item_name, gw2_side) (gw2_commerce_item_price)', "{{gw2_item_name}} {{gw2_side}}")]), 12, 8)
+    g.row()
+    g.add(timeseries("Open orders value by side (gold)",
+                     [target(gold('max by (gw2_side) (gw2_commerce_orders_open_value)'), "{{gw2_side}}")]), 12, 8)
+    g.add(timeseries("Tracked item supply vs demand (units)",
+                     [target('max by (gw2_item_name) (gw2_commerce_item_supply)', "supply {{gw2_item_name}}"),
+                      {"refId": "B", "datasource": PROM, "legendFormat": "demand {{gw2_item_name}}",
+                       "expr": 'max by (gw2_item_name) (gw2_commerce_item_demand)'}]), 12, 8)
     return dashboard("gw2-wealth", "GW2 Wealth & Economy", g)
 
 
@@ -177,6 +184,10 @@ def progression():
                   "expr": "max by (gw2_region) (gw2_account_mastery_points_earned_total)"},
                  {"refId": "spent", "format": "table", "instant": True, "datasource": PROM,
                   "expr": "max by (gw2_region) (gw2_account_mastery_points_spent)"}]), 12, 9)
+    g.row()
+    g.add(timeseries("Reset-cycle completions (since reset)",
+                     [target("max by (gw2_kind) (gw2_account_reset_completed)", "{{gw2_kind}}")],
+                     unit="none"), 24, 7)
     return dashboard("gw2-progression", "GW2 Progression", g)
 
 
@@ -208,6 +219,13 @@ def characters():
     g.add(bargauge("Crafting rating (top disciplines)",
                    "topk(16, max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating))",
                    "{{gw2_character_name}} {{gw2_discipline}}", maxv=500), 24, 10)
+    g.row()
+    g.add(bargauge("Inventory slots used by character",
+                   'max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state="used"})',
+                   "{{gw2_character_name}}"), 12, 8)
+    g.add(bargauge("Inventory capacity by character",
+                   'max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state="capacity"})',
+                   "{{gw2_character_name}}"), 12, 8)
     return dashboard("gw2-characters", "GW2 Characters", g)
 
 
@@ -223,7 +241,11 @@ def pvp_ops():
                unit="percent", decimals=1), 8, 4)
     g.row()
     g.add(timeseries("PvP matches by outcome",
-                     [target("max by (gw2_outcome) (gw2_pvp_matches_total)", "{{gw2_outcome}}")]), 24, 7)
+                     [target("max by (gw2_outcome) (gw2_pvp_matches_total)", "{{gw2_outcome}}")]), 12, 7)
+    g.add(timeseries("PvP wins by profession & ladder",
+                     [target('max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome="win"})', "prof {{gw2_profession}}"),
+                      {"refId": "B", "datasource": PROM, "legendFormat": "ladder {{gw2_ladder}}",
+                       "expr": 'max by (gw2_ladder) (gw2_pvp_ladder_matches_total{gw2_outcome="win"})'}]), 12, 7)
     g.row()
     # --- collector operations / self-observability ---
     g.add(timeseries("API request rate (req/s) by endpoint",

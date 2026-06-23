@@ -644,6 +644,51 @@
         "w": 12,
         "h": 9
       }
+    },
+    {
+      "type": "timeseries",
+      "title": "Reset-cycle completions (since reset)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_kind) (gw2_account_reset_completed)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_kind}}"
+        }
+      ],
+      "id": 16,
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 24,
+        "h": 7
+      }
     }
   ]
 }

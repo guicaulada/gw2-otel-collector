@@ -508,12 +508,25 @@ func (p *Poller) Start(ctx context.Context) {
 		if err != nil {
 			return err
 		}
-		p.store.SetCommerce(&store.Commerce{
+		comm := &store.Commerce{
 			CoinsPerGemBuy:  buy.CoinsPerGem,
 			CoinsPerGemSell: sell.CoinsPerGem,
 			DeliveryCoins:   delivery.Coins,
 			DeliveryItems:   int64(len(delivery.Items)),
-		}, time.Now())
+		}
+		if curBuys, err := p.client.TransactionsCurrent(ctx, "buys"); err == nil {
+			comm.OpenBuyCount = int64(len(curBuys))
+			for _, t := range curBuys {
+				comm.OpenBuyValue += t.Price * t.Quantity
+			}
+		}
+		if curSells, err := p.client.TransactionsCurrent(ctx, "sells"); err == nil {
+			comm.OpenSellCount = int64(len(curSells))
+			for _, t := range curSells {
+				comm.OpenSellValue += t.Price * t.Quantity
+			}
+		}
+		p.store.SetCommerce(comm, time.Now())
 
 		if len(p.trackItems) > 0 {
 			prices, err := p.client.Prices(ctx, p.trackItems)

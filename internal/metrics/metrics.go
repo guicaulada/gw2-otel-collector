@@ -312,6 +312,26 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.commerce.item.flip_margin", err)
 	}
+	itemSupply, err := meter.Int64ObservableGauge("gw2.commerce.item.supply",
+		metric.WithDescription("Tracked item sell-side supply (units listed)"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.item.supply", err)
+	}
+	itemDemand, err := meter.Int64ObservableGauge("gw2.commerce.item.demand",
+		metric.WithDescription("Tracked item buy-side demand (units wanted)"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.item.demand", err)
+	}
+	ordersValue, err := meter.Int64ObservableGauge("gw2.commerce.orders.open_value",
+		metric.WithDescription("Copper tied up in open trading-post orders, by side"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.orders.open_value", err)
+	}
+	ordersCount, err := meter.Int64ObservableGauge("gw2.commerce.orders.open_count",
+		metric.WithUnit("{order}"), metric.WithDescription("Open trading-post orders, by side"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.orders.open_count", err)
+	}
 	wvMetaProgress, err := meter.Int64ObservableGauge("gw2.wizardsvault.meta.progress",
 		metric.WithDescription("Wizard's Vault meta-reward progress, by period"))
 	if err != nil {
@@ -569,6 +589,10 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 				metric.WithAttributes(attribute.String("gw2.direction", "sell_gems")))
 			o.ObserveInt64(deliveryCoins, c.DeliveryCoins)
 			o.ObserveInt64(deliveryItems, c.DeliveryItems)
+			o.ObserveInt64(ordersValue, c.OpenBuyValue, metric.WithAttributes(attribute.String("gw2.side", "buy")))
+			o.ObserveInt64(ordersValue, c.OpenSellValue, metric.WithAttributes(attribute.String("gw2.side", "sell")))
+			o.ObserveInt64(ordersCount, c.OpenBuyCount, metric.WithAttributes(attribute.String("gw2.side", "buy")))
+			o.ObserveInt64(ordersCount, c.OpenSellCount, metric.WithAttributes(attribute.String("gw2.side", "sell")))
 		}
 
 		for _, gi := range st.Guilds() {
@@ -674,6 +698,8 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			// Flip margin nets the 15% trading-post tax off the sell price.
 			o.ObserveInt64(itemFlipMargin, int64(float64(p.Sells.UnitPrice)*0.85)-p.Buys.UnitPrice,
 				metric.WithAttributes(base...))
+			o.ObserveInt64(itemSupply, p.Sells.Quantity, metric.WithAttributes(base...))
+			o.ObserveInt64(itemDemand, p.Buys.Quantity, metric.WithAttributes(base...))
 		}
 
 		if resolver != nil {
@@ -733,6 +759,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		resetCompleted,
 		wvwScore, wvwVP, wvwKills, wvwDeaths, wvwPPT, wvwObjectives, wvwHome,
 		pvpProfMatches, pvpLadderMatches, pvpStanding, charInvSlots, charCreated,
+		itemSupply, itemDemand, ordersValue, ordersCount,
 		lastSuccess,
 	)
 }

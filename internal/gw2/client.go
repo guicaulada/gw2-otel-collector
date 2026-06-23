@@ -373,6 +373,18 @@ func (c *Client) WvWMatchByWorld(ctx context.Context, world int) (*WvWMatch, err
 	return &m, nil
 }
 
+// TransactionsCurrent fetches open (unfulfilled) orders for the given side
+// ("buys" or "sells"): /v2/commerce/transactions/current/{side}. tradingpost scope.
+func (c *Client) TransactionsCurrent(ctx context.Context, side string) ([]Transaction, error) {
+	var txs []Transaction
+	path := "commerce/transactions/current/" + side
+	params := url.Values{"page": {"0"}, "page_size": {"200"}}
+	if err := c.get(ctx, path, "commerce/transactions/current", params, &txs); err != nil {
+		return nil, err
+	}
+	return txs, nil
+}
+
 // PvPStats fetches /v2/pvp/stats.
 func (c *Client) PvPStats(ctx context.Context) (*PvPStats, error) {
 	var s PvPStats

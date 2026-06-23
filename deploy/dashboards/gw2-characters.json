@@ -315,6 +315,92 @@
         "w": 24,
         "h": 10
       }
+    },
+    {
+      "type": "bargauge",
+      "title": "Inventory slots used by character",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state=\"used\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_character_name}}",
+          "instant": true
+        }
+      ],
+      "id": 8,
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Inventory capacity by character",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state=\"capacity\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_character_name}}",
+          "instant": true
+        }
+      ],
+      "id": 9,
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      }
     }
   ]
 }

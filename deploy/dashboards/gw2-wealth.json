@@ -504,6 +504,105 @@
         "w": 12,
         "h": 8
       }
+    },
+    {
+      "type": "timeseries",
+      "title": "Open orders value by side (gold)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(max by (gw2_side) (gw2_commerce_orders_open_value)) / 10000",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_side}}"
+        }
+      ],
+      "id": 12,
+      "gridPos": {
+        "x": 0,
+        "y": 28,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Tracked item supply vs demand (units)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_item_name) (gw2_commerce_item_supply)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "supply {{gw2_item_name}}"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "demand {{gw2_item_name}}",
+          "expr": "max by (gw2_item_name) (gw2_commerce_item_demand)"
+        }
+      ],
+      "id": 13,
+      "gridPos": {
+        "x": 12,
+        "y": 28,
+        "w": 12,
+        "h": 8
+      }
     }
   ]
 }

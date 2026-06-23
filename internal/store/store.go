@@ -20,6 +20,10 @@ type Commerce struct {
 	CoinsPerGemSell int64 // coins received per gem sold (/exchange/gems)
 	DeliveryCoins   int64 // copper awaiting pickup
 	DeliveryItems   int64 // distinct item stacks awaiting pickup
+	OpenBuyValue    int64 // copper tied up in open buy orders
+	OpenBuyCount    int64 // number of open buy orders
+	OpenSellValue   int64 // copper listed in open sell orders
+	OpenSellCount   int64 // number of open sell orders
 }
 
 // MasteryRegionPoints is earned/spent mastery points for one region.
