@@ -101,12 +101,23 @@ Switching dev → Alloy → Grafana Cloud is config-only: point
   persistence (diff baselines + seen-set) for at-least-once, restart-safe emission.
 - **Reference cache**: id→name (currencies) and collection totals, refreshed only on
   `/v2/build` change via a lock-free atomic-pointer swap.
-- **Dashboard**: a 9-panel "GW2 Account Overview" auto-provisioned into the dev stack.
+- **Dashboard**: a 12-panel "GW2 Account Overview" auto-provisioned into the dev stack.
 - **Tests**: client (retry/decode/auth), state (persistence), config, reference (build-gating).
+
+**v2 adds:**
+
+- **Traces** (OTLP → Tempo): a `poll <family>` span per cycle parenting a CLIENT span per
+  API request; the request-duration histogram carries trace exemplars.
+- **Per-item trading-post prices**: configurable watchlist (`GW2_TRACK_ITEMS`) →
+  buy/sell price, spread, and flip margin (net of the 15% tax), with item names.
+- **Wizard's Vault**: meta progress, objectives completed, and unclaimed acclaim per period.
+- **Story completion**: quest→story→season join → completion % per season (333 quests, validated).
+- **Guild internals**: treasury/stash/storage gauges + guild-log events with a watermark
+  (activates when leading a guild).
 
 See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the layout and
 [`docs/api-empirical-findings.md`](docs/api-empirical-findings.md) for verified API shapes.
 
-**Possible next steps:** traces (CLIENT spans + exemplars), per-item commerce price tracking
-with a configurable allowlist, Wizard's Vault, richer guild metrics (treasury/stash/log
-events) once leading a guild, PvP leaderboards, and story-completion tracking.
+**Descoped:** PvP leaderboards (global top-250 rankings, not account-specific — own PvP is
+covered by `pvp/stats`). **Possible future:** richer per-item commerce (order-book depth,
+crafting profit), more guild-log event types, and arcdps-log combat data (out of API scope).
