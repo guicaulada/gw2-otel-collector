@@ -230,6 +230,31 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.guild.upgrades.completed", err)
 	}
+	guildTreasury, err := meter.Int64ObservableGauge("gw2.guild.treasury.items",
+		metric.WithUnit("{item}"), metric.WithDescription("Distinct items in the guild treasury"))
+	if err != nil {
+		return nil, wrap("gw2.guild.treasury.items", err)
+	}
+	guildStashCoins, err := meter.Int64ObservableGauge("gw2.guild.stash.coins",
+		metric.WithDescription("Copper across guild stash sections"))
+	if err != nil {
+		return nil, wrap("gw2.guild.stash.coins", err)
+	}
+	guildStashUsed, err := meter.Int64ObservableGauge("gw2.guild.stash.slots.used",
+		metric.WithUnit("{slot}"), metric.WithDescription("Occupied guild stash slots"))
+	if err != nil {
+		return nil, wrap("gw2.guild.stash.slots.used", err)
+	}
+	guildStashSize, err := meter.Int64ObservableGauge("gw2.guild.stash.slots.capacity",
+		metric.WithUnit("{slot}"), metric.WithDescription("Total guild stash slots"))
+	if err != nil {
+		return nil, wrap("gw2.guild.stash.slots.capacity", err)
+	}
+	guildStorage, err := meter.Int64ObservableGauge("gw2.guild.storage.items",
+		metric.WithUnit("{item}"), metric.WithDescription("Distinct guild-storage consumables"))
+	if err != nil {
+		return nil, wrap("gw2.guild.storage.items", err)
+	}
 	pvpRank, err := meter.Int64ObservableGauge("gw2.pvp.rank",
 		metric.WithDescription("PvP rank"))
 	if err != nil {
@@ -392,8 +417,13 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 					attribute.String("gw2.currency", kind),
 				))
 			}
-			if gi.UpgradesCompleted >= 0 {
+			if gi.UpgradesCompleted >= 0 { // leader-only internals
 				o.ObserveInt64(guildUpgrades, int64(gi.UpgradesCompleted), attrs)
+				o.ObserveInt64(guildTreasury, int64(gi.TreasuryItems), attrs)
+				o.ObserveInt64(guildStashCoins, gi.StashCoins, attrs)
+				o.ObserveInt64(guildStashUsed, gi.StashSlotsUsed, attrs)
+				o.ObserveInt64(guildStashSize, gi.StashSlotsSize, attrs)
+				o.ObserveInt64(guildStorage, int64(gi.StorageItems), attrs)
 			}
 		}
 
@@ -483,6 +513,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		bankUsed, bankCapacity, sharedUsed, sharedCapacity, materialCount,
 		unlocksCount, unlocksTotal,
 		guildLevel, guildMembers, guildCapacity, guildCurrency, guildUpgrades,
+		guildTreasury, guildStashCoins, guildStashUsed, guildStashSize, guildStorage,
 		pvpRank, pvpRankPoints, pvpMatches,
 		itemPrice, itemSpread, itemFlipMargin,
 		wvMetaProgress, wvMetaTarget, wvObjectives, wvCompleted, wvUnclaimed,

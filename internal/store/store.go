@@ -70,11 +70,16 @@ type WizardsVaultPeriod struct {
 	UnclaimedAcclaim int64
 }
 
-// GuildInfo bundles a guild's detail with its completed-upgrade count
-// (UpgradesCompleted is -1 when unknown, e.g. the key does not lead the guild).
+// GuildInfo bundles a guild's detail with derived internals. Fields default to
+// zero / -1 when the key does not lead the guild (no access to those endpoints).
 type GuildInfo struct {
 	Guild             gw2.Guild
-	UpgradesCompleted int
+	UpgradesCompleted int   // -1 when unknown
+	TreasuryItems     int   // distinct items in the treasury
+	StashCoins        int64 // total copper across stash sections
+	StashSlotsUsed    int64
+	StashSlotsSize    int64
+	StorageItems      int // distinct guild-storage consumables
 }
 
 // New returns an empty Store.

@@ -259,6 +259,43 @@ func (c *Client) TransactionHistory(ctx context.Context, side string) ([]Transac
 	return txs, nil
 }
 
+// GuildTreasury fetches /v2/guild/:id/treasury (leader only).
+func (c *Client) GuildTreasury(ctx context.Context, id string) ([]GuildTreasuryEntry, error) {
+	var out []GuildTreasuryEntry
+	if err := c.get(ctx, "guild/"+id+"/treasury", "guild/:id/treasury", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// GuildStash fetches /v2/guild/:id/stash (leader only).
+func (c *Client) GuildStash(ctx context.Context, id string) ([]GuildStashSection, error) {
+	var out []GuildStashSection
+	if err := c.get(ctx, "guild/"+id+"/stash", "guild/:id/stash", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// GuildStorage fetches /v2/guild/:id/storage (leader only).
+func (c *Client) GuildStorage(ctx context.Context, id string) ([]GuildStorageEntry, error) {
+	var out []GuildStorageEntry
+	if err := c.get(ctx, "guild/"+id+"/storage", "guild/:id/storage", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// GuildLog fetches the recent /v2/guild/:id/log entries (leader only). The
+// caller (event emitter) de-dupes by a persisted watermark.
+func (c *Client) GuildLog(ctx context.Context, id string) ([]GuildLogEntry, error) {
+	var out []GuildLogEntry
+	if err := c.get(ctx, "guild/"+id+"/log", "guild/:id/log", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PvPStats fetches /v2/pvp/stats.
 func (c *Client) PvPStats(ctx context.Context) (*PvPStats, error) {
 	var s PvPStats

@@ -113,6 +113,34 @@ func (e *Emitter) OnAccount(ctx context.Context, a *gw2.Account) {
 	})
 }
 
+// OnGuildLog emits an event per guild-log entry newer than the persisted
+// watermark (a monotonic log id), then advances the watermark after emitting.
+func (e *Emitter) OnGuildLog(ctx context.Context, guildID string, entries []gw2.GuildLogEntry) {
+	key := "guildlog:" + guildID
+	wm, _ := e.state.PrevInt(key)
+	var maxID int64 = wm
+	for _, en := range entries {
+		if en.ID <= wm {
+			continue
+		}
+		if en.ID > maxID {
+			maxID = en.ID
+		}
+		e.emit(ctx, "gw2.guild.log",
+			fmt.Sprintf("guild %s: %s", en.Type, en.User),
+			log.String("gw2.guild.id", guildID),
+			log.String("gw2.guild.log.type", en.Type),
+			log.String("gw2.guild.log.user", en.User),
+			log.String("gw2.guild.log.operation", en.Operation),
+			log.String("gw2.guild.log.action", en.Action))
+	}
+	if maxID > wm {
+		if err := e.state.SetInt(key, maxID); err != nil {
+			e.log.Warn("state SetInt failed", "key", key, "error", err)
+		}
+	}
+}
+
 // OnTransactions emits one event per completed transaction id not seen before.
 func (e *Emitter) OnTransactions(ctx context.Context, txs []gw2.Transaction, side string) {
 	for _, t := range txs {

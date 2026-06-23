@@ -37,6 +37,43 @@ type Guild struct {
 	MemberCapacity int    `json:"member_capacity"`
 }
 
+// GuildTreasuryEntry is one entry of /v2/guild/:id/treasury.
+type GuildTreasuryEntry struct {
+	ItemID int   `json:"item_id"`
+	Count  int64 `json:"count"`
+}
+
+// GuildStashSection is one vault section of /v2/guild/:id/stash.
+type GuildStashSection struct {
+	UpgradeID int     `json:"upgrade_id"`
+	Size      int64   `json:"size"`
+	Coins     int64   `json:"coins"`
+	Inventory []*Slot `json:"inventory"`
+}
+
+// GuildStorageEntry is one entry of /v2/guild/:id/storage.
+type GuildStorageEntry struct {
+	ID    int   `json:"id"`
+	Count int64 `json:"count"`
+}
+
+// GuildLogEntry is one entry of /v2/guild/:id/log (fields vary by type).
+type GuildLogEntry struct {
+	ID        int64  `json:"id"`
+	Time      string `json:"time"`
+	Type      string `json:"type"`
+	User      string `json:"user"`
+	Operation string `json:"operation"`
+	ItemID    int    `json:"item_id"`
+	Count     int64  `json:"count"`
+	Coins     int64  `json:"coins"`
+	Motd      string `json:"motd"`
+	UpgradeID int    `json:"upgrade_id"`
+	Action    string `json:"action"`
+	NewRank   string `json:"new_rank"`
+	OldRank   string `json:"old_rank"`
+}
+
 // PvPStats is the subset of /v2/pvp/stats the collector tracks.
 type PvPStats struct {
 	PvPRank       int `json:"pvp_rank"`

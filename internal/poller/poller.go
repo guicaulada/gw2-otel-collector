@@ -31,6 +31,7 @@ type Emitter interface {
 	OnCharacters(ctx context.Context, chars []gw2.Character)
 	OnUnlocks(ctx context.Context, counts map[string]int)
 	OnTransactions(ctx context.Context, txs []gw2.Transaction, side string)
+	OnGuildLog(ctx context.Context, guildID string, entries []gw2.GuildLogEntry)
 }
 
 // Poller drives scheduled polling of the GW2 API.
@@ -185,13 +186,30 @@ func (p *Poller) Start(ctx context.Context) {
 			if err != nil {
 				return err
 			}
-			upgrades := -1 // unknown unless we lead the guild (upgrades is leader-only)
+			info := store.GuildInfo{Guild: *g, UpgradesCompleted: -1}
+			// Treasury/stash/storage/log are leader-only.
 			if contains(acc.GuildLeader, gid) {
 				if n, err := p.client.GuildUpgradesCompleted(ctx, gid); err == nil {
-					upgrades = n
+					info.UpgradesCompleted = n
+				}
+				if treasury, err := p.client.GuildTreasury(ctx, gid); err == nil {
+					info.TreasuryItems = len(treasury)
+				}
+				if stash, err := p.client.GuildStash(ctx, gid); err == nil {
+					for _, sec := range stash {
+						info.StashCoins += sec.Coins
+						info.StashSlotsSize += sec.Size
+						info.StashSlotsUsed += countFilled(sec.Inventory)
+					}
+				}
+				if storage, err := p.client.GuildStorage(ctx, gid); err == nil {
+					info.StorageItems = len(storage)
+				}
+				if entries, err := p.client.GuildLog(ctx, gid); err == nil && p.emitter != nil {
+					p.emitter.OnGuildLog(ctx, gid, entries)
 				}
 			}
-			infos = append(infos, store.GuildInfo{Guild: *g, UpgradesCompleted: upgrades})
+			infos = append(infos, info)
 		}
 		p.store.SetGuilds(infos, time.Now())
 		return nil
