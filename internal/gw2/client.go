@@ -215,6 +215,16 @@ func (c *Client) Materials(ctx context.Context) ([]MaterialAmount, error) {
 	return m, nil
 }
 
+// CountIDs fetches an endpoint that returns a JSON array and returns its length.
+// Works for account unlock lists (id or object arrays) and reference index lists.
+func (c *Client) CountIDs(ctx context.Context, path, label string) (int, error) {
+	var arr []json.RawMessage
+	if err := c.get(ctx, path, label, nil, &arr); err != nil {
+		return 0, err
+	}
+	return len(arr), nil
+}
+
 // Build fetches the current game build number (/v2/build). Public endpoint; used
 // as the cache-invalidation signal for static reference data.
 func (c *Client) Build(ctx context.Context) (int, error) {

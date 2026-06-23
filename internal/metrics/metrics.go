@@ -17,16 +17,17 @@ import (
 	"github.com/guicaulada/gw2-otel-collector/internal/store"
 )
 
-// CurrencyNamer resolves a currency id to a human-readable name. The reference
-// cache implements it; a nil namer simply omits the name attribute.
-type CurrencyNamer interface {
+// Resolver enriches metrics with reference data (id→name, collection totals).
+// The reference cache implements it; a nil resolver omits the enrichment.
+type Resolver interface {
 	CurrencyName(id int) (string, bool)
+	CollectionTotal(name string) (int, bool)
 }
 
 // Register creates the gw2.* observable instruments and wires a single callback
 // that observes them from the store. It returns the registration so the caller
-// can unregister on shutdown. namer enriches wallet series with currency names.
-func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error) {
+// can unregister on shutdown. resolver enriches series with reference data.
+func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	meter := otel.Meter("github.com/guicaulada/gw2-otel-collector/internal/metrics")
 
 	accountAge, err := meter.Int64ObservableCounter(
@@ -187,6 +188,20 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 	if err != nil {
 		return nil, wrap("gw2.account.material.count", err)
 	}
+	unlocksCount, err := meter.Int64ObservableGauge(
+		"gw2.account.unlocks.count",
+		metric.WithDescription("Unlocked items per collection"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.unlocks.count", err)
+	}
+	unlocksTotal, err := meter.Int64ObservableGauge(
+		"gw2.account.unlocks.total",
+		metric.WithDescription("Total unlockable items per collection (for completion %)"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.unlocks.total", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -231,8 +246,8 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 		if w := st.Wallet(); w != nil {
 			for _, c := range w {
 				attrs := []attribute.KeyValue{attribute.Int("gw2.currency.id", c.ID)}
-				if namer != nil {
-					if name, ok := namer.CurrencyName(c.ID); ok {
+				if resolver != nil {
+					if name, ok := resolver.CurrencyName(c.ID); ok {
 						attrs = append(attrs, attribute.String("gw2.currency.name", name))
 					}
 				}
@@ -263,6 +278,16 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 			o.ObserveInt64(deliveryItems, c.DeliveryItems)
 		}
 
+		for name, count := range st.Unlocks() {
+			attrs := metric.WithAttributes(attribute.String("gw2.collection", name))
+			o.ObserveInt64(unlocksCount, int64(count), attrs)
+			if resolver != nil {
+				if total, ok := resolver.CollectionTotal(name); ok {
+					o.ObserveInt64(unlocksTotal, int64(total), attrs)
+				}
+			}
+		}
+
 		for family, ts := range st.LastSuccess() {
 			o.ObserveFloat64(lastSuccess, float64(ts.Unix()),
 				metric.WithAttributes(attribute.String("gw2.family", family)))
@@ -276,7 +301,7 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 		exchangeRate, deliveryCoins, deliveryItems,
 		accountAP, luck, masteriesUnlocked, masteryEarned, masterySpent,
 		bankUsed, bankCapacity, sharedUsed, sharedCapacity, materialCount,
-		lastSuccess,
+		unlocksCount, unlocksTotal, lastSuccess,
 	)
 }
 

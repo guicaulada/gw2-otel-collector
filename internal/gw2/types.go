@@ -46,6 +46,33 @@ type Delivery struct {
 	} `json:"items"`
 }
 
+// Collection pairs an account unlock endpoint (the unlocked set) with its
+// reference index endpoint (the full set), so the collector can report both an
+// unlocked count and a completion total per collection.
+type Collection struct {
+	Name        string // metric label, e.g. "skins"
+	AccountPath string // e.g. "account/skins"
+	RefPath     string // e.g. "skins"
+}
+
+// Collections is the set of unlock collections the collector tracks.
+var Collections = []Collection{
+	{"skins", "account/skins", "skins"},
+	{"dyes", "account/dyes", "colors"},
+	{"minis", "account/minis", "minis"},
+	{"outfits", "account/outfits", "outfits"},
+	{"gliders", "account/gliders", "gliders"},
+	{"mount_skins", "account/mounts/skins", "mounts/skins"},
+	{"mount_types", "account/mounts/types", "mounts/types"},
+	{"finishers", "account/finishers", "finishers"},
+	{"novelties", "account/novelties", "novelties"},
+	{"titles", "account/titles", "titles"},
+	{"mailcarriers", "account/mailcarriers", "mailcarriers"},
+	{"recipes", "account/recipes", "recipes"},
+	{"jadebots", "account/jadebots", "jadebots"},
+	{"skiffs", "account/skiffs", "skiffs"},
+}
+
 // Mastery is one entry of /v2/account/masteries.
 type Mastery struct {
 	ID    int `json:"id"`

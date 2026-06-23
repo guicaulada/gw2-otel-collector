@@ -50,6 +50,7 @@ type Store struct {
 	commerce    *Commerce
 	progression *Progression
 	storage     *Storage
+	unlocks     map[string]int
 	lastSuccess map[string]time.Time
 }
 
@@ -146,6 +147,21 @@ func (s *Store) Storage() *Storage {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.storage
+}
+
+// SetUnlocks stores the latest per-collection unlocked counts.
+func (s *Store) SetUnlocks(u map[string]int, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.unlocks = u
+	s.lastSuccess["unlocks"] = at
+}
+
+// Unlocks returns the latest per-collection unlocked counts.
+func (s *Store) Unlocks() map[string]int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.unlocks
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

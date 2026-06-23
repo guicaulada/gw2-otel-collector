@@ -18,6 +18,7 @@ import (
 // data is an immutable snapshot of reference tables. Never mutate after publish.
 type data struct {
 	currencies map[int]string
+	totals     map[string]int // collection name -> total unlockable count
 }
 
 // Cache holds the latest reference data and the build number it was built for.
@@ -43,6 +44,16 @@ func (c *Cache) CurrencyName(id int) (string, bool) {
 	return name, ok
 }
 
+// CollectionTotal returns the total unlockable count for a collection, if loaded.
+func (c *Cache) CollectionTotal(name string) (int, bool) {
+	d := c.d.Load()
+	if d == nil {
+		return 0, false
+	}
+	total, ok := d.totals[name]
+	return total, ok
+}
+
 // Refresh checks the game build number and, if it changed (or nothing is loaded
 // yet), rebuilds the reference tables. Fail-soft: on error the current good data
 // is kept. Returns the error so callers can log it.
@@ -64,9 +75,19 @@ func (c *Cache) Refresh(ctx context.Context) error {
 		m[cur.ID] = cur.Name
 	}
 
-	c.d.Store(&data{currencies: m})
+	// Collection totals: the length of each reference index endpoint.
+	totals := make(map[string]int, len(gw2.Collections))
+	for _, col := range gw2.Collections {
+		n, err := c.client.CountIDs(ctx, col.RefPath, col.RefPath)
+		if err != nil {
+			return err // fail-soft: keep previously published tables
+		}
+		totals[col.Name] = n
+	}
+
+	c.d.Store(&data{currencies: m, totals: totals})
 	c.build.Store(int64(build))
-	c.log.Info("reference data refreshed", "build", build, "currencies", len(m))
+	c.log.Info("reference data refreshed", "build", build, "currencies", len(m), "collections", len(totals))
 	return nil
 }
 

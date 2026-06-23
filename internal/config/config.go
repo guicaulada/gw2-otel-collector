@@ -45,6 +45,7 @@ type Intervals struct {
 	Commerce    time.Duration
 	Progression time.Duration
 	Storage     time.Duration
+	Unlocks     time.Duration
 	// Reference is how often the game build number is checked to invalidate
 	// static reference data (id→name tables). Reference data changes only on a
 	// game patch, so this can be infrequent.
@@ -87,6 +88,7 @@ func FromEnv() (*Config, error) {
 			Commerce:    envDuration("GW2_INTERVAL_COMMERCE", 5*time.Minute),
 			Progression: envDuration("GW2_INTERVAL_PROGRESSION", 10*time.Minute),
 			Storage:     envDuration("GW2_INTERVAL_STORAGE", 15*time.Minute),
+			Unlocks:     envDuration("GW2_INTERVAL_UNLOCKS", 15*time.Minute),
 			Reference:   envDuration("GW2_INTERVAL_REFERENCE", time.Hour),
 		},
 	}, nil

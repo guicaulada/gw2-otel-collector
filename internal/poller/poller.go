@@ -117,6 +117,19 @@ func (p *Poller) Start(ctx context.Context) {
 		return nil
 	})
 
+	p.run(ctx, "unlocks", p.intervals.Unlocks, func(ctx context.Context) error {
+		counts := make(map[string]int, len(gw2.Collections))
+		for _, col := range gw2.Collections {
+			n, err := p.client.CountIDs(ctx, col.AccountPath, col.AccountPath)
+			if err != nil {
+				return err
+			}
+			counts[col.Name] = n
+		}
+		p.store.SetUnlocks(counts, time.Now())
+		return nil
+	})
+
 	p.run(ctx, "commerce", p.intervals.Commerce, func(ctx context.Context) error {
 		buy, err := p.client.ExchangeCoins(ctx, exchangeCoinsQuantity)
 		if err != nil {
