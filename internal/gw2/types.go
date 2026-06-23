@@ -16,7 +16,38 @@ type Account struct {
 		TeamID int `json:"team_id"`
 		Rank   int `json:"rank"`
 	} `json:"wvw"`
-	LastModified string `json:"last_modified"`
+	Guilds       []string `json:"guilds"`
+	GuildLeader  []string `json:"guild_leader"`
+	LastModified string   `json:"last_modified"`
+}
+
+// Guild is the subset of /v2/guild/:id the collector tracks. The operational
+// fields (level, influence, ...) are populated only for guilds the key has
+// permission to see; otherwise they are zero.
+type Guild struct {
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Tag            string `json:"tag"`
+	Level          int    `json:"level"`
+	Influence      int64  `json:"influence"`
+	Aetherium      int64  `json:"aetherium"`
+	Resonance      int64  `json:"resonance"`
+	Favor          int64  `json:"favor"`
+	MemberCount    int    `json:"member_count"`
+	MemberCapacity int    `json:"member_capacity"`
+}
+
+// PvPStats is the subset of /v2/pvp/stats the collector tracks.
+type PvPStats struct {
+	PvPRank       int `json:"pvp_rank"`
+	PvPRankPoints int `json:"pvp_rank_points"`
+	Aggregate     struct {
+		Wins       int64 `json:"wins"`
+		Losses     int64 `json:"losses"`
+		Desertions int64 `json:"desertions"`
+		Byes       int64 `json:"byes"`
+		Forfeits   int64 `json:"forfeits"`
+	} `json:"aggregate"`
 }
 
 // CurrencyAmount is one entry of /v2/account/wallet.

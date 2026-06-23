@@ -51,7 +51,16 @@ type Store struct {
 	progression *Progression
 	storage     *Storage
 	unlocks     map[string]int
+	guilds      []GuildInfo
+	pvp         *gw2.PvPStats
 	lastSuccess map[string]time.Time
+}
+
+// GuildInfo bundles a guild's detail with its completed-upgrade count
+// (UpgradesCompleted is -1 when unknown, e.g. the key does not lead the guild).
+type GuildInfo struct {
+	Guild             gw2.Guild
+	UpgradesCompleted int
 }
 
 // New returns an empty Store.
@@ -162,6 +171,36 @@ func (s *Store) Unlocks() map[string]int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.unlocks
+}
+
+// SetGuilds stores the latest guild snapshots.
+func (s *Store) SetGuilds(g []GuildInfo, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.guilds = g
+	s.lastSuccess["guild"] = at
+}
+
+// Guilds returns the latest guild snapshots.
+func (s *Store) Guilds() []GuildInfo {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.guilds
+}
+
+// SetPvP stores the latest PvP stats.
+func (s *Store) SetPvP(p *gw2.PvPStats, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.pvp = p
+	s.lastSuccess["pvp"] = at
+}
+
+// PvP returns the latest PvP stats.
+func (s *Store) PvP() *gw2.PvPStats {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.pvp
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

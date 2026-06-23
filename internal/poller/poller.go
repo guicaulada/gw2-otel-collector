@@ -117,6 +117,44 @@ func (p *Poller) Start(ctx context.Context) {
 		return nil
 	})
 
+	p.run(ctx, "guild", p.intervals.Guild, func(ctx context.Context) error {
+		acc := p.store.Account()
+		if acc == nil { // store not populated yet (startup race) — fetch directly
+			var err error
+			if acc, err = p.client.Account(ctx); err != nil {
+				return err
+			}
+		}
+		if len(acc.Guilds) == 0 {
+			return nil // account is in no guild
+		}
+		infos := make([]store.GuildInfo, 0, len(acc.Guilds))
+		for _, gid := range acc.Guilds {
+			g, err := p.client.Guild(ctx, gid)
+			if err != nil {
+				return err
+			}
+			upgrades := -1 // unknown unless we lead the guild (upgrades is leader-only)
+			if contains(acc.GuildLeader, gid) {
+				if n, err := p.client.GuildUpgradesCompleted(ctx, gid); err == nil {
+					upgrades = n
+				}
+			}
+			infos = append(infos, store.GuildInfo{Guild: *g, UpgradesCompleted: upgrades})
+		}
+		p.store.SetGuilds(infos, time.Now())
+		return nil
+	})
+
+	p.run(ctx, "pvp", p.intervals.PvP, func(ctx context.Context) error {
+		s, err := p.client.PvPStats(ctx)
+		if err != nil {
+			return err
+		}
+		p.store.SetPvP(s, time.Now())
+		return nil
+	})
+
 	p.run(ctx, "unlocks", p.intervals.Unlocks, func(ctx context.Context) error {
 		counts := make(map[string]int, len(gw2.Collections))
 		for _, col := range gw2.Collections {
@@ -155,6 +193,16 @@ func (p *Poller) Start(ctx context.Context) {
 
 // Wait blocks until all polling goroutines have exited.
 func (p *Poller) Wait() { p.wg.Wait() }
+
+// contains reports whether s is in the slice.
+func contains(slice []string, s string) bool {
+	for _, v := range slice {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
 
 // countFilled counts non-nil (occupied) slots in a positional bank/inventory.
 func countFilled(slots []*gw2.Slot) int64 {

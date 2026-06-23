@@ -202,6 +202,46 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.account.unlocks.total", err)
 	}
+	guildLevel, err := meter.Int64ObservableGauge("gw2.guild.level",
+		metric.WithDescription("Guild level"))
+	if err != nil {
+		return nil, wrap("gw2.guild.level", err)
+	}
+	guildMembers, err := meter.Int64ObservableGauge("gw2.guild.members",
+		metric.WithUnit("{member}"), metric.WithDescription("Guild member count"))
+	if err != nil {
+		return nil, wrap("gw2.guild.members", err)
+	}
+	guildCapacity, err := meter.Int64ObservableGauge("gw2.guild.member_capacity",
+		metric.WithUnit("{member}"), metric.WithDescription("Guild member capacity"))
+	if err != nil {
+		return nil, wrap("gw2.guild.member_capacity", err)
+	}
+	guildCurrency, err := meter.Int64ObservableGauge("gw2.guild.currency",
+		metric.WithDescription("Guild currency balance, by kind (influence/aetherium/resonance/favor)"))
+	if err != nil {
+		return nil, wrap("gw2.guild.currency", err)
+	}
+	guildUpgrades, err := meter.Int64ObservableGauge("gw2.guild.upgrades.completed",
+		metric.WithUnit("{upgrade}"), metric.WithDescription("Completed guild upgrades"))
+	if err != nil {
+		return nil, wrap("gw2.guild.upgrades.completed", err)
+	}
+	pvpRank, err := meter.Int64ObservableGauge("gw2.pvp.rank",
+		metric.WithDescription("PvP rank"))
+	if err != nil {
+		return nil, wrap("gw2.pvp.rank", err)
+	}
+	pvpRankPoints, err := meter.Int64ObservableGauge("gw2.pvp.rank.points",
+		metric.WithDescription("PvP rank points toward next rank"))
+	if err != nil {
+		return nil, wrap("gw2.pvp.rank.points", err)
+	}
+	pvpMatches, err := meter.Int64ObservableCounter("gw2.pvp.matches",
+		metric.WithUnit("{match}"), metric.WithDescription("Lifetime PvP match outcomes, by outcome"))
+	if err != nil {
+		return nil, wrap("gw2.pvp.matches", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -278,6 +318,45 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			o.ObserveInt64(deliveryItems, c.DeliveryItems)
 		}
 
+		for _, gi := range st.Guilds() {
+			g := gi.Guild
+			attrs := metric.WithAttributes(
+				attribute.String("gw2.guild.id", g.ID),
+				attribute.String("gw2.guild.name", g.Name),
+				attribute.String("gw2.guild.tag", g.Tag),
+			)
+			o.ObserveInt64(guildLevel, int64(g.Level), attrs)
+			o.ObserveInt64(guildMembers, int64(g.MemberCount), attrs)
+			o.ObserveInt64(guildCapacity, int64(g.MemberCapacity), attrs)
+			for kind, val := range map[string]int64{
+				"influence": g.Influence, "aetherium": g.Aetherium,
+				"resonance": g.Resonance, "favor": g.Favor,
+			} {
+				o.ObserveInt64(guildCurrency, val, metric.WithAttributes(
+					attribute.String("gw2.guild.id", g.ID),
+					attribute.String("gw2.guild.name", g.Name),
+					attribute.String("gw2.guild.tag", g.Tag),
+					attribute.String("gw2.currency", kind),
+				))
+			}
+			if gi.UpgradesCompleted >= 0 {
+				o.ObserveInt64(guildUpgrades, int64(gi.UpgradesCompleted), attrs)
+			}
+		}
+
+		if p := st.PvP(); p != nil {
+			o.ObserveInt64(pvpRank, int64(p.PvPRank))
+			o.ObserveInt64(pvpRankPoints, int64(p.PvPRankPoints))
+			for outcome, n := range map[string]int64{
+				"win": p.Aggregate.Wins, "loss": p.Aggregate.Losses,
+				"desertion": p.Aggregate.Desertions, "bye": p.Aggregate.Byes,
+				"forfeit": p.Aggregate.Forfeits,
+			} {
+				o.ObserveInt64(pvpMatches, n,
+					metric.WithAttributes(attribute.String("gw2.outcome", outcome)))
+			}
+		}
+
 		for name, count := range st.Unlocks() {
 			attrs := metric.WithAttributes(attribute.String("gw2.collection", name))
 			o.ObserveInt64(unlocksCount, int64(count), attrs)
@@ -301,7 +380,9 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		exchangeRate, deliveryCoins, deliveryItems,
 		accountAP, luck, masteriesUnlocked, masteryEarned, masterySpent,
 		bankUsed, bankCapacity, sharedUsed, sharedCapacity, materialCount,
-		unlocksCount, unlocksTotal, lastSuccess,
+		unlocksCount, unlocksTotal,
+		guildLevel, guildMembers, guildCapacity, guildCurrency, guildUpgrades,
+		pvpRank, pvpRankPoints, pvpMatches, lastSuccess,
 	)
 }
 

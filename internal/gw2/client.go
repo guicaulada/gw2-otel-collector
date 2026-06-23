@@ -215,6 +215,31 @@ func (c *Client) Materials(ctx context.Context) ([]MaterialAmount, error) {
 	return m, nil
 }
 
+// Guild fetches /v2/guild/:id (detailed fields require the guilds scope and
+// appropriate guild permission).
+func (c *Client) Guild(ctx context.Context, id string) (*Guild, error) {
+	var g Guild
+	if err := c.get(ctx, "guild/"+id, "guild/:id", nil, &g); err != nil {
+		return nil, err
+	}
+	return &g, nil
+}
+
+// GuildUpgradesCompleted fetches /v2/guild/:id/upgrades (leader only) and returns
+// the count of completed upgrades.
+func (c *Client) GuildUpgradesCompleted(ctx context.Context, id string) (int, error) {
+	return c.CountIDs(ctx, "guild/"+id+"/upgrades", "guild/:id/upgrades")
+}
+
+// PvPStats fetches /v2/pvp/stats.
+func (c *Client) PvPStats(ctx context.Context) (*PvPStats, error) {
+	var s PvPStats
+	if err := c.get(ctx, "pvp/stats", "pvp/stats", nil, &s); err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
 // CountIDs fetches an endpoint that returns a JSON array and returns its length.
 // Works for account unlock lists (id or object arrays) and reference index lists.
 func (c *Client) CountIDs(ctx context.Context, path, label string) (int, error) {
