@@ -147,6 +147,13 @@ def wealth():
     g.add(timeseries("Tracked item prices (copper)",
                      [target('max by (gw2_item_name, gw2_side) (gw2_commerce_item_price)', "{{gw2_item_name}} {{gw2_side}}")]), 12, 8)
     g.row()
+    g.add(bargauge("Crafting profit per item (copper)",
+                   "max by (gw2_item_name) (gw2_commerce_craft_profit)", "{{gw2_item_name}}"), 12, 8)
+    g.add(timeseries("Craft cost vs sell revenue (copper)",
+                     [target('max by (gw2_item_name) (gw2_commerce_craft_cost)', "cost {{gw2_item_name}}"),
+                      {"refId": "B", "datasource": PROM, "legendFormat": "profit {{gw2_item_name}}",
+                       "expr": 'max by (gw2_item_name) (gw2_commerce_craft_profit)'}]), 12, 8)
+    g.row()
     g.add(timeseries("Open orders value by side (gold)",
                      [target(gold('max by (gw2_side) (gw2_commerce_orders_open_value)'), "{{gw2_side}}")]), 12, 8)
     g.add(timeseries("Tracked item supply vs demand (units)",
@@ -196,6 +203,15 @@ def progression():
     g.add(timeseries("Reset-cycle completions (since reset)",
                      [target("max by (gw2_kind) (gw2_account_reset_completed)", "{{gw2_kind}}")],
                      unit="none"), 24, 7)
+    g.row()
+    g.add(bargauge("Legendary collections done / total",
+                   "100 * max by (gw2_legendary_category) (gw2_legendary_collections_done) / "
+                   "clamp_min(max by (gw2_legendary_category) (gw2_legendary_collections_total), 1)",
+                   "{{gw2_legendary_category}}", unit="percent", maxv=100), 12, 8)
+    g.add(bargauge("Legendary items obtained (started collections)",
+                   "100 * max by (gw2_legendary_category) (gw2_legendary_items_current) / "
+                   "clamp_min(max by (gw2_legendary_category) (gw2_legendary_items_max), 1)",
+                   "{{gw2_legendary_category}}", unit="percent", maxv=100), 12, 8)
     return dashboard("gw2-progression", "GW2 Progression", g)
 
 

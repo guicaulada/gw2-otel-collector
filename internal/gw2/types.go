@@ -189,6 +189,22 @@ type ItemPrice struct {
 	} `json:"sells"`
 }
 
+// Recipe is the subset of /v2/recipes used for single-level crafting-profit:
+// the output item/count and the ingredient list.
+type Recipe struct {
+	OutputItemID    int                `json:"output_item_id"`
+	OutputItemCount int64              `json:"output_item_count"`
+	Ingredients     []RecipeIngredient `json:"ingredients"`
+}
+
+// RecipeIngredient is one input of a recipe. Under the latest schema each entry
+// has a type (Item / Currency / GuildUpgrade); only Item inputs are TP-priceable.
+type RecipeIngredient struct {
+	Type   string `json:"type"`
+	ItemID int    `json:"id"`
+	Count  int64  `json:"count"`
+}
+
 // Item is the subset of /v2/items the collector uses (for id→name on tracked items).
 type Item struct {
 	ID   int    `json:"id"`
@@ -367,6 +383,21 @@ type AccountAchievement struct {
 	Max      int   `json:"max"`
 	Done     bool  `json:"done"`
 	Repeated int64 `json:"repeated"`
+}
+
+// AchievementCategory is the subset of /v2/achievements/categories used to group
+// achievements (e.g. the legendary/precursor collections) by category name. Under
+// the latest schema each achievements entry is an object carrying its id (older
+// schemas returned a bare int).
+type AchievementCategory struct {
+	ID           int                        `json:"id"`
+	Name         string                     `json:"name"`
+	Achievements []AchievementCategoryEntry `json:"achievements"`
+}
+
+// AchievementCategoryEntry is one achievement reference inside a category.
+type AchievementCategoryEntry struct {
+	ID int `json:"id"`
 }
 
 // AchievementDef is the subset of /v2/achievements used to compute AP.

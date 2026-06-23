@@ -403,6 +403,38 @@ func (c *Client) PvPStandings(ctx context.Context) ([]PvPStanding, error) {
 	return out, nil
 }
 
+// RecipeSearchOutput returns recipe ids that produce the given output item id
+// (/v2/recipes/search?output=). Public, static reference data.
+func (c *Client) RecipeSearchOutput(ctx context.Context, itemID int) ([]int, error) {
+	var out []int
+	params := url.Values{"output": {strconv.Itoa(itemID)}}
+	if err := c.get(ctx, "recipes/search", "recipes/search", params, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Recipe fetches a single recipe definition (/v2/recipes/:id). Public, static.
+func (c *Client) Recipe(ctx context.Context, id int) (*Recipe, error) {
+	var r Recipe
+	if err := c.get(ctx, "recipes/"+strconv.Itoa(id), "recipes/:id", nil, &r); err != nil {
+		return nil, err
+	}
+	return &r, nil
+}
+
+// AchievementCategoriesAll fetches /v2/achievements/categories?ids=all. Public,
+// static reference data used to group achievements by category (e.g. legendary
+// and precursor collections).
+func (c *Client) AchievementCategoriesAll(ctx context.Context) ([]AchievementCategory, error) {
+	var out []AchievementCategory
+	params := url.Values{"ids": {"all"}}
+	if err := c.get(ctx, "achievements/categories", "achievements/categories", params, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountIntList fetches an account endpoint returning a JSON array of integer
 // ids (account/skins, account/dyes — the unlocked wardrobe sets).
 func (c *Client) AccountIntList(ctx context.Context, path string) ([]int, error) {

@@ -313,6 +313,16 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.commerce.item.flip_margin", err)
 	}
+	craftProfit, err := meter.Int64ObservableGauge("gw2.commerce.craft_profit",
+		metric.WithDescription("Single-level crafting profit in copper (output sell*0.85 - ingredient buy)"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.craft_profit", err)
+	}
+	craftCost, err := meter.Int64ObservableGauge("gw2.commerce.craft_cost",
+		metric.WithDescription("Single-level crafting ingredient cost in copper (item ingredients)"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.craft_cost", err)
+	}
 	itemSupply, err := meter.Int64ObservableGauge("gw2.commerce.item.supply",
 		metric.WithDescription("Tracked item sell-side supply (units listed)"))
 	if err != nil {
@@ -407,6 +417,26 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		metric.WithDescription("Distinct legendaries in the armory (denominator)"))
 	if err != nil {
 		return nil, wrap("gw2.account.legendary_armory.available", err)
+	}
+	legColDone, err := meter.Int64ObservableGauge("gw2.legendary.collections.done",
+		metric.WithDescription("Completed legendary/precursor collections, by category"))
+	if err != nil {
+		return nil, wrap("gw2.legendary.collections.done", err)
+	}
+	legColTotal, err := meter.Int64ObservableGauge("gw2.legendary.collections.total",
+		metric.WithDescription("Total legendary/precursor collections, by category"))
+	if err != nil {
+		return nil, wrap("gw2.legendary.collections.total", err)
+	}
+	legItemsCurrent, err := meter.Int64ObservableGauge("gw2.legendary.items.current",
+		metric.WithDescription("Legendary collection items obtained (started collections), by category"))
+	if err != nil {
+		return nil, wrap("gw2.legendary.items.current", err)
+	}
+	legItemsMax, err := meter.Int64ObservableGauge("gw2.legendary.items.max",
+		metric.WithDescription("Legendary collection items needed (started collections), by category"))
+	if err != nil {
+		return nil, wrap("gw2.legendary.items.max", err)
 	}
 	wvwScore, err := meter.Int64ObservableGauge("gw2.wvw.match.score",
 		metric.WithDescription("WvW war score, by team color"))
@@ -523,6 +553,14 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			o.ObserveInt64(achievementsTotalAP, a.TotalAP)
 			o.ObserveInt64(achievementsDone, int64(a.Done))
 			o.ObserveInt64(achievementsTracked, int64(a.Total))
+		}
+
+		for category, lp := range st.Legendary() {
+			attrs := metric.WithAttributes(attribute.String("gw2.legendary.category", category))
+			o.ObserveInt64(legColDone, int64(lp.Done), attrs)
+			o.ObserveInt64(legColTotal, int64(lp.Total), attrs)
+			o.ObserveInt64(legItemsCurrent, lp.ItemsCurrent, attrs)
+			o.ObserveInt64(legItemsMax, lp.ItemsMax, attrs)
 		}
 
 		for kind, n := range st.Resets() {
@@ -755,6 +793,17 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			o.ObserveInt64(itemDemand, p.Buys.Quantity, metric.WithAttributes(base...))
 		}
 
+		for _, cp := range st.CraftProfits() {
+			attrs := []attribute.KeyValue{attribute.Int("gw2.item.id", cp.ItemID)}
+			if resolver != nil {
+				if name, ok := resolver.ItemName(cp.ItemID); ok {
+					attrs = append(attrs, attribute.String("gw2.item.name", name))
+				}
+			}
+			o.ObserveInt64(craftProfit, cp.Profit, metric.WithAttributes(attrs...))
+			o.ObserveInt64(craftCost, cp.Cost, metric.WithAttributes(attrs...))
+		}
+
 		if resolver != nil {
 			if completed := st.StoryCompleted(); completed != nil {
 				bySeason := map[string]int64{}
@@ -819,6 +868,8 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		itemSupply, itemDemand, ordersValue, ordersCount,
 		materialValue, wvwMapScore, wvwMapKills,
 		wardrobeSkins, wardrobeDyes,
+		legColDone, legColTotal, legItemsCurrent, legItemsMax,
+		craftProfit, craftCost,
 		lastSuccess,
 	)
 }

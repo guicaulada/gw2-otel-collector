@@ -157,11 +157,50 @@ func (p *Poller) Start(ctx context.Context) {
 
 	// Achievement points: account achievements joined to cached definitions.
 	achDefs := map[int]gw2.AchievementDef{} // id -> def (lazy, process-lifetime cache)
+	// Legendary/precursor collection grouping (lazy, process-lifetime cache).
+	legCatByAch := map[int]string{} // achievement id -> legendary category name
+	legCatTotal := map[string]int{} // legendary category name -> achievement count
+	legLoaded := false
 	p.run(ctx, "achievements", p.intervals.Achievements, func(ctx context.Context) error {
 		accAch, err := p.client.AccountAchievements(ctx)
 		if err != nil {
 			return err
 		}
+
+		if !legLoaded {
+			cats, err := p.client.AchievementCategoriesAll(ctx)
+			if err != nil {
+				return err
+			}
+			for _, c := range cats {
+				if !isLegendaryCategory(c.Name) {
+					continue
+				}
+				legCatTotal[c.Name] = len(c.Achievements)
+				for _, a := range c.Achievements {
+					legCatByAch[a.ID] = c.Name
+				}
+			}
+			legLoaded = true
+		}
+		legendary := make(map[string]store.LegendaryProgress, len(legCatTotal))
+		for name, total := range legCatTotal {
+			legendary[name] = store.LegendaryProgress{Total: total}
+		}
+		for _, a := range accAch {
+			cat, ok := legCatByAch[a.ID]
+			if !ok {
+				continue
+			}
+			lp := legendary[cat]
+			if a.Done {
+				lp.Done++
+			}
+			lp.ItemsCurrent += int64(a.Current)
+			lp.ItemsMax += int64(a.Max)
+			legendary[cat] = lp
+		}
+		p.store.SetLegendary(legendary, time.Now())
 		var missing []int
 		for _, a := range accAch {
 			if _, ok := achDefs[a.ID]; !ok {
@@ -582,6 +621,8 @@ func (p *Poller) Start(ctx context.Context) {
 		return nil
 	})
 
+	// Recipe lookups for crafting-profit (lazy, process-lifetime; nil = no recipe).
+	craftRecipes := map[int]*gw2.Recipe{}
 	p.run(ctx, "commerce", p.intervals.Commerce, func(ctx context.Context) error {
 		buy, err := p.client.ExchangeCoins(ctx, exchangeCoinsQuantity)
 		if err != nil {
@@ -621,6 +662,81 @@ func (p *Poller) Start(ctx context.Context) {
 				return err
 			}
 			p.store.SetPrices(prices, time.Now())
+
+			// Crafting profit: resolve a recipe per tracked item (cached), price
+			// its item-type ingredients, and compare against the crafted output.
+			for _, id := range p.trackItems {
+				if _, ok := craftRecipes[id]; ok {
+					continue
+				}
+				rids, err := p.client.RecipeSearchOutput(ctx, id)
+				if err != nil {
+					return err
+				}
+				if len(rids) == 0 {
+					craftRecipes[id] = nil
+					continue
+				}
+				r, err := p.client.Recipe(ctx, rids[0])
+				if err != nil {
+					return err
+				}
+				craftRecipes[id] = r
+			}
+
+			priceByID := make(map[int]gw2.ItemPrice, len(prices))
+			for _, pr := range prices {
+				priceByID[pr.ID] = pr
+			}
+			ingredientIDs := map[int]struct{}{}
+			for _, id := range p.trackItems {
+				if r := craftRecipes[id]; r != nil {
+					for _, ing := range r.Ingredients {
+						if ing.Type == "" || ing.Type == "Item" {
+							ingredientIDs[ing.ItemID] = struct{}{}
+						}
+					}
+				}
+			}
+			if len(ingredientIDs) > 0 {
+				ids := make([]int, 0, len(ingredientIDs))
+				for id := range ingredientIDs {
+					ids = append(ids, id)
+				}
+				ingPrices, err := p.client.Prices(ctx, ids)
+				if err != nil {
+					return err
+				}
+				for _, pr := range ingPrices {
+					priceByID[pr.ID] = pr
+				}
+			}
+
+			var profits []store.CraftProfit
+			for _, id := range p.trackItems {
+				r := craftRecipes[id]
+				if r == nil {
+					continue
+				}
+				out, ok := priceByID[id]
+				if !ok {
+					continue
+				}
+				var cost int64
+				for _, ing := range r.Ingredients {
+					if ing.Type != "" && ing.Type != "Item" {
+						continue // currency/guild-upgrade inputs aren't TP-priceable
+					}
+					if ip, ok := priceByID[ing.ItemID]; ok {
+						cost += ing.Count * ip.Buys.UnitPrice
+					}
+				}
+				revenue := int64(float64(r.OutputItemCount*out.Sells.UnitPrice) * 0.85)
+				profits = append(profits, store.CraftProfit{
+					ItemID: id, Cost: cost, Revenue: revenue, Profit: revenue - cost,
+				})
+			}
+			p.store.SetCraftProfits(profits, time.Now())
 		}
 		return nil
 	})
@@ -633,6 +749,13 @@ func (p *Poller) Wait() { p.wg.Wait() }
 // categories array carries exactly one of these alongside hue/material tags.
 var colorRarityTiers = map[string]bool{
 	"Starter": true, "Common": true, "Uncommon": true, "Rare": true, "Exclusive": true,
+}
+
+// isLegendaryCategory reports whether an achievement-category name denotes a
+// legendary or precursor collection (the gw2efficiency "legendary journey" view).
+func isLegendaryCategory(name string) bool {
+	n := strings.ToLower(name)
+	return strings.Contains(n, "legendary") || strings.Contains(n, "precursor")
 }
 
 // colorRarity extracts the rarity tier from a dye's categories, or "Unknown".

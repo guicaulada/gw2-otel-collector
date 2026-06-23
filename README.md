@@ -134,8 +134,22 @@ See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the
   Characters, PvP & Health, WvW — auto-provisioned via the file provider.
 - Plus material-storage value by category, and WvW per-map (EBG + 3 borderlands) breakdown.
 
+**Post-v3 additions:**
+
+- **Equipped-gear value** — a dedicated `equipment` component summing the tradable
+  runes/sigils/infusions across every character's equipped gear.
+- **Material categories by name** — material-storage metrics carry the resolved category
+  name alongside the numeric id.
+- **Wardrobe breakdown** — unlocked skins by type/rarity and dyes by rarity.
+- **Legendary/precursor collections** — per-category done/total and items obtained, from the
+  achievement collections (the gw2efficiency "legendary journey" view).
+- **Crafting profit** — single-level craft economics per tracked item (ingredient buy cost vs
+  output sell revenue net of the 15% tax).
+- **Recent PvP games** — the last ~10 matches emitted as `gw2.pvp.game` events to Loki.
+- **24h price movers** — per-item sell-price change on the Wealth tab.
+
 See [`docs/feature-coverage.md`](docs/feature-coverage.md) for the full parity matrix.
 
 **Descoped / impossible from the API:** PvP leaderboards (global rankings, not account data),
-map completion %, DPS/combat (arcdps logs), gem-store prices. **Possible future:** per-collection
-achievement progress (legendary/precursor), crafting-profit calculator, farming-session deltas.
+map completion %, DPS/combat (arcdps logs), gem-store prices. **Possible future:**
+farming-session deltas, multi-level (recursive) crafting cost.

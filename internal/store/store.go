@@ -57,6 +57,26 @@ type Storage struct {
 	MaterialsByCategory        map[int]int64
 }
 
+// CraftProfit is the single-level crafting economics for one tracked item:
+// the TP cost to buy all (item-type) ingredients vs revenue from selling the
+// crafted output (sell price minus the 15% TP tax). Profit = revenue - cost.
+type CraftProfit struct {
+	ItemID  int
+	Cost    int64 // sum of ingredient buy-order prices × counts
+	Revenue int64 // output sell-listing price × count × 0.85
+	Profit  int64 // revenue - cost
+}
+
+// LegendaryProgress aggregates one legendary/precursor collection category:
+// completed achievements vs total, and items collected vs needed (the latter
+// summed only over started collections, since the API omits unstarted ones).
+type LegendaryProgress struct {
+	Done         int
+	Total        int
+	ItemsCurrent int64
+	ItemsMax     int64
+}
+
 // Wardrobe is the unlocked-skins/dyes breakdown by static attribute.
 type Wardrobe struct {
 	Skins map[string]map[string]int // type -> rarity -> count
@@ -84,6 +104,8 @@ type Store struct {
 	resets         map[string]int // reset kind -> count completed since reset
 	wvw            *WvW
 	wardrobe       *Wardrobe
+	legendary      map[string]LegendaryProgress // category name -> progress
+	craftProfits   []CraftProfit
 	lastSuccess    map[string]time.Time
 }
 
@@ -239,6 +261,36 @@ func (s *Store) Unlocks() map[string]int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.unlocks
+}
+
+// SetCraftProfits stores the latest crafting-profit calculations.
+func (s *Store) SetCraftProfits(c []CraftProfit, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.craftProfits = c
+	s.lastSuccess["craft_profits"] = at
+}
+
+// CraftProfits returns the latest crafting-profit calculations.
+func (s *Store) CraftProfits() []CraftProfit {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.craftProfits
+}
+
+// SetLegendary stores the latest legendary-collection progress by category.
+func (s *Store) SetLegendary(l map[string]LegendaryProgress, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.legendary = l
+	s.lastSuccess["legendary"] = at
+}
+
+// Legendary returns the latest legendary-collection progress by category.
+func (s *Store) Legendary() map[string]LegendaryProgress {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.legendary
 }
 
 // SetWardrobe stores the latest skin/dye breakdown.
