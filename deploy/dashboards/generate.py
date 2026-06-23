@@ -159,6 +159,12 @@ def progression():
     g.add(stat("Masteries unlocked", "max(gw2_account_masteries_unlocked)"), 4, 4)
     g.add(stat("Played (days, /age)", "max(gw2_account_age_seconds_total) / 86400", decimals=1), 4, 4)
     g.row()
+    g.add(stat("Total AP (computed)", "max(gw2_account_achievement_points_total)"), 5, 4)
+    g.add(stat("Achievements done", "max(gw2_account_achievements_done)"), 5, 4)
+    g.add(stat("Achievements %", "100 * max(gw2_account_achievements_done) / max(gw2_account_achievements_tracked)", unit="percent", decimals=1), 4, 4)
+    g.add(stat("Legendaries owned", "max(gw2_account_legendary_armory_owned)"), 5, 4)
+    g.add(stat("Legendaries available", "max(gw2_account_legendary_armory_available)"), 5, 4)
+    g.row()
     g.add(timeseries("Luck consumed", [target("max(gw2_account_luck_total)", "luck")]), 12, 8)
     g.add(timeseries("Wizard's Vault objectives completed",
                      [target("max by (gw2_period) (gw2_wizardsvault_objectives_completed)", "{{gw2_period}}")]), 12, 8)
@@ -198,6 +204,10 @@ def characters():
     g.add(bargauge("Level by character", "max by (gw2_character_name) (gw2_character_level)", "{{gw2_character_name}}", maxv=80), 8, 10)
     g.add(bargauge("Playtime by character (h)", "max by (gw2_character_name) (gw2_character_playtime_seconds_total) / 3600", "{{gw2_character_name}}"), 8, 10)
     g.add(bargauge("Deaths by character", "max by (gw2_character_name) (gw2_character_deaths_total)", "{{gw2_character_name}}"), 8, 10)
+    g.row()
+    g.add(bargauge("Crafting rating (top disciplines)",
+                   "topk(16, max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating))",
+                   "{{gw2_character_name}} {{gw2_discipline}}", maxv=500), 24, 10)
     return dashboard("gw2-characters", "GW2 Characters", g)
 
 

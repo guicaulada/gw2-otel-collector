@@ -270,6 +270,51 @@
         "w": 8,
         "h": 10
       }
+    },
+    {
+      "type": "bargauge",
+      "title": "Crafting rating (top disciplines)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "min": 0,
+          "max": 500
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(16, max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_character_name}} {{gw2_discipline}}",
+          "instant": true
+        }
+      ],
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 24,
+        "h": 10
+      }
     }
   ]
 }
