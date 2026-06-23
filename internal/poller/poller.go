@@ -457,6 +457,11 @@ func (p *Poller) Start(ctx context.Context) {
 			return err
 		}
 		p.store.SetPvP(s, time.Now())
+		standings, err := p.client.PvPStandings(ctx)
+		if err != nil {
+			return err
+		}
+		p.store.SetPvPStandings(standings, time.Now())
 		return nil
 	})
 

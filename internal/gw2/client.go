@@ -382,6 +382,15 @@ func (c *Client) PvPStats(ctx context.Context) (*PvPStats, error) {
 	return &s, nil
 }
 
+// PvPStandings fetches /v2/pvp/standings (empty array when no active season).
+func (c *Client) PvPStandings(ctx context.Context) ([]PvPStanding, error) {
+	var out []PvPStanding
+	if err := c.get(ctx, "pvp/standings", "pvp/standings", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CountIDs fetches an endpoint that returns a JSON array and returns its length.
 // Works for account unlock lists (id or object arrays) and reference index lists.
 func (c *Client) CountIDs(ctx context.Context, path, label string) (int, error) {

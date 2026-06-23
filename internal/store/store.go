@@ -65,6 +65,7 @@ type Store struct {
 	unlocks        map[string]int
 	guilds         []GuildInfo
 	pvp            *gw2.PvPStats
+	pvpStandings   []gw2.PvPStanding
 	prices         []gw2.ItemPrice
 	wizardsvault   []WizardsVaultPeriod
 	storyCompleted []int
@@ -248,6 +249,20 @@ func (s *Store) PvP() *gw2.PvPStats {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.pvp
+}
+
+// SetPvPStandings stores the latest PvP season standings.
+func (s *Store) SetPvPStandings(st []gw2.PvPStanding, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.pvpStandings = st
+}
+
+// PvPStandings returns the latest PvP season standings (empty if no active season).
+func (s *Store) PvPStandings() []gw2.PvPStanding {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.pvpStandings
 }
 
 // SetPrices stores the latest tracked-item prices.

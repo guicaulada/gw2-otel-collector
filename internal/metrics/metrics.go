@@ -9,11 +9,13 @@ package metrics
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 
+	"github.com/guicaulada/gw2-otel-collector/internal/gw2"
 	"github.com/guicaulada/gw2-otel-collector/internal/store"
 )
 
@@ -270,6 +272,31 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.pvp.matches", err)
 	}
+	pvpProfMatches, err := meter.Int64ObservableCounter("gw2.pvp.profession.matches",
+		metric.WithUnit("{match}"), metric.WithDescription("Lifetime PvP outcomes by profession"))
+	if err != nil {
+		return nil, wrap("gw2.pvp.profession.matches", err)
+	}
+	pvpLadderMatches, err := meter.Int64ObservableCounter("gw2.pvp.ladder.matches",
+		metric.WithUnit("{match}"), metric.WithDescription("Lifetime PvP outcomes by ladder"))
+	if err != nil {
+		return nil, wrap("gw2.pvp.ladder.matches", err)
+	}
+	pvpStanding, err := meter.Int64ObservableGauge("gw2.pvp.standing",
+		metric.WithDescription("PvP season standing (rating/division/tier), by scope and field"))
+	if err != nil {
+		return nil, wrap("gw2.pvp.standing", err)
+	}
+	charInvSlots, err := meter.Int64ObservableGauge("gw2.character.inventory.slots",
+		metric.WithUnit("{slot}"), metric.WithDescription("Per-character bag slots, by state (used/capacity)"))
+	if err != nil {
+		return nil, wrap("gw2.character.inventory.slots", err)
+	}
+	charCreated, err := meter.Int64ObservableGauge("gw2.character.created.timestamp",
+		metric.WithUnit("s"), metric.WithDescription("Per-character creation unix timestamp"))
+	if err != nil {
+		return nil, wrap("gw2.character.created.timestamp", err)
+	}
 	itemPrice, err := meter.Int64ObservableGauge("gw2.commerce.item.price",
 		metric.WithDescription("Tracked item best bid/ask in copper, by side"))
 	if err != nil {
@@ -515,6 +542,23 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 						attribute.String("gw2.character.name", c.Name),
 						attribute.String("gw2.discipline", cr.Discipline)))
 				}
+				var used, capacity int64
+				for _, bag := range c.Bags {
+					if bag != nil {
+						capacity += int64(bag.Size)
+						for _, s := range bag.Inventory {
+							if s != nil {
+								used++
+							}
+						}
+					}
+				}
+				nameAttr := attribute.String("gw2.character.name", c.Name)
+				o.ObserveInt64(charInvSlots, used, metric.WithAttributes(nameAttr, attribute.String("gw2.state", "used")))
+				o.ObserveInt64(charInvSlots, capacity, metric.WithAttributes(nameAttr, attribute.String("gw2.state", "capacity")))
+				if t, err := time.Parse(time.RFC3339, c.Created); err == nil {
+					o.ObserveInt64(charCreated, t.Unix(), metric.WithAttributes(nameAttr))
+				}
 			}
 		}
 
@@ -561,14 +605,36 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		if p := st.PvP(); p != nil {
 			o.ObserveInt64(pvpRank, int64(p.PvPRank))
 			o.ObserveInt64(pvpRankPoints, int64(p.PvPRankPoints))
-			for outcome, n := range map[string]int64{
-				"win": p.Aggregate.Wins, "loss": p.Aggregate.Losses,
-				"desertion": p.Aggregate.Desertions, "bye": p.Aggregate.Byes,
-				"forfeit": p.Aggregate.Forfeits,
-			} {
-				o.ObserveInt64(pvpMatches, n,
-					metric.WithAttributes(attribute.String("gw2.outcome", outcome)))
+			outcomes := func(wl gw2.WinLoss) map[string]int64 {
+				return map[string]int64{"win": wl.Wins, "loss": wl.Losses,
+					"desertion": wl.Desertions, "bye": wl.Byes, "forfeit": wl.Forfeits}
 			}
+			for outcome, n := range outcomes(p.Aggregate) {
+				o.ObserveInt64(pvpMatches, n, metric.WithAttributes(attribute.String("gw2.outcome", outcome)))
+			}
+			for prof, wl := range p.Professions {
+				for outcome, n := range outcomes(wl) {
+					o.ObserveInt64(pvpProfMatches, n, metric.WithAttributes(
+						attribute.String("gw2.profession", prof), attribute.String("gw2.outcome", outcome)))
+				}
+			}
+			for ladder, wl := range p.Ladders {
+				for outcome, n := range outcomes(wl) {
+					o.ObserveInt64(pvpLadderMatches, n, metric.WithAttributes(
+						attribute.String("gw2.ladder", ladder), attribute.String("gw2.outcome", outcome)))
+				}
+			}
+		}
+
+		for _, s := range st.PvPStandings() {
+			field := func(name string, v int64) {
+				o.ObserveInt64(pvpStanding, v, metric.WithAttributes(
+					attribute.String("gw2.scope", "current"), attribute.String("gw2.field", name)))
+			}
+			field("rating", s.Current.Rating)
+			field("division", s.Current.Division)
+			field("tier", s.Current.Tier)
+			field("total_points", s.Current.TotalPoints)
 		}
 
 		for name, count := range st.Unlocks() {
@@ -666,6 +732,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		fractalAugment, legendaryOwned, legendaryCopies, legendaryAvailable,
 		resetCompleted,
 		wvwScore, wvwVP, wvwKills, wvwDeaths, wvwPPT, wvwObjectives, wvwHome,
+		pvpProfMatches, pvpLadderMatches, pvpStanding, charInvSlots, charCreated,
 		lastSuccess,
 	)
 }

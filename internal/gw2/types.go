@@ -95,17 +95,39 @@ type WvWMatch struct {
 	} `json:"maps"`
 }
 
+// WinLoss is the win/loss record shape used across pvp/stats.
+type WinLoss struct {
+	Wins       int64 `json:"wins"`
+	Losses     int64 `json:"losses"`
+	Desertions int64 `json:"desertions"`
+	Byes       int64 `json:"byes"`
+	Forfeits   int64 `json:"forfeits"`
+}
+
 // PvPStats is the subset of /v2/pvp/stats the collector tracks.
 type PvPStats struct {
-	PvPRank       int `json:"pvp_rank"`
-	PvPRankPoints int `json:"pvp_rank_points"`
-	Aggregate     struct {
-		Wins       int64 `json:"wins"`
-		Losses     int64 `json:"losses"`
-		Desertions int64 `json:"desertions"`
-		Byes       int64 `json:"byes"`
-		Forfeits   int64 `json:"forfeits"`
-	} `json:"aggregate"`
+	PvPRank       int                `json:"pvp_rank"`
+	PvPRankPoints int                `json:"pvp_rank_points"`
+	Aggregate     WinLoss            `json:"aggregate"`
+	Professions   map[string]WinLoss `json:"professions"`
+	Ladders       map[string]WinLoss `json:"ladders"`
+}
+
+// PvPStanding is one entry of /v2/pvp/standings (empty when no active season).
+type PvPStanding struct {
+	SeasonID string `json:"season_id"`
+	Current  struct {
+		Rating      int64 `json:"rating"`
+		Division    int64 `json:"division"`
+		Tier        int64 `json:"tier"`
+		Points      int64 `json:"points"`
+		TotalPoints int64 `json:"total_points"`
+	} `json:"current"`
+	Best struct {
+		Division    int64 `json:"division"`
+		Tier        int64 `json:"tier"`
+		TotalPoints int64 `json:"total_points"`
+	} `json:"best"`
 }
 
 // CurrencyAmount is one entry of /v2/account/wallet.
