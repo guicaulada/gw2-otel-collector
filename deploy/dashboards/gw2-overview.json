@@ -27,7 +27,7 @@
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "decimals": 1, "unit": "none" }, "overrides": [] },
-      "targets": [ { "refId": "A", "expr": "sum(gw2_character_playtime_seconds_total) / 3600" } ]
+      "targets": [ { "refId": "A", "expr": "sum(max by (gw2_character_name) (gw2_character_playtime_seconds_total)) / 3600" } ]
     },
     {
       "id": 4, "type": "stat", "title": "Luck consumed",
@@ -70,6 +70,27 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "options": { "showTime": true, "sortOrder": "Descending", "wrapLogMessage": true },
       "targets": [ { "refId": "A", "expr": "{service_name=\"gw2-otel-collector\"}" } ]
+    },
+    {
+      "id": 10, "type": "bargauge", "title": "Story completion %",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 }, "overrides": [] },
+      "options": { "orientation": "horizontal", "displayMode": "gradient" },
+      "targets": [ { "refId": "A", "instant": true, "expr": "100 * max by (gw2_season) (gw2_story_quests_completed) / max by (gw2_season) (gw2_story_quests_total)", "legendFormat": "{{gw2_season}}" } ]
+    },
+    {
+      "id": 11, "type": "bargauge", "title": "Tracked item flip margin (copper)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "orientation": "horizontal", "displayMode": "basic" },
+      "targets": [ { "refId": "A", "instant": true, "expr": "max by (gw2_item_name) (gw2_commerce_item_flip_margin)", "legendFormat": "{{gw2_item_name}}" } ]
+    },
+    {
+      "id": 12, "type": "timeseries", "title": "Wizard's Vault objectives completed",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 36 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [ { "refId": "A", "expr": "max by (gw2_period) (gw2_wizardsvault_objectives_completed)", "legendFormat": "{{gw2_period}}" } ]
     }
   ]
 }
