@@ -435,6 +435,9 @@ func (p *Poller) Start(ctx context.Context) {
 			}
 		}
 		for _, mp := range m.Maps {
+			w.Maps = append(w.Maps, store.WvWMapStats{
+				Type: mp.Type, Scores: mp.Scores, Kills: mp.Kills, Deaths: mp.Deaths,
+			})
 			for _, o := range mp.Objectives {
 				color := strings.ToLower(o.Owner)
 				if color == "neutral" || color == "" {

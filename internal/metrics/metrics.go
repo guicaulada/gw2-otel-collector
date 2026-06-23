@@ -453,6 +453,22 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.account.value", err)
 	}
+	materialValue, err := meter.Int64ObservableGauge("gw2.account.material.value",
+		metric.WithUnit("{copper}"),
+		metric.WithDescription("Material storage liquid value in copper, by category"))
+	if err != nil {
+		return nil, wrap("gw2.account.material.value", err)
+	}
+	wvwMapScore, err := meter.Int64ObservableGauge("gw2.wvw.map.score",
+		metric.WithDescription("WvW per-map score, by map and team"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.map.score", err)
+	}
+	wvwMapKills, err := meter.Int64ObservableGauge("gw2.wvw.map.kills",
+		metric.WithDescription("WvW per-map kills, by map and team"))
+	if err != nil {
+		return nil, wrap("gw2.wvw.map.kills", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -520,6 +536,16 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			}
 			if w.HomeColor != "" {
 				o.ObserveInt64(wvwHome, 1, metric.WithAttributes(attribute.String("gw2.team", w.HomeColor)))
+			}
+			for _, mp := range w.Maps {
+				for color, v := range mp.Scores {
+					o.ObserveInt64(wvwMapScore, v, metric.WithAttributes(
+						attribute.String("gw2.map", mp.Type), attribute.String("gw2.team", color)))
+				}
+				for color, v := range mp.Kills {
+					o.ObserveInt64(wvwMapKills, v, metric.WithAttributes(
+						attribute.String("gw2.map", mp.Type), attribute.String("gw2.team", color)))
+				}
 			}
 		}
 
@@ -732,6 +758,10 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 					attribute.String("gw2.component", component),
 					attribute.String("gw2.basis", "sell")))
 			}
+			for category, copper := range v.MaterialCategory {
+				o.ObserveInt64(materialValue, copper,
+					metric.WithAttributes(attribute.Int("gw2.material.category", category)))
+			}
 		}
 
 		for family, ts := range st.LastSuccess() {
@@ -760,6 +790,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		wvwScore, wvwVP, wvwKills, wvwDeaths, wvwPPT, wvwObjectives, wvwHome,
 		pvpProfMatches, pvpLadderMatches, pvpStanding, charInvSlots, charCreated,
 		itemSupply, itemDemand, ordersValue, ordersCount,
+		materialValue, wvwMapScore, wvwMapKills,
 		lastSuccess,
 	)
 }

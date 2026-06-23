@@ -85,7 +85,10 @@ type WvWMatch struct {
 	Worlds        map[string]int   `json:"worlds"`
 	AllWorlds     map[string][]int `json:"all_worlds"`
 	Maps          []struct {
-		Type       string `json:"type"`
+		Type       string           `json:"type"` // Center/RedHome/BlueHome/GreenHome
+		Scores     map[string]int64 `json:"scores"`
+		Kills      map[string]int64 `json:"kills"`
+		Deaths     map[string]int64 `json:"deaths"`
 		Objectives []struct {
 			Type          string `json:"type"`
 			Owner         string `json:"owner"` // Red/Blue/Green/Neutral

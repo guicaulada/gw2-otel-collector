@@ -90,6 +90,15 @@ type WvW struct {
 	Deaths         map[string]int64          // color -> deaths
 	PPT            map[string]int64          // color -> points-per-tick (derived)
 	ObjectivesHeld map[string]map[string]int // color -> objective type -> count
+	Maps           []WvWMapStats             // per-map score/kills/deaths
+}
+
+// WvWMapStats is per-map (Center/RedHome/...) score/kills/deaths by team color.
+type WvWMapStats struct {
+	Type   string
+	Scores map[string]int64
+	Kills  map[string]int64
+	Deaths map[string]int64
 }
 
 // WizardsVaultPeriod is the derived Wizard's Vault snapshot for one period.

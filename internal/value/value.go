@@ -8,8 +8,9 @@ import "github.com/guicaulada/gw2-otel-collector/internal/gw2"
 
 // Account is the computed value breakdown, in copper, by component and basis.
 type Account struct {
-	Buy  map[string]int64 // component -> value at best buy-order price (gross)
-	Sell map[string]int64 // component -> value at lowest sell-listing price (gross)
+	Buy              map[string]int64 // component -> value at best buy-order price (gross)
+	Sell             map[string]int64 // component -> value at lowest sell-listing price (gross)
+	MaterialCategory map[int]int64    // material category id -> sell-basis value
 }
 
 // itemCounts accumulates count per item id for one component.
@@ -42,8 +43,12 @@ func Compute(
 
 	slotCounts(bank, components["bank"])
 	slotCounts(shared, components["shared"])
+	materialCategory := map[int]int64{} // category -> sell value
 	for _, m := range materials {
 		components["materials"][m.ID] += m.Count
+		if p, ok := prices[m.ID]; ok {
+			materialCategory[m.Category] += m.Count * p.Sells.UnitPrice
+		}
 	}
 	for _, c := range characters {
 		for _, bag := range c.Bags {
@@ -53,7 +58,7 @@ func Compute(
 		}
 	}
 
-	acc := Account{Buy: map[string]int64{}, Sell: map[string]int64{}}
+	acc := Account{Buy: map[string]int64{}, Sell: map[string]int64{}, MaterialCategory: materialCategory}
 	var totalBuy, totalSell int64
 	for name, counts := range components {
 		var buy, sell int64
