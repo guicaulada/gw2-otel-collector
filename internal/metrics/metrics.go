@@ -360,6 +360,11 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.account.legendary_armory.available", err)
 	}
+	resetCompleted, err := meter.Int64ObservableGauge("gw2.account.reset.completed",
+		metric.WithDescription("Reset-cycle completions since the last reset, by kind (worldbosses/dungeons/raids/mapchests/dailycrafting)"))
+	if err != nil {
+		return nil, wrap("gw2.account.reset.completed", err)
+	}
 	accountValue, err := meter.Int64ObservableGauge("gw2.account.value",
 		metric.WithUnit("{copper}"),
 		metric.WithDescription("Liquid account value in copper, by component and price basis"))
@@ -407,6 +412,11 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			o.ObserveInt64(achievementsTotalAP, a.TotalAP)
 			o.ObserveInt64(achievementsDone, int64(a.Done))
 			o.ObserveInt64(achievementsTracked, int64(a.Total))
+		}
+
+		for kind, n := range st.Resets() {
+			o.ObserveInt64(resetCompleted, int64(n),
+				metric.WithAttributes(attribute.String("gw2.kind", kind)))
 		}
 
 		if s := st.Storage(); s != nil {
@@ -597,7 +607,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		storyCompleted, storyTotal, accountValue,
 		craftingRating, achievementsTotalAP, achievementsDone, achievementsTracked,
 		fractalAugment, legendaryOwned, legendaryCopies, legendaryAvailable,
-		lastSuccess,
+		resetCompleted, lastSuccess,
 	)
 }
 

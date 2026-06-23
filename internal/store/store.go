@@ -70,6 +70,7 @@ type Store struct {
 	storyCompleted []int
 	accountValue   *value.Account
 	achievements   *Achievements
+	resets         map[string]int // reset kind -> count completed since reset
 	lastSuccess    map[string]time.Time
 }
 
@@ -309,6 +310,21 @@ func (s *Store) Achievements() *Achievements {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.achievements
+}
+
+// SetResets stores the latest reset-cycle completion counts by kind.
+func (s *Store) SetResets(r map[string]int, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.resets = r
+	s.lastSuccess["resets"] = at
+}
+
+// Resets returns the latest reset-cycle completion counts by kind.
+func (s *Store) Resets() map[string]int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.resets
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

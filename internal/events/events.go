@@ -101,6 +101,19 @@ func (e *Emitter) OnUnlocks(ctx context.Context, counts map[string]int) {
 	}
 }
 
+// OnResets emits a completion event when a reset-cycle count grows (e.g. a world
+// boss killed). At reset the count drops to 0 and the baseline resets silently,
+// so the next completion re-emits.
+func (e *Emitter) OnResets(ctx context.Context, kind string, count int) {
+	e.diffUp(ctx, "reset:"+kind, int64(count), func(prev int64) {
+		e.emit(ctx, "gw2.daily.completed",
+			fmt.Sprintf("%s: %d completed (%d total this cycle)", kind, int64(count)-prev, count),
+			log.String("gw2.reset.kind", kind),
+			log.Int64("gw2.reset.delta", int64(count)-prev),
+			log.Int64("gw2.reset.total", int64(count)))
+	})
+}
+
 // OnAccount emits an event when the owned-expansion set grows.
 func (e *Emitter) OnAccount(ctx context.Context, a *gw2.Account) {
 	if a == nil {

@@ -201,6 +201,16 @@ func (c *Client) AchievementsByIDs(ctx context.Context, ids []int) ([]Achievemen
 	return out, nil
 }
 
+// AccountStringList fetches an account endpoint returning a JSON array of string
+// ids (worldbosses/dungeons/raids/mapchests/dailycrafting — completed since reset).
+func (c *Client) AccountStringList(ctx context.Context, path, label string) ([]string, error) {
+	var out []string
+	if err := c.get(ctx, path, label, nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountProgression fetches /v2/account/progression (luck + fractal augmentations).
 func (c *Client) AccountProgression(ctx context.Context) ([]ProgressionEntry, error) {
 	var out []ProgressionEntry

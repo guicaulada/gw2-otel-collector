@@ -79,9 +79,9 @@ func run(log *slog.Logger) error {
 	// are present from the first metric export, then keep it fresh in the
 	// background (gated on the game build number).
 	ref := reference.New(client, log, cfg.TrackItems)
-	refCtx, refCancel := context.WithTimeout(ctx, 30*time.Second)
+	refCtx, refCancel := context.WithTimeout(ctx, 90*time.Second)
 	if err := ref.Refresh(refCtx); err != nil {
-		log.Warn("initial reference refresh failed; names unavailable until next refresh", "error", err)
+		log.Warn("initial reference refresh failed; retrying in background", "error", err)
 	}
 	refCancel()
 	ref.Start(ctx, cfg.Intervals.Reference)

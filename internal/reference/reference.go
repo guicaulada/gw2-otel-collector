@@ -175,17 +175,24 @@ func (c *Cache) Refresh(ctx context.Context) error {
 	return nil
 }
 
-// Start runs Refresh on an interval until the context is cancelled. Call Refresh
-// once synchronously first if you want tables populated before serving metrics.
+// retryInterval is how often Start retries while no data is loaded yet (the
+// initial sync can fail under startup contention; don't wait a full interval).
+const retryInterval = time.Minute
+
+// Start refreshes on an interval until the context is cancelled. Until the first
+// successful load it retries every retryInterval rather than waiting the full
+// (possibly hourly) interval, so a failed initial sync recovers quickly.
 func (c *Cache) Start(ctx context.Context, interval time.Duration) {
 	go func() {
-		ticker := time.NewTicker(interval)
-		defer ticker.Stop()
 		for {
+			wait := interval
+			if c.d.Load() == nil {
+				wait = retryInterval
+			}
 			select {
 			case <-ctx.Done():
 				return
-			case <-ticker.C:
+			case <-time.After(wait):
 				if err := c.Refresh(ctx); err != nil && ctx.Err() == nil {
 					c.log.Warn("reference refresh failed", "error", err)
 				}

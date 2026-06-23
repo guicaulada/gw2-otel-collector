@@ -33,6 +33,16 @@ type Emitter interface {
 	OnUnlocks(ctx context.Context, counts map[string]int)
 	OnTransactions(ctx context.Context, txs []gw2.Transaction, side string)
 	OnGuildLog(ctx context.Context, guildID string, entries []gw2.GuildLogEntry)
+	OnResets(ctx context.Context, kind string, count int)
+}
+
+// resetFamilies maps reset-cycle metric kinds to their account endpoints.
+var resetFamilies = []struct{ kind, path string }{
+	{"worldbosses", "account/worldbosses"},
+	{"dungeons", "account/dungeons"},
+	{"raids", "account/raids"},
+	{"mapchests", "account/mapchests"},
+	{"dailycrafting", "account/dailycrafting"},
 }
 
 // Poller drives scheduled polling of the GW2 API.
@@ -350,6 +360,22 @@ func (p *Poller) Start(ctx context.Context) {
 
 		acc := value.Compute(bank, materials, shared, chars, walletCopper, prices)
 		p.store.SetAccountValue(&acc, time.Now())
+		return nil
+	})
+
+	p.run(ctx, "resets", p.intervals.Resets, func(ctx context.Context) error {
+		counts := make(map[string]int, len(resetFamilies))
+		for _, rf := range resetFamilies {
+			ids, err := p.client.AccountStringList(ctx, rf.path, rf.path)
+			if err != nil {
+				return err
+			}
+			counts[rf.kind] = len(ids)
+			if p.emitter != nil {
+				p.emitter.OnResets(ctx, rf.kind, len(ids))
+			}
+		}
+		p.store.SetResets(counts, time.Now())
 		return nil
 	})
 
