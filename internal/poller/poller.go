@@ -35,17 +35,18 @@ type Emitter interface {
 
 // Poller drives scheduled polling of the GW2 API.
 type Poller struct {
-	client    *gw2.Client
-	store     *store.Store
-	emitter   Emitter
-	intervals config.Intervals
-	log       *slog.Logger
-	wg        sync.WaitGroup
+	client     *gw2.Client
+	store      *store.Store
+	emitter    Emitter
+	intervals  config.Intervals
+	trackItems []int
+	log        *slog.Logger
+	wg         sync.WaitGroup
 }
 
 // New returns a Poller. emitter may be nil to disable event emission.
-func New(client *gw2.Client, st *store.Store, emitter Emitter, intervals config.Intervals, log *slog.Logger) *Poller {
-	return &Poller{client: client, store: st, emitter: emitter, intervals: intervals, log: log}
+func New(client *gw2.Client, st *store.Store, emitter Emitter, intervals config.Intervals, trackItems []int, log *slog.Logger) *Poller {
+	return &Poller{client: client, store: st, emitter: emitter, intervals: intervals, trackItems: trackItems, log: log}
 }
 
 // Start launches one goroutine per family. It returns immediately; call Wait to
@@ -223,6 +224,14 @@ func (p *Poller) Start(ctx context.Context) {
 			DeliveryCoins:   delivery.Coins,
 			DeliveryItems:   int64(len(delivery.Items)),
 		}, time.Now())
+
+		if len(p.trackItems) > 0 {
+			prices, err := p.client.Prices(ctx, p.trackItems)
+			if err != nil {
+				return err
+			}
+			p.store.SetPrices(prices, time.Now())
+		}
 		return nil
 	})
 }

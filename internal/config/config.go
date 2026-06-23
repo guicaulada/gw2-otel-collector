@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -35,6 +36,9 @@ type Config struct {
 
 	// StatePath is the bbolt file for event watermarks and diff state.
 	StatePath string
+
+	// TrackItems are trading-post item ids to track prices for (GW2_TRACK_ITEMS).
+	TrackItems []int
 
 	// Per-family poll intervals (kept >= the server's documented cache TTL).
 	Intervals Intervals
@@ -87,6 +91,7 @@ func FromEnv() (*Config, error) {
 		ServiceInstance: env("OTEL_SERVICE_INSTANCE_ID", fmt.Sprintf("%s-%d", host, os.Getpid())),
 		ExportInterval:  envDuration("GW2_EXPORT_INTERVAL", 30*time.Second),
 		StatePath:       env("GW2_STATE_PATH", "state.db"),
+		TrackItems:      envInts("GW2_TRACK_ITEMS"),
 
 		Intervals: Intervals{
 			Account:      envDuration("GW2_INTERVAL_ACCOUNT", 5*time.Minute),
@@ -127,6 +132,21 @@ func envFloat(key string, def float64) float64 {
 		}
 	}
 	return def
+}
+
+// envInts parses a comma-separated list of ints (ignoring blanks/invalid).
+func envInts(key string) []int {
+	v := os.Getenv(key)
+	if v == "" {
+		return nil
+	}
+	var out []int
+	for _, p := range strings.Split(v, ",") {
+		if n, err := strconv.Atoi(strings.TrimSpace(p)); err == nil {
+			out = append(out, n)
+		}
+	}
+	return out
 }
 
 func envDuration(key string, def time.Duration) time.Duration {

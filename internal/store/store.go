@@ -53,6 +53,7 @@ type Store struct {
 	unlocks     map[string]int
 	guilds      []GuildInfo
 	pvp         *gw2.PvPStats
+	prices      []gw2.ItemPrice
 	lastSuccess map[string]time.Time
 }
 
@@ -201,6 +202,21 @@ func (s *Store) PvP() *gw2.PvPStats {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.pvp
+}
+
+// SetPrices stores the latest tracked-item prices.
+func (s *Store) SetPrices(p []gw2.ItemPrice, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.prices = p
+	s.lastSuccess["prices"] = at
+}
+
+// Prices returns the latest tracked-item prices.
+func (s *Store) Prices() []gw2.ItemPrice {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.prices
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

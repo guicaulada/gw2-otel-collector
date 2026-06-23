@@ -72,6 +72,25 @@ type Transaction struct {
 	Purchased string `json:"purchased"`
 }
 
+// ItemPrice is one entry of /v2/commerce/prices: aggregated best bid/ask.
+type ItemPrice struct {
+	ID   int `json:"id"`
+	Buys struct {
+		Quantity  int64 `json:"quantity"`
+		UnitPrice int64 `json:"unit_price"`
+	} `json:"buys"`
+	Sells struct {
+		Quantity  int64 `json:"quantity"`
+		UnitPrice int64 `json:"unit_price"`
+	} `json:"sells"`
+}
+
+// Item is the subset of /v2/items the collector uses (for id→name on tracked items).
+type Item struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 // Exchange is the response of /v2/commerce/exchange/{coins,gems}.
 type Exchange struct {
 	CoinsPerGem int64 `json:"coins_per_gem"`

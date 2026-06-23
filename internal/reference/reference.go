@@ -19,19 +19,21 @@ import (
 type data struct {
 	currencies map[int]string
 	totals     map[string]int // collection name -> total unlockable count
+	items      map[int]string // tracked item id -> name
 }
 
 // Cache holds the latest reference data and the build number it was built for.
 type Cache struct {
-	client *gw2.Client
-	log    *slog.Logger
-	d      atomic.Pointer[data]
-	build  atomic.Int64
+	client     *gw2.Client
+	log        *slog.Logger
+	trackItems []int // item ids to resolve names for
+	d          atomic.Pointer[data]
+	build      atomic.Int64
 }
 
-// New returns an empty Cache.
-func New(client *gw2.Client, log *slog.Logger) *Cache {
-	return &Cache{client: client, log: log}
+// New returns an empty Cache. trackItems are item ids whose names to resolve.
+func New(client *gw2.Client, log *slog.Logger, trackItems []int) *Cache {
+	return &Cache{client: client, log: log, trackItems: trackItems}
 }
 
 // CurrencyName resolves a currency id to its name, if loaded.
@@ -52,6 +54,16 @@ func (c *Cache) CollectionTotal(name string) (int, bool) {
 	}
 	total, ok := d.totals[name]
 	return total, ok
+}
+
+// ItemName resolves a tracked item id to its name, if loaded.
+func (c *Cache) ItemName(id int) (string, bool) {
+	d := c.d.Load()
+	if d == nil {
+		return "", false
+	}
+	name, ok := d.items[id]
+	return name, ok
 }
 
 // Refresh checks the game build number and, if it changed (or nothing is loaded
@@ -85,9 +97,22 @@ func (c *Cache) Refresh(ctx context.Context) error {
 		totals[col.Name] = n
 	}
 
-	c.d.Store(&data{currencies: m, totals: totals})
+	// Names for tracked items (static; refetched only on build change).
+	items := make(map[int]string, len(c.trackItems))
+	if len(c.trackItems) > 0 {
+		defs, err := c.client.Items(ctx, c.trackItems)
+		if err != nil {
+			return err
+		}
+		for _, it := range defs {
+			items[it.ID] = it.Name
+		}
+	}
+
+	c.d.Store(&data{currencies: m, totals: totals, items: items})
 	c.build.Store(int64(build))
-	c.log.Info("reference data refreshed", "build", build, "currencies", len(m), "collections", len(totals))
+	c.log.Info("reference data refreshed", "build", build,
+		"currencies", len(m), "collections", len(totals), "items", len(items))
 	return nil
 }
 

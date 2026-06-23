@@ -22,6 +22,7 @@ import (
 type Resolver interface {
 	CurrencyName(id int) (string, bool)
 	CollectionTotal(name string) (int, bool)
+	ItemName(id int) (string, bool)
 }
 
 // Register creates the gw2.* observable instruments and wires a single callback
@@ -242,6 +243,21 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.pvp.matches", err)
 	}
+	itemPrice, err := meter.Int64ObservableGauge("gw2.commerce.item.price",
+		metric.WithDescription("Tracked item best bid/ask in copper, by side"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.item.price", err)
+	}
+	itemSpread, err := meter.Int64ObservableGauge("gw2.commerce.item.spread",
+		metric.WithDescription("Tracked item sell-minus-buy spread in copper"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.item.spread", err)
+	}
+	itemFlipMargin, err := meter.Int64ObservableGauge("gw2.commerce.item.flip_margin",
+		metric.WithDescription("Tracked item flip margin in copper (sell*0.85 - buy)"))
+	if err != nil {
+		return nil, wrap("gw2.commerce.item.flip_margin", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -367,6 +383,24 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			}
 		}
 
+		for _, p := range st.Prices() {
+			base := []attribute.KeyValue{attribute.Int("gw2.item.id", p.ID)}
+			if resolver != nil {
+				if name, ok := resolver.ItemName(p.ID); ok {
+					base = append(base, attribute.String("gw2.item.name", name))
+				}
+			}
+			o.ObserveInt64(itemPrice, p.Buys.UnitPrice,
+				metric.WithAttributes(append(base, attribute.String("gw2.side", "buy"))...))
+			o.ObserveInt64(itemPrice, p.Sells.UnitPrice,
+				metric.WithAttributes(append(base, attribute.String("gw2.side", "sell"))...))
+			o.ObserveInt64(itemSpread, p.Sells.UnitPrice-p.Buys.UnitPrice,
+				metric.WithAttributes(base...))
+			// Flip margin nets the 15% trading-post tax off the sell price.
+			o.ObserveInt64(itemFlipMargin, int64(float64(p.Sells.UnitPrice)*0.85)-p.Buys.UnitPrice,
+				metric.WithAttributes(base...))
+		}
+
 		for family, ts := range st.LastSuccess() {
 			o.ObserveFloat64(lastSuccess, float64(ts.Unix()),
 				metric.WithAttributes(attribute.String("gw2.family", family)))
@@ -382,7 +416,8 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		bankUsed, bankCapacity, sharedUsed, sharedCapacity, materialCount,
 		unlocksCount, unlocksTotal,
 		guildLevel, guildMembers, guildCapacity, guildCurrency, guildUpgrades,
-		pvpRank, pvpRankPoints, pvpMatches, lastSuccess,
+		pvpRank, pvpRankPoints, pvpMatches,
+		itemPrice, itemSpread, itemFlipMargin, lastSuccess,
 	)
 }
 

@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -265,6 +266,42 @@ func (c *Client) CountIDs(ctx context.Context, path, label string) (int, error) 
 		return 0, err
 	}
 	return len(arr), nil
+}
+
+// Prices fetches aggregated best bid/ask for the given item ids
+// (/v2/commerce/prices?ids=). Public. Returns nil for an empty id list.
+func (c *Client) Prices(ctx context.Context, ids []int) ([]ItemPrice, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	var out []ItemPrice
+	params := url.Values{"ids": {joinInts(ids)}}
+	if err := c.get(ctx, "commerce/prices", "commerce/prices", params, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Items fetches item definitions for the given ids (/v2/items?ids=). Public,
+// static reference. Returns nil for an empty id list.
+func (c *Client) Items(ctx context.Context, ids []int) ([]Item, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	var out []Item
+	params := url.Values{"ids": {joinInts(ids)}}
+	if err := c.get(ctx, "items", "items", params, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func joinInts(ids []int) string {
+	parts := make([]string, len(ids))
+	for i, id := range ids {
+		parts[i] = strconv.Itoa(id)
+	}
+	return strings.Join(parts, ",")
 }
 
 // Build fetches the current game build number (/v2/build). Public endpoint; used

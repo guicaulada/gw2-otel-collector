@@ -38,7 +38,7 @@ func TestRefreshIsBuildGated(t *testing.T) {
 		t.Fatalf("NewClient: %v", err)
 	}
 
-	c := New(client, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	c := New(client, slog.New(slog.NewTextHandler(io.Discard, nil)), nil)
 	ctx := context.Background()
 
 	if err := c.Refresh(ctx); err != nil {
