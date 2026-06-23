@@ -18,6 +18,7 @@ import (
 // data is an immutable snapshot of reference tables. Never mutate after publish.
 type data struct {
 	currencies  map[int]string
+	materials   map[int]string // material storage category id -> name
 	totals      map[string]int // collection name -> total unlockable count
 	items       map[int]string // tracked item id -> name
 	questSeason map[int]string // quest id -> season name
@@ -45,6 +46,16 @@ func (c *Cache) CurrencyName(id int) (string, bool) {
 		return "", false
 	}
 	name, ok := d.currencies[id]
+	return name, ok
+}
+
+// MaterialCategoryName resolves a material storage category id to its name, if loaded.
+func (c *Cache) MaterialCategoryName(id int) (string, bool) {
+	d := c.d.Load()
+	if d == nil {
+		return "", false
+	}
+	name, ok := d.materials[id]
 	return name, ok
 }
 
@@ -108,6 +119,15 @@ func (c *Cache) Refresh(ctx context.Context) error {
 		m[cur.ID] = cur.Name
 	}
 
+	mats, err := c.client.MaterialCategories(ctx)
+	if err != nil {
+		return err
+	}
+	materials := make(map[int]string, len(mats))
+	for _, mat := range mats {
+		materials[mat.ID] = mat.Name
+	}
+
 	// Collection totals: the length of each reference index endpoint.
 	totals := make(map[string]int, len(gw2.Collections))
 	for _, col := range gw2.Collections {
@@ -165,13 +185,13 @@ func (c *Cache) Refresh(ctx context.Context) error {
 	}
 
 	c.d.Store(&data{
-		currencies: m, totals: totals, items: items,
+		currencies: m, materials: materials, totals: totals, items: items,
 		questSeason: questSeason, seasonTotal: seasonTotal,
 	})
 	c.build.Store(int64(build))
 	c.log.Info("reference data refreshed", "build", build,
-		"currencies", len(m), "collections", len(totals), "items", len(items),
-		"quests", len(questSeason), "seasons", len(seasonTotal))
+		"currencies", len(m), "materials", len(materials), "collections", len(totals),
+		"items", len(items), "quests", len(questSeason), "seasons", len(seasonTotal))
 	return nil
 }
 

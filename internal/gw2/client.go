@@ -531,6 +531,17 @@ func (c *Client) Currencies(ctx context.Context) ([]Currency, error) {
 	return out, nil
 }
 
+// MaterialCategories fetches all material storage category definitions
+// (/v2/materials?ids=all). Public, static reference data.
+func (c *Client) MaterialCategories(ctx context.Context) ([]Material, error) {
+	var out []Material
+	params := url.Values{"ids": {"all"}}
+	if err := c.get(ctx, "materials", "materials", params, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // get fetches a path, retrying 429/5xx with jittered backoff, and decodes JSON
 // into dest. endpoint is the low-cardinality label used for self-obs metrics.
 func (c *Client) get(ctx context.Context, path, endpoint string, params url.Values, dest any) error {

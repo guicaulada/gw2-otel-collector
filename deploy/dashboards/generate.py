@@ -155,7 +155,7 @@ def wealth():
                        "expr": 'max by (gw2_item_name) (gw2_commerce_item_demand)'}]), 12, 8)
     g.row()
     g.add(bargauge("Material storage value by category (gold)",
-                   "gw2_account_material_value / 10000", "category {{gw2_material_category}}", unit="none"), 24, 8)
+                   "gw2_account_material_value / 10000", "{{gw2_material_category_name}}", unit="none"), 24, 8)
     return dashboard("gw2-wealth", "GW2 Wealth & Economy", g)
 
 

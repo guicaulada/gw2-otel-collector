@@ -145,6 +145,13 @@ type Currency struct {
 	Name string `json:"name"`
 }
 
+// Material is one entry of the static /v2/materials reference endpoint: a
+// material storage category and its display name.
+type Material struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 // Transaction is one entry of /v2/commerce/transactions/history/{buys,sells}.
 type Transaction struct {
 	ID        int64  `json:"id"`

@@ -23,6 +23,8 @@ func TestRefreshIsBuildGated(t *testing.T) {
 		case "/currencies":
 			currencyCalls.Add(1)
 			_, _ = io.WriteString(w, `[{"id":1,"name":"Coin"},{"id":2,"name":"Karma"}]`)
+		case "/materials":
+			_, _ = io.WriteString(w, `[{"id":5,"name":"Cooking Materials"},{"id":6,"name":"Wood"}]`)
 		case "/quests":
 			_, _ = io.WriteString(w, `[{"id":10,"story":1},{"id":11,"story":1}]`)
 		case "/stories":
@@ -52,6 +54,9 @@ func TestRefreshIsBuildGated(t *testing.T) {
 	}
 	if name, ok := c.CurrencyName(1); !ok || name != "Coin" {
 		t.Errorf("CurrencyName(1) = (%q, %v)", name, ok)
+	}
+	if name, ok := c.MaterialCategoryName(5); !ok || name != "Cooking Materials" {
+		t.Errorf("MaterialCategoryName(5) = (%q, %v), want (Cooking Materials, true)", name, ok)
 	}
 	if total, ok := c.CollectionTotal("skins"); !ok || total != 3 {
 		t.Errorf("CollectionTotal(skins) = (%d, %v), want (3, true)", total, ok)

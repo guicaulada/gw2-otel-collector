@@ -23,6 +23,7 @@ import (
 // The reference cache implements it; a nil resolver omits the enrichment.
 type Resolver interface {
 	CurrencyName(id int) (string, bool)
+	MaterialCategoryName(id int) (string, bool)
 	CollectionTotal(name string) (int, bool)
 	ItemName(id int) (string, bool)
 	QuestSeason(id int) (string, bool)
@@ -556,7 +557,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			o.ObserveInt64(sharedCapacity, s.SharedCapacity)
 			for category, count := range s.MaterialsByCategory {
 				o.ObserveInt64(materialCount, count,
-					metric.WithAttributes(attribute.Int("gw2.material.category", category)))
+					metric.WithAttributes(materialCategoryAttrs(resolver, category)...))
 			}
 		}
 
@@ -760,7 +761,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			}
 			for category, copper := range v.MaterialCategory {
 				o.ObserveInt64(materialValue, copper,
-					metric.WithAttributes(attribute.Int("gw2.material.category", category)))
+					metric.WithAttributes(materialCategoryAttrs(resolver, category)...))
 			}
 		}
 
@@ -797,4 +798,16 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 
 func wrap(name string, err error) error {
 	return fmt.Errorf("create instrument %s: %w", name, err)
+}
+
+// materialCategoryAttrs builds the attribute set for a material storage category,
+// enriching with the resolved category name when the reference cache is loaded.
+func materialCategoryAttrs(resolver Resolver, category int) []attribute.KeyValue {
+	attrs := []attribute.KeyValue{attribute.Int("gw2.material.category", category)}
+	if resolver != nil {
+		if name, ok := resolver.MaterialCategoryName(category); ok {
+			attrs = append(attrs, attribute.String("gw2.material.category.name", name))
+		}
+	}
+	return attrs
 }

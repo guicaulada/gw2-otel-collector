@@ -1389,7 +1389,7 @@
                       },
                       "spec": {
                         "expr": "gw2_account_material_value / 10000",
-                        "legendFormat": "category {{gw2_material_category}}",
+                        "legendFormat": "{{gw2_material_category_name}}",
                         "instant": true,
                         "range": false
                       }
