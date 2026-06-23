@@ -1,6 +1,6 @@
 {
-  "uid": "gw2-overview",
-  "title": "GW2 Overview",
+  "uid": "gw2-wealth",
+  "title": "GW2 Wealth & Economy",
   "tags": [
     "gw2"
   ],
@@ -18,7 +18,7 @@
   "panels": [
     {
       "type": "stat",
-      "title": "Account Value (gold)",
+      "title": "Total value (gold)",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -54,7 +54,49 @@
       "gridPos": {
         "x": 0,
         "y": 0,
-        "w": 4,
+        "w": 5,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Liquid sell (gold, -15%)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(max(gw2_account_value{gw2_component=\"total\",gw2_basis=\"sell\"}) * 0.85) / 10000",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "id": 2,
+      "gridPos": {
+        "x": 5,
+        "y": 0,
+        "w": 5,
         "h": 4
       }
     },
@@ -92,17 +134,17 @@
           }
         }
       ],
-      "id": 2,
+      "id": 3,
       "gridPos": {
-        "x": 4,
+        "x": 10,
         "y": 0,
-        "w": 4,
+        "w": 5,
         "h": 4
       }
     },
     {
       "type": "stat",
-      "title": "Characters",
+      "title": "Gems",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -126,16 +168,16 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(gw2_account_characters)",
+          "expr": "max(gw2_account_wallet_balance{gw2_currency_name=\"Gem\"})",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           }
         }
       ],
-      "id": 3,
+      "id": 4,
       "gridPos": {
-        "x": 8,
+        "x": 15,
         "y": 0,
         "w": 4,
         "h": 4
@@ -143,7 +185,7 @@
     },
     {
       "type": "stat",
-      "title": "Playtime (h)",
+      "title": "Delivery (gold)",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -154,7 +196,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 1
+          "decimals": 2
         },
         "overrides": []
       },
@@ -168,48 +210,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(max by (gw2_character_name) (gw2_character_playtime_seconds_total)) / 3600",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 4,
-      "gridPos": {
-        "x": 12,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Daily AP",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(gw2_account_achievement_points{gw2_period=\"daily\"})",
+          "expr": "(max(gw2_commerce_delivery_coins)) / 10000",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -218,50 +219,9 @@
       ],
       "id": 5,
       "gridPos": {
-        "x": 16,
+        "x": 19,
         "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Luck",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(gw2_account_luck_total)",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 6,
-      "gridPos": {
-        "x": 20,
-        "y": 0,
-        "w": 4,
+        "w": 5,
         "h": 4
       }
     },
@@ -305,29 +265,171 @@
           "legendFormat": "{{gw2_component}}"
         }
       ],
-      "id": 7,
+      "id": 6,
       "gridPos": {
         "x": 0,
         "y": 4,
         "w": 12,
-        "h": 9
+        "h": 8
       }
     },
     {
-      "type": "bargauge",
-      "title": "Collection completion %",
+      "type": "timeseries",
+      "title": "Total value: buy vs sell (gold)",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
+          "unit": "none",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(max(gw2_account_value{gw2_component=\"total\",gw2_basis=\"buy\"})) / 10000",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "buy"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "sell",
+          "expr": "(max(gw2_account_value{gw2_component=\"total\",gw2_basis=\"sell\"})) / 10000"
+        }
+      ],
+      "id": 7,
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Gem / coin exchange rate (copper per gem)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_direction) (gw2_commerce_exchange_coins_per_gem)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_direction}}"
+        }
+      ],
+      "id": 8,
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Wallet balances (top 8)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(8, max by (gw2_currency_name) (gw2_account_wallet_balance))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_currency_name}}"
+        }
+      ],
+      "id": 9,
+      "gridPos": {
+        "x": 12,
+        "y": 12,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Tracked item flip margin (copper)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
           "color": {
             "mode": "continuous-GrYlRd"
-          },
-          "min": 0,
-          "max": 100
+          }
         },
         "overrides": []
       },
@@ -341,21 +443,66 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / max by (gw2_collection) (gw2_account_unlocks_total)",
+          "expr": "max by (gw2_item_name) (gw2_commerce_item_flip_margin)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "legendFormat": "{{gw2_collection}}",
+          "legendFormat": "{{gw2_item_name}}",
           "instant": true
         }
       ],
-      "id": 8,
+      "id": 10,
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Tracked item prices (copper)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_item_name, gw2_side) (gw2_commerce_item_price)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_item_name}} {{gw2_side}}"
+        }
+      ],
+      "id": 11,
       "gridPos": {
         "x": 12,
-        "y": 4,
+        "y": 20,
         "w": 12,
-        "h": 9
+        "h": 8
       }
     }
   ]

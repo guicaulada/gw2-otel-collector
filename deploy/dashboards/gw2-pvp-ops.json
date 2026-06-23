@@ -1,6 +1,6 @@
 {
-  "uid": "gw2-overview",
-  "title": "GW2 Overview",
+  "uid": "gw2-pvp-ops",
+  "title": "GW2 PvP & Collector Health",
   "tags": [
     "gw2"
   ],
@@ -18,7 +18,7 @@
   "panels": [
     {
       "type": "stat",
-      "title": "Account Value (gold)",
+      "title": "PvP rank",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -28,8 +28,7 @@
           "unit": "none",
           "color": {
             "mode": "thresholds"
-          },
-          "decimals": 1
+          }
         },
         "overrides": []
       },
@@ -43,7 +42,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(max(gw2_account_value{gw2_component=\"total\",gw2_basis=\"sell\"})) / 10000",
+          "expr": "max(gw2_pvp_rank)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -60,7 +59,7 @@
     },
     {
       "type": "stat",
-      "title": "Gold",
+      "title": "Rank points",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -70,8 +69,7 @@
           "unit": "none",
           "color": {
             "mode": "thresholds"
-          },
-          "decimals": 2
+          }
         },
         "overrides": []
       },
@@ -85,7 +83,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(max(gw2_account_wallet_balance{gw2_currency_name=\"Coin\"})) / 10000",
+          "expr": "max(gw2_pvp_rank_points)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -102,7 +100,7 @@
     },
     {
       "type": "stat",
-      "title": "Characters",
+      "title": "Wins",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -126,7 +124,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(gw2_account_characters)",
+          "expr": "max(gw2_pvp_matches_total{gw2_outcome=\"win\"})",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -143,7 +141,7 @@
     },
     {
       "type": "stat",
-      "title": "Playtime (h)",
+      "title": "Losses",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -151,6 +149,47 @@
       "fieldConfig": {
         "defaults": {
           "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(gw2_pvp_matches_total{gw2_outcome=\"loss\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "id": 4,
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Win rate %",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
           "color": {
             "mode": "thresholds"
           },
@@ -168,48 +207,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(max by (gw2_character_name) (gw2_character_playtime_seconds_total)) / 3600",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 4,
-      "gridPos": {
-        "x": 12,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Daily AP",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(gw2_account_achievement_points{gw2_period=\"daily\"})",
+          "expr": "100 * max(gw2_pvp_matches_total{gw2_outcome=\"win\"}) / clamp_min(max(gw2_pvp_matches_total{gw2_outcome=\"win\"}) + max(gw2_pvp_matches_total{gw2_outcome=\"loss\"}), 1)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -220,54 +218,13 @@
       "gridPos": {
         "x": 16,
         "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Luck",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(gw2_account_luck_total)",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 6,
-      "gridPos": {
-        "x": 20,
-        "y": 0,
-        "w": 4,
+        "w": 8,
         "h": 4
       }
     },
     {
       "type": "timeseries",
-      "title": "Account value by component (sell, gold)",
+      "title": "PvP matches by outcome",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -276,11 +233,8 @@
         "defaults": {
           "unit": "none",
           "custom": {
-            "fillOpacity": 40,
-            "showPoints": "never",
-            "stacking": {
-              "mode": "normal"
-            }
+            "fillOpacity": 15,
+            "showPoints": "never"
           }
         },
         "overrides": []
@@ -297,64 +251,169 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(max by (gw2_component) (gw2_account_value{gw2_basis=\"sell\",gw2_component!=\"total\"})) / 10000",
+          "expr": "max by (gw2_outcome) (gw2_pvp_matches_total)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "legendFormat": "{{gw2_component}}"
+          "legendFormat": "{{gw2_outcome}}"
         }
       ],
-      "id": 7,
+      "id": 6,
       "gridPos": {
         "x": 0,
         "y": 4,
-        "w": 12,
-        "h": 9
+        "w": 24,
+        "h": 7
       }
     },
     {
-      "type": "bargauge",
-      "title": "Collection completion %",
+      "type": "timeseries",
+      "title": "API request rate (req/s) by endpoint",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
-          "color": {
-            "mode": "continuous-GrYlRd"
-          },
-          "min": 0,
-          "max": 100
+          "unit": "reqps",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
         },
         "overrides": []
       },
       "options": {
-        "orientation": "horizontal",
-        "displayMode": "gradient",
-        "reduceOptions": {
-          "calc": "lastNotNull"
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
         }
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / max by (gw2_collection) (gw2_account_unlocks_total)",
+          "expr": "sum by (gw2_endpoint) (rate(gw2_api_requests_total[5m]))",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "legendFormat": "{{gw2_collection}}",
-          "instant": true
+          "legendFormat": "{{gw2_endpoint}}"
+        }
+      ],
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "API request p95 latency (s)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(gw2_api_request_duration_seconds_bucket[5m])))",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "p95"
         }
       ],
       "id": 8,
       "gridPos": {
         "x": 12,
-        "y": 4,
+        "y": 11,
         "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "table",
+      "title": "Seconds since last successful poll",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "instant": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "time() - max by (gw2_family) (gw2_poll_last_success_timestamp_seconds)"
+        }
+      ],
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 8,
+        "h": 9
+      }
+    },
+    {
+      "type": "logs",
+      "title": "Recent events",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{service_name=\"gw2-otel-collector\"}",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          }
+        }
+      ],
+      "id": 10,
+      "gridPos": {
+        "x": 8,
+        "y": 19,
+        "w": 16,
         "h": 9
       }
     }

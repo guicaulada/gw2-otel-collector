@@ -1,6 +1,6 @@
 {
-  "uid": "gw2-overview",
-  "title": "GW2 Overview",
+  "uid": "gw2-progression",
+  "title": "GW2 Progression",
   "tags": [
     "gw2"
   ],
@@ -16,173 +16,6 @@
     "list": []
   },
   "panels": [
-    {
-      "type": "stat",
-      "title": "Account Value (gold)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 1
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(max(gw2_account_value{gw2_component=\"total\",gw2_basis=\"sell\"})) / 10000",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 1,
-      "gridPos": {
-        "x": 0,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Gold",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 2
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(max(gw2_account_wallet_balance{gw2_currency_name=\"Coin\"})) / 10000",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 2,
-      "gridPos": {
-        "x": 4,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Characters",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(gw2_account_characters)",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 3,
-      "gridPos": {
-        "x": 8,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Playtime (h)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 1
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "sum(max by (gw2_character_name) (gw2_character_playtime_seconds_total)) / 3600",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 4,
-      "gridPos": {
-        "x": 12,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
     {
       "type": "stat",
       "title": "Daily AP",
@@ -216,9 +49,9 @@
           }
         }
       ],
-      "id": 5,
+      "id": 1,
       "gridPos": {
-        "x": 16,
+        "x": 0,
         "y": 0,
         "w": 4,
         "h": 4
@@ -226,7 +59,7 @@
     },
     {
       "type": "stat",
-      "title": "Luck",
+      "title": "Monthly AP",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -250,7 +83,173 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(gw2_account_luck_total)",
+          "expr": "max(gw2_account_achievement_points{gw2_period=\"monthly\"})",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "id": 2,
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Magic Find %",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "clamp_max(max(gw2_account_luck_total) * 300 / 4295450, 300)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "id": 3,
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Fractal level",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(gw2_account_fractal_level)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "id": 4,
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Masteries unlocked",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(gw2_account_masteries_unlocked)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "id": 5,
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Played (days, /age)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max(gw2_account_age_seconds_total) / 86400",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -267,7 +266,7 @@
     },
     {
       "type": "timeseries",
-      "title": "Account value by component (sell, gold)",
+      "title": "Luck consumed",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -276,11 +275,8 @@
         "defaults": {
           "unit": "none",
           "custom": {
-            "fillOpacity": 40,
-            "showPoints": "never",
-            "stacking": {
-              "mode": "normal"
-            }
+            "fillOpacity": 15,
+            "showPoints": "never"
           }
         },
         "overrides": []
@@ -297,12 +293,12 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "(max by (gw2_component) (gw2_account_value{gw2_basis=\"sell\",gw2_component!=\"total\"})) / 10000",
+          "expr": "max(gw2_account_luck_total)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "legendFormat": "{{gw2_component}}"
+          "legendFormat": "luck"
         }
       ],
       "id": 7,
@@ -310,12 +306,57 @@
         "x": 0,
         "y": 4,
         "w": 12,
-        "h": 9
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Wizard's Vault objectives completed",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "fillOpacity": 15,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_period) (gw2_wizardsvault_objectives_completed)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_period}}"
+        }
+      ],
+      "id": 8,
+      "gridPos": {
+        "x": 12,
+        "y": 4,
+        "w": 12,
+        "h": 8
       }
     },
     {
       "type": "bargauge",
-      "title": "Collection completion %",
+      "title": "Story completion % by season",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -341,19 +382,59 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / max by (gw2_collection) (gw2_account_unlocks_total)",
+          "expr": "100 * max by (gw2_season) (gw2_story_quests_completed) / max by (gw2_season) (gw2_story_quests_total)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "legendFormat": "{{gw2_collection}}",
+          "legendFormat": "{{gw2_season}}",
           "instant": true
         }
       ],
-      "id": 8,
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "table",
+      "title": "Mastery points by region",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "earned",
+          "format": "table",
+          "instant": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (gw2_region) (gw2_account_mastery_points_earned_total)"
+        },
+        {
+          "refId": "spent",
+          "format": "table",
+          "instant": true,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (gw2_region) (gw2_account_mastery_points_spent)"
+        }
+      ],
+      "id": 10,
       "gridPos": {
         "x": 12,
-        "y": 4,
+        "y": 12,
         "w": 12,
         "h": 9
       }

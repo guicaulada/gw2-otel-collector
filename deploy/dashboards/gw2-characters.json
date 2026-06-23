@@ -1,6 +1,6 @@
 {
-  "uid": "gw2-overview",
-  "title": "GW2 Overview",
+  "uid": "gw2-characters",
+  "title": "GW2 Characters",
   "tags": [
     "gw2"
   ],
@@ -16,90 +16,6 @@
     "list": []
   },
   "panels": [
-    {
-      "type": "stat",
-      "title": "Account Value (gold)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 1
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(max(gw2_account_value{gw2_component=\"total\",gw2_basis=\"sell\"})) / 10000",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 1,
-      "gridPos": {
-        "x": 0,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Gold",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 2
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(max(gw2_account_wallet_balance{gw2_currency_name=\"Coin\"})) / 10000",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 2,
-      "gridPos": {
-        "x": 4,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
     {
       "type": "stat",
       "title": "Characters",
@@ -133,17 +49,17 @@
           }
         }
       ],
-      "id": 3,
+      "id": 1,
       "gridPos": {
-        "x": 8,
+        "x": 0,
         "y": 0,
-        "w": 4,
+        "w": 8,
         "h": 4
       }
     },
     {
       "type": "stat",
-      "title": "Playtime (h)",
+      "title": "Total playtime (h)",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -175,17 +91,17 @@
           }
         }
       ],
-      "id": 4,
+      "id": 2,
       "gridPos": {
-        "x": 12,
+        "x": 8,
         "y": 0,
-        "w": 4,
+        "w": 8,
         "h": 4
       }
     },
     {
       "type": "stat",
-      "title": "Daily AP",
+      "title": "Total deaths",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -209,125 +125,36 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "max(gw2_account_achievement_points{gw2_period=\"daily\"})",
+          "expr": "sum(max by (gw2_character_name) (gw2_character_deaths_total))",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           }
         }
       ],
-      "id": 5,
+      "id": 3,
       "gridPos": {
         "x": 16,
         "y": 0,
-        "w": 4,
+        "w": 8,
         "h": 4
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Luck",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "color": {
-            "mode": "thresholds"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "reduceOptions": {
-          "calc": "lastNotNull"
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "max(gw2_account_luck_total)",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          }
-        }
-      ],
-      "id": 6,
-      "gridPos": {
-        "x": 20,
-        "y": 0,
-        "w": 4,
-        "h": 4
-      }
-    },
-    {
-      "type": "timeseries",
-      "title": "Account value by component (sell, gold)",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "none",
-          "custom": {
-            "fillOpacity": 40,
-            "showPoints": "never",
-            "stacking": {
-              "mode": "normal"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "calcs": [
-            "lastNotNull"
-          ]
-        }
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "expr": "(max by (gw2_component) (gw2_account_value{gw2_basis=\"sell\",gw2_component!=\"total\"})) / 10000",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "legendFormat": "{{gw2_component}}"
-        }
-      ],
-      "id": 7,
-      "gridPos": {
-        "x": 0,
-        "y": 4,
-        "w": 12,
-        "h": 9
       }
     },
     {
       "type": "bargauge",
-      "title": "Collection completion %",
+      "title": "Level by character",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
+          "unit": "none",
           "color": {
             "mode": "continuous-GrYlRd"
           },
           "min": 0,
-          "max": 100
+          "max": 80
         },
         "overrides": []
       },
@@ -341,21 +168,107 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / max by (gw2_collection) (gw2_account_unlocks_total)",
+          "expr": "max by (gw2_character_name) (gw2_character_level)",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "legendFormat": "{{gw2_collection}}",
+          "legendFormat": "{{gw2_character_name}}",
           "instant": true
         }
       ],
-      "id": 8,
+      "id": 4,
       "gridPos": {
-        "x": 12,
+        "x": 0,
         "y": 4,
-        "w": 12,
-        "h": 9
+        "w": 8,
+        "h": 10
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Playtime by character (h)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_character_name) (gw2_character_playtime_seconds_total) / 3600",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_character_name}}",
+          "instant": true
+        }
+      ],
+      "id": 5,
+      "gridPos": {
+        "x": 8,
+        "y": 4,
+        "w": 8,
+        "h": 10
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Deaths by character",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "color": {
+            "mode": "continuous-GrYlRd"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calc": "lastNotNull"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (gw2_character_name) (gw2_character_deaths_total)",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "{{gw2_character_name}}",
+          "instant": true
+        }
+      ],
+      "id": 6,
+      "gridPos": {
+        "x": 16,
+        "y": 4,
+        "w": 8,
+        "h": 10
       }
     }
   ]
