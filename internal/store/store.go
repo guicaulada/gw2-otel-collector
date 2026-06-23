@@ -57,6 +57,12 @@ type Storage struct {
 	MaterialsByCategory        map[int]int64
 }
 
+// Wardrobe is the unlocked-skins/dyes breakdown by static attribute.
+type Wardrobe struct {
+	Skins map[string]map[string]int // type -> rarity -> count
+	Dyes  map[string]int            // rarity -> count
+}
+
 // Store is a concurrency-safe cache of the latest snapshot per family.
 type Store struct {
 	mu             sync.RWMutex
@@ -77,6 +83,7 @@ type Store struct {
 	achievements   *Achievements
 	resets         map[string]int // reset kind -> count completed since reset
 	wvw            *WvW
+	wardrobe       *Wardrobe
 	lastSuccess    map[string]time.Time
 }
 
@@ -232,6 +239,21 @@ func (s *Store) Unlocks() map[string]int {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.unlocks
+}
+
+// SetWardrobe stores the latest skin/dye breakdown.
+func (s *Store) SetWardrobe(w *Wardrobe, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.wardrobe = w
+	s.lastSuccess["wardrobe"] = at
+}
+
+// Wardrobe returns the latest skin/dye breakdown.
+func (s *Store) Wardrobe() *Wardrobe {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.wardrobe
 }
 
 // SetGuilds stores the latest guild snapshots.

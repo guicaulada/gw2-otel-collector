@@ -504,6 +504,70 @@ func (p *Poller) Start(ctx context.Context) {
 		return nil
 	})
 
+	// Wardrobe breakdown: unlocked skins/dyes bucketed by static type/rarity.
+	// Definitions are cached process-lifetime; only newly-unlocked ids are fetched.
+	skinMeta := map[int]gw2.Skin{} // skin id -> type/rarity
+	dyeRarity := map[int]string{}  // dye id -> rarity tier
+	p.run(ctx, "wardrobe", p.intervals.Wardrobe, func(ctx context.Context) error {
+		skinIDs, err := p.client.AccountIntList(ctx, "account/skins")
+		if err != nil {
+			return err
+		}
+		var missingSkins []int
+		for _, id := range skinIDs {
+			if _, ok := skinMeta[id]; !ok {
+				missingSkins = append(missingSkins, id)
+			}
+		}
+		if len(missingSkins) > 0 {
+			defs, err := p.client.SkinsByIDs(ctx, missingSkins)
+			if err != nil {
+				return err
+			}
+			for _, d := range defs {
+				skinMeta[d.ID] = d
+			}
+		}
+		skins := map[string]map[string]int{}
+		for _, id := range skinIDs {
+			m, ok := skinMeta[id]
+			if !ok {
+				continue // def not returned (e.g. hidden skin) — skip
+			}
+			if skins[m.Type] == nil {
+				skins[m.Type] = map[string]int{}
+			}
+			skins[m.Type][m.Rarity]++
+		}
+
+		dyeIDs, err := p.client.AccountIntList(ctx, "account/dyes")
+		if err != nil {
+			return err
+		}
+		var missingDyes []int
+		for _, id := range dyeIDs {
+			if _, ok := dyeRarity[id]; !ok {
+				missingDyes = append(missingDyes, id)
+			}
+		}
+		if len(missingDyes) > 0 {
+			defs, err := p.client.ColorsByIDs(ctx, missingDyes)
+			if err != nil {
+				return err
+			}
+			for _, d := range defs {
+				dyeRarity[d.ID] = colorRarity(d.Categories)
+			}
+		}
+		dyes := map[string]int{}
+		for _, id := range dyeIDs {
+			dyes[dyeRarity[id]]++
+		}
+
+		p.store.SetWardrobe(&store.Wardrobe{Skins: skins, Dyes: dyes}, time.Now())
+		return nil
+	})
+
 	p.run(ctx, "transactions", p.intervals.Transactions, func(ctx context.Context) error {
 		if p.emitter == nil {
 			return nil
@@ -564,6 +628,22 @@ func (p *Poller) Start(ctx context.Context) {
 
 // Wait blocks until all polling goroutines have exited.
 func (p *Poller) Wait() { p.wg.Wait() }
+
+// colorRarityTiers is the set of dye rarity categories the API uses; a color's
+// categories array carries exactly one of these alongside hue/material tags.
+var colorRarityTiers = map[string]bool{
+	"Starter": true, "Common": true, "Uncommon": true, "Rare": true, "Exclusive": true,
+}
+
+// colorRarity extracts the rarity tier from a dye's categories, or "Unknown".
+func colorRarity(categories []string) string {
+	for _, c := range categories {
+		if colorRarityTiers[c] {
+			return c
+		}
+	}
+	return "Unknown"
+}
 
 // achievementPoints computes AP earned for one achievement: tier points for
 // every tier reached (all tiers when done), plus repeatable completions capped

@@ -152,6 +152,20 @@ type Material struct {
 	Name string `json:"name"`
 }
 
+// Skin is the subset of /v2/skins used to bucket the wardrobe by type/rarity.
+type Skin struct {
+	ID     int    `json:"id"`
+	Type   string `json:"type"`   // Armor / Weapon / Back / Gathering
+	Rarity string `json:"rarity"` // Basic / Fine / ... / Legendary
+}
+
+// Color is the subset of /v2/colors used to bucket dyes. One of its categories
+// is the rarity tier (Starter / Common / Uncommon / Rare / Exclusive).
+type Color struct {
+	ID         int      `json:"id"`
+	Categories []string `json:"categories"`
+}
+
 // Transaction is one entry of /v2/commerce/transactions/history/{buys,sells}.
 type Transaction struct {
 	ID        int64  `json:"id"`

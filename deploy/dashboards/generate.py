@@ -210,6 +210,15 @@ def collections():
                   "expr": "max by (gw2_collection) (gw2_account_unlocks_count)"},
                  {"refId": "total", "format": "table", "instant": True, "datasource": PROM,
                   "expr": "max by (gw2_collection) (gw2_account_unlocks_total)"}]), 12, 12)
+    g.row()
+    g.add(bargauge("Unlocked skins by type",
+                   "sum by (gw2_skin_type) (max by (gw2_skin_type, gw2_rarity) (gw2_wardrobe_skins))",
+                   "{{gw2_skin_type}}"), 8, 8)
+    g.add(timeseries("Unlocked skins by rarity",
+                     [target("sum by (gw2_rarity) (max by (gw2_skin_type, gw2_rarity) (gw2_wardrobe_skins))",
+                             "{{gw2_rarity}}")], stack=True), 8, 8)
+    g.add(bargauge("Unlocked dyes by rarity",
+                   "max by (gw2_rarity) (gw2_wardrobe_dyes)", "{{gw2_rarity}}"), 8, 8)
     return dashboard("gw2-collections", "GW2 Collections", g)
 
 

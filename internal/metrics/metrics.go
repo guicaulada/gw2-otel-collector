@@ -460,6 +460,18 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.account.material.value", err)
 	}
+	wardrobeSkins, err := meter.Int64ObservableGauge("gw2.wardrobe.skins",
+		metric.WithUnit("{skin}"),
+		metric.WithDescription("Unlocked skins, by type and rarity"))
+	if err != nil {
+		return nil, wrap("gw2.wardrobe.skins", err)
+	}
+	wardrobeDyes, err := meter.Int64ObservableGauge("gw2.wardrobe.dyes",
+		metric.WithUnit("{dye}"),
+		metric.WithDescription("Unlocked dyes, by rarity"))
+	if err != nil {
+		return nil, wrap("gw2.wardrobe.dyes", err)
+	}
 	wvwMapScore, err := meter.Int64ObservableGauge("gw2.wvw.map.score",
 		metric.WithDescription("WvW per-map score, by map and team"))
 	if err != nil {
@@ -558,6 +570,20 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 			for category, count := range s.MaterialsByCategory {
 				o.ObserveInt64(materialCount, count,
 					metric.WithAttributes(materialCategoryAttrs(resolver, category)...))
+			}
+		}
+
+		if w := st.Wardrobe(); w != nil {
+			for typ, byRarity := range w.Skins {
+				for rarity, n := range byRarity {
+					o.ObserveInt64(wardrobeSkins, int64(n), metric.WithAttributes(
+						attribute.String("gw2.skin.type", typ),
+						attribute.String("gw2.rarity", rarity)))
+				}
+			}
+			for rarity, n := range w.Dyes {
+				o.ObserveInt64(wardrobeDyes, int64(n),
+					metric.WithAttributes(attribute.String("gw2.rarity", rarity)))
 			}
 		}
 
@@ -792,6 +818,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		pvpProfMatches, pvpLadderMatches, pvpStanding, charInvSlots, charCreated,
 		itemSupply, itemDemand, ordersValue, ordersCount,
 		materialValue, wvwMapScore, wvwMapKills,
+		wardrobeSkins, wardrobeDyes,
 		lastSuccess,
 	)
 }

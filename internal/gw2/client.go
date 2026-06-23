@@ -403,6 +403,56 @@ func (c *Client) PvPStandings(ctx context.Context) ([]PvPStanding, error) {
 	return out, nil
 }
 
+// AccountIntList fetches an account endpoint returning a JSON array of integer
+// ids (account/skins, account/dyes — the unlocked wardrobe sets).
+func (c *Client) AccountIntList(ctx context.Context, path string) ([]int, error) {
+	var out []int
+	if err := c.get(ctx, path, path, nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SkinsByIDs fetches skin definitions for the given ids, batched 200 at a time.
+// Public, static reference data (type/rarity never change for a skin id).
+func (c *Client) SkinsByIDs(ctx context.Context, ids []int) ([]Skin, error) {
+	var out []Skin
+	const batch = 200
+	for i := 0; i < len(ids); i += batch {
+		end := i + batch
+		if end > len(ids) {
+			end = len(ids)
+		}
+		var defs []Skin
+		params := url.Values{"ids": {joinInts(ids[i:end])}}
+		if err := c.get(ctx, "skins", "skins", params, &defs); err != nil {
+			return nil, err
+		}
+		out = append(out, defs...)
+	}
+	return out, nil
+}
+
+// ColorsByIDs fetches color (dye) definitions for the given ids, batched 200 at
+// a time. Public, static reference data.
+func (c *Client) ColorsByIDs(ctx context.Context, ids []int) ([]Color, error) {
+	var out []Color
+	const batch = 200
+	for i := 0; i < len(ids); i += batch {
+		end := i + batch
+		if end > len(ids) {
+			end = len(ids)
+		}
+		var defs []Color
+		params := url.Values{"ids": {joinInts(ids[i:end])}}
+		if err := c.get(ctx, "colors", "colors", params, &defs); err != nil {
+			return nil, err
+		}
+		out = append(out, defs...)
+	}
+	return out, nil
+}
+
 // PvPGames fetches /v2/pvp/games?ids=all — the account's last ~10 matches as
 // full objects (the list is small enough to request all at once).
 func (c *Client) PvPGames(ctx context.Context) ([]PvPGame, error) {
