@@ -338,6 +338,18 @@ func (p *Poller) Start(ctx context.Context) {
 					addSlots(bag.Inventory)
 				}
 			}
+			for _, e := range c.Equipment {
+				if e == nil {
+					continue
+				}
+				idSet[e.ID] = struct{}{}
+				for _, up := range e.Upgrades {
+					idSet[up] = struct{}{}
+				}
+				for _, inf := range e.Infusions {
+					idSet[inf] = struct{}{}
+				}
+			}
 		}
 		ids := make([]int, 0, len(idSet))
 		for id := range idSet {

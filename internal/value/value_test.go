@@ -16,11 +16,17 @@ func TestComputeValuesComponentsAndTotal(t *testing.T) {
 	bank := []*gw2.Slot{{ID: 1, Count: 10}, nil, {ID: 2, Count: 5}}
 	materials := []gw2.MaterialAmount{{ID: 1, Count: 100}}
 	shared := []*gw2.Slot{{ID: 2, Count: 1}}
-	chars := []gw2.Character{{Bags: []*gw2.CharacterBag{{Inventory: []*gw2.Slot{{ID: 1, Count: 2}, nil}}}}}
+	chars := []gw2.Character{{
+		Bags: []*gw2.CharacterBag{{Inventory: []*gw2.Slot{{ID: 1, Count: 2}, nil}}},
+		Equipment: []*gw2.EquipmentItem{
+			nil,
+			{ID: 3, Upgrades: []int{2}, Infusions: []int{1}}, // gear unpriced; rune id2 + infusion id1 tradable
+		},
+	}}
 	prices := map[int]gw2.ItemPrice{
 		1: price(1, 10, 12),
 		2: price(2, 100, 150),
-		// id 3 (none) untradable -> 0
+		// id 3 (gear) untradable -> 0
 	}
 
 	acc := Compute(bank, materials, shared, chars, 50_000, prices)
@@ -41,12 +47,17 @@ func TestComputeValuesComponentsAndTotal(t *testing.T) {
 	if acc.Buy["characters"] != 20 || acc.Sell["characters"] != 24 {
 		t.Errorf("characters = buy %d sell %d, want 20/24", acc.Buy["characters"], acc.Sell["characters"])
 	}
+	// equipment: gear id3 unpriced + upgrade id2 (1×) + infusion id1 (1×)
+	// -> buy 100+10=110, sell 150+12=162
+	if acc.Buy["equipment"] != 110 || acc.Sell["equipment"] != 162 {
+		t.Errorf("equipment = buy %d sell %d, want 110/162", acc.Buy["equipment"], acc.Sell["equipment"])
+	}
 	// wallet liquid on both bases
 	if acc.Buy["wallet"] != 50_000 || acc.Sell["wallet"] != 50_000 {
 		t.Errorf("wallet = %d/%d, want 50000 both", acc.Buy["wallet"], acc.Sell["wallet"])
 	}
-	// total buy = 600+1000+100+20+50000 = 51720
-	if acc.Buy["total"] != 51_720 {
-		t.Errorf("total buy = %d, want 51720", acc.Buy["total"])
+	// total buy = 600+1000+100+20+110+50000 = 51830
+	if acc.Buy["total"] != 51_830 {
+		t.Errorf("total buy = %d, want 51830", acc.Buy["total"])
 	}
 }

@@ -304,8 +304,18 @@ type Character struct {
 	Age        int64                `json:"age"`    // playtime in seconds (monotonic)
 	Deaths     int64                `json:"deaths"` // lifetime deaths (monotonic)
 	Created    string               `json:"created"`
-	Bags       []*CharacterBag      `json:"bags"`     // present in the ?ids=all overview
-	Crafting   []CraftingDiscipline `json:"crafting"` // present in the ?ids=all overview
+	Bags       []*CharacterBag      `json:"bags"`      // present in the ?ids=all overview
+	Crafting   []CraftingDiscipline `json:"crafting"`  // present in the ?ids=all overview
+	Equipment  []*EquipmentItem     `json:"equipment"` // equipped gear in the overview
+}
+
+// EquipmentItem is one equipped piece from a character overview. The item itself
+// is usually account-bound (no TP price), but its upgrades (runes/sigils) and
+// infusions are frequently tradable and carry the liquid value.
+type EquipmentItem struct {
+	ID        int   `json:"id"`
+	Upgrades  []int `json:"upgrades"`
+	Infusions []int `json:"infusions"`
 }
 
 // CharacterBag is one equipped bag with its slots (null slots = empty).

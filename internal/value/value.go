@@ -39,6 +39,7 @@ func Compute(
 		"materials":  {},
 		"shared":     {},
 		"characters": {},
+		"equipment":  {},
 	}
 
 	slotCounts(bank, components["bank"])
@@ -50,10 +51,25 @@ func Compute(
 			materialCategory[m.Category] += m.Count * p.Sells.UnitPrice
 		}
 	}
+	equip := components["equipment"]
 	for _, c := range characters {
 		for _, bag := range c.Bags {
 			if bag != nil {
 				slotCounts(bag.Inventory, components["characters"])
+			}
+		}
+		// Equipped gear: the piece itself is usually account-bound (unpriced),
+		// but its upgrades (runes/sigils) and infusions are often tradable.
+		for _, e := range c.Equipment {
+			if e == nil {
+				continue
+			}
+			equip[e.ID]++
+			for _, up := range e.Upgrades {
+				equip[up]++
+			}
+			for _, inf := range e.Infusions {
+				equip[inf]++
 			}
 		}
 	}
