@@ -89,6 +89,28 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 	if err != nil {
 		return nil, wrap("gw2.character.level", err)
 	}
+	exchangeRate, err := meter.Int64ObservableGauge(
+		"gw2.commerce.exchange.coins_per_gem",
+		metric.WithDescription("Gem/coin exchange rate in copper, by direction"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.commerce.exchange.coins_per_gem", err)
+	}
+	deliveryCoins, err := meter.Int64ObservableGauge(
+		"gw2.commerce.delivery.coins",
+		metric.WithDescription("Copper awaiting pickup in the trading-post delivery box"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.commerce.delivery.coins", err)
+	}
+	deliveryItems, err := meter.Int64ObservableGauge(
+		"gw2.commerce.delivery.items",
+		metric.WithUnit("{item}"),
+		metric.WithDescription("Item stacks awaiting pickup in the delivery box"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.commerce.delivery.items", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -131,6 +153,15 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 			}
 		}
 
+		if c := st.Commerce(); c != nil {
+			o.ObserveInt64(exchangeRate, c.CoinsPerGemBuy,
+				metric.WithAttributes(attribute.String("gw2.direction", "buy_gems")))
+			o.ObserveInt64(exchangeRate, c.CoinsPerGemSell,
+				metric.WithAttributes(attribute.String("gw2.direction", "sell_gems")))
+			o.ObserveInt64(deliveryCoins, c.DeliveryCoins)
+			o.ObserveInt64(deliveryItems, c.DeliveryItems)
+		}
+
 		for family, ts := range st.LastSuccess() {
 			o.ObserveFloat64(lastSuccess, float64(ts.Unix()),
 				metric.WithAttributes(attribute.String("gw2.family", family)))
@@ -140,7 +171,8 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 
 	return meter.RegisterCallback(callback,
 		accountAge, fractalLevel, wvwRank, charCount, walletBalance,
-		charPlaytime, charDeaths, charLevel, lastSuccess,
+		charPlaytime, charDeaths, charLevel,
+		exchangeRate, deliveryCoins, deliveryItems, lastSuccess,
 	)
 }
 

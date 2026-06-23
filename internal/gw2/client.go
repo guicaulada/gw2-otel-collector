@@ -13,6 +13,7 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -122,6 +123,38 @@ func (c *Client) Characters(ctx context.Context) ([]Character, error) {
 		return nil, err
 	}
 	return ch, nil
+}
+
+// ExchangeCoins prices gems in coins: how many coins one gem costs when buying
+// gems with gold (/v2/commerce/exchange/coins?quantity=<copper>). Public.
+func (c *Client) ExchangeCoins(ctx context.Context, copper int64) (*Exchange, error) {
+	var e Exchange
+	params := url.Values{"quantity": {strconv.FormatInt(copper, 10)}}
+	if err := c.get(ctx, "commerce/exchange/coins", "commerce/exchange/coins", params, &e); err != nil {
+		return nil, err
+	}
+	return &e, nil
+}
+
+// ExchangeGems prices coins per gem when selling gems for gold
+// (/v2/commerce/exchange/gems?quantity=<gems>). Public.
+func (c *Client) ExchangeGems(ctx context.Context, gems int64) (*Exchange, error) {
+	var e Exchange
+	params := url.Values{"quantity": {strconv.FormatInt(gems, 10)}}
+	if err := c.get(ctx, "commerce/exchange/gems", "commerce/exchange/gems", params, &e); err != nil {
+		return nil, err
+	}
+	return &e, nil
+}
+
+// Delivery fetches the trading-post pickup box (/v2/commerce/delivery).
+// Requires the tradingpost scope.
+func (c *Client) Delivery(ctx context.Context) (*Delivery, error) {
+	var d Delivery
+	if err := c.get(ctx, "commerce/delivery", "commerce/delivery", nil, &d); err != nil {
+		return nil, err
+	}
+	return &d, nil
 }
 
 // Build fetches the current game build number (/v2/build). Public endpoint; used

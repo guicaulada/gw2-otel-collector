@@ -31,6 +31,21 @@ type Currency struct {
 	Name string `json:"name"`
 }
 
+// Exchange is the response of /v2/commerce/exchange/{coins,gems}.
+type Exchange struct {
+	CoinsPerGem int64 `json:"coins_per_gem"`
+	Quantity    int64 `json:"quantity"`
+}
+
+// Delivery is the response of /v2/commerce/delivery (the trading-post pickup box).
+type Delivery struct {
+	Coins int64 `json:"coins"`
+	Items []struct {
+		ID    int   `json:"id"`
+		Count int64 `json:"count"`
+	} `json:"items"`
+}
+
 // Character is the subset of a /v2/characters?ids=all overview object the
 // collector uses. The bulk overview embeds far more (equipment, tabs, recipes,
 // ...) — later slices will read those from the same response.

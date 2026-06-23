@@ -13,12 +13,21 @@ import (
 	"github.com/guicaulada/gw2-otel-collector/internal/gw2"
 )
 
+// Commerce is the derived commerce snapshot the collector tracks as gauges.
+type Commerce struct {
+	CoinsPerGemBuy  int64 // coins to buy one gem (/exchange/coins)
+	CoinsPerGemSell int64 // coins received per gem sold (/exchange/gems)
+	DeliveryCoins   int64 // copper awaiting pickup
+	DeliveryItems   int64 // distinct item stacks awaiting pickup
+}
+
 // Store is a concurrency-safe cache of the latest snapshot per family.
 type Store struct {
 	mu          sync.RWMutex
 	account     *gw2.Account
 	wallet      []gw2.CurrencyAmount
 	characters  []gw2.Character
+	commerce    *Commerce
 	lastSuccess map[string]time.Time
 }
 
@@ -70,6 +79,21 @@ func (s *Store) Characters() []gw2.Character {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.characters
+}
+
+// SetCommerce stores the latest commerce snapshot.
+func (s *Store) SetCommerce(c *Commerce, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.commerce = c
+	s.lastSuccess["commerce"] = at
+}
+
+// Commerce returns the latest commerce snapshot.
+func (s *Store) Commerce() *Commerce {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.commerce
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

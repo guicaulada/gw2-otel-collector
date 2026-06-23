@@ -14,6 +14,13 @@ import (
 	"github.com/guicaulada/gw2-otel-collector/internal/store"
 )
 
+// Fixed quantities used to price the gem/coin exchange, so the rate is
+// comparable over time (small inputs return degenerate rates).
+const (
+	exchangeCoinsQuantity = 100000 // 10 gold -> price of a gem in coins
+	exchangeGemsQuantity  = 100    // 100 gems -> coins received per gem
+)
+
 // Poller drives scheduled polling of the GW2 API.
 type Poller struct {
 	client    *gw2.Client
@@ -55,6 +62,28 @@ func (p *Poller) Start(ctx context.Context) {
 			return err
 		}
 		p.store.SetCharacters(ch, time.Now())
+		return nil
+	})
+
+	p.run(ctx, "commerce", p.intervals.Commerce, func(ctx context.Context) error {
+		buy, err := p.client.ExchangeCoins(ctx, exchangeCoinsQuantity)
+		if err != nil {
+			return err
+		}
+		sell, err := p.client.ExchangeGems(ctx, exchangeGemsQuantity)
+		if err != nil {
+			return err
+		}
+		delivery, err := p.client.Delivery(ctx)
+		if err != nil {
+			return err
+		}
+		p.store.SetCommerce(&store.Commerce{
+			CoinsPerGemBuy:  buy.CoinsPerGem,
+			CoinsPerGemSell: sell.CoinsPerGem,
+			DeliveryCoins:   delivery.Coins,
+			DeliveryItems:   int64(len(delivery.Items)),
+		}, time.Now())
 		return nil
 	})
 }
