@@ -118,6 +118,22 @@ Switching dev → Alloy → Grafana Cloud is config-only: point
 See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the layout and
 [`docs/api-empirical-findings.md`](docs/api-empirical-findings.md) for verified API shapes.
 
-**Descoped:** PvP leaderboards (global top-250 rankings, not account-specific — own PvP is
-covered by `pvp/stats`). **Possible future:** richer per-item commerce (order-book depth,
-crafting profit), more guild-log event types, and arcdps-log combat data (out of API scope).
+**v3 adds (community-tool parity push):**
+
+- **Account value** — total + per-component (bank/materials/shared/characters/wallet) at
+  buy/sell basis, priced against the TP (the gw2efficiency flagship), with the value curve.
+- **Progression depth** — computed total AP, achievements done/%, per-character crafting,
+  legendary armory, fractal augmentations, magic find %.
+- **Reset-cycle activity** — world bosses / dungeons / raids / map chests / daily crafting
+  completed since reset + completion events.
+- **WvW match data** — per-team score / VP / kills / deaths / KDR / PPT, objectives held.
+- **PvP depth** — per-profession & per-ladder W/L, season standings; character inventory.
+- **Market depth** — item supply/demand, open-order value.
+- **7 focused dashboards** generated as code (`deploy/dashboards/generate.py`): Overview,
+  Wealth, Progression, Collections, Characters, PvP & Health, WvW.
+
+See [`docs/feature-coverage.md`](docs/feature-coverage.md) for the full parity matrix.
+
+**Descoped / impossible from the API:** PvP leaderboards (global rankings, not account data),
+map completion %, DPS/combat (arcdps logs), gem-store prices. **Possible future:** per-collection
+achievement progress (legendary/precursor), crafting-profit calculator, farming-session deltas.
