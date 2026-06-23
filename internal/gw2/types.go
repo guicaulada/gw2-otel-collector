@@ -106,6 +106,24 @@ type Delivery struct {
 	} `json:"items"`
 }
 
+// Quest is the subset of /v2/quests used for story-completion mapping.
+type Quest struct {
+	ID    int `json:"id"`
+	Story int `json:"story"`
+}
+
+// StoryDef is the subset of /v2/stories: a story belongs to a season (GUID).
+type StoryDef struct {
+	ID     int    `json:"id"`
+	Season string `json:"season"`
+}
+
+// StorySeason is /v2/stories/seasons: a season id (GUID) and its name.
+type StorySeason struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 // Collection pairs an account unlock endpoint (the unlocked set) with its
 // reference index endpoint (the full set), so the collector can report both an
 // unlocked count and a completion total per collection.

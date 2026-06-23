@@ -23,6 +23,12 @@ func TestRefreshIsBuildGated(t *testing.T) {
 		case "/currencies":
 			currencyCalls.Add(1)
 			_, _ = io.WriteString(w, `[{"id":1,"name":"Coin"},{"id":2,"name":"Karma"}]`)
+		case "/quests":
+			_, _ = io.WriteString(w, `[{"id":10,"story":1},{"id":11,"story":1}]`)
+		case "/stories":
+			_, _ = io.WriteString(w, `[{"id":1,"season":"S1"}]`)
+		case "/stories/seasons":
+			_, _ = io.WriteString(w, `[{"id":"S1","name":"Season One"}]`)
 		default:
 			// Collection index endpoints (skins, colors, ...) -> small arrays.
 			_, _ = io.WriteString(w, `[1,2,3]`)
@@ -49,6 +55,12 @@ func TestRefreshIsBuildGated(t *testing.T) {
 	}
 	if total, ok := c.CollectionTotal("skins"); !ok || total != 3 {
 		t.Errorf("CollectionTotal(skins) = (%d, %v), want (3, true)", total, ok)
+	}
+	if season, ok := c.QuestSeason(10); !ok || season != "Season One" {
+		t.Errorf("QuestSeason(10) = (%q, %v), want (Season One, true)", season, ok)
+	}
+	if c.SeasonTotals()["Season One"] != 2 {
+		t.Errorf("SeasonTotals[Season One] = %d, want 2", c.SeasonTotals()["Season One"])
 	}
 
 	// Second refresh at the same build must NOT refetch currencies/collections.

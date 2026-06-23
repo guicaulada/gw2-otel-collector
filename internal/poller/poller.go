@@ -197,6 +197,32 @@ func (p *Poller) Start(ctx context.Context) {
 		return nil
 	})
 
+	p.run(ctx, "story", p.intervals.Story, func(ctx context.Context) error {
+		chars := p.store.Characters()
+		if len(chars) == 0 { // startup race — fetch the roster directly
+			var err error
+			if chars, err = p.client.Characters(ctx); err != nil {
+				return err
+			}
+		}
+		seen := map[int]bool{}
+		for _, c := range chars {
+			qids, err := p.client.CharacterQuests(ctx, c.Name)
+			if err != nil {
+				return err
+			}
+			for _, id := range qids {
+				seen[id] = true
+			}
+		}
+		completed := make([]int, 0, len(seen))
+		for id := range seen {
+			completed = append(completed, id)
+		}
+		p.store.SetStoryCompleted(completed, time.Now())
+		return nil
+	})
+
 	p.run(ctx, "pvp", p.intervals.PvP, func(ctx context.Context) error {
 		s, err := p.client.PvPStats(ctx)
 		if err != nil {

@@ -23,6 +23,8 @@ type Resolver interface {
 	CurrencyName(id int) (string, bool)
 	CollectionTotal(name string) (int, bool)
 	ItemName(id int) (string, bool)
+	QuestSeason(id int) (string, bool)
+	SeasonTotals() map[string]int
 }
 
 // Register creates the gw2.* observable instruments and wires a single callback
@@ -283,6 +285,16 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 	if err != nil {
 		return nil, wrap("gw2.wizardsvault.acclaim.unclaimed", err)
 	}
+	storyCompleted, err := meter.Int64ObservableGauge("gw2.story.quests.completed",
+		metric.WithUnit("{quest}"), metric.WithDescription("Completed story quests (union across characters), by season"))
+	if err != nil {
+		return nil, wrap("gw2.story.quests.completed", err)
+	}
+	storyTotal, err := meter.Int64ObservableGauge("gw2.story.quests.total",
+		metric.WithUnit("{quest}"), metric.WithDescription("Total story quests, by season"))
+	if err != nil {
+		return nil, wrap("gw2.story.quests.total", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -437,6 +449,25 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 				metric.WithAttributes(base...))
 		}
 
+		if resolver != nil {
+			if completed := st.StoryCompleted(); completed != nil {
+				bySeason := map[string]int64{}
+				for _, qid := range completed {
+					if season, ok := resolver.QuestSeason(qid); ok {
+						bySeason[season]++
+					}
+				}
+				for season, n := range bySeason {
+					o.ObserveInt64(storyCompleted, n,
+						metric.WithAttributes(attribute.String("gw2.season", season)))
+				}
+			}
+			for season, total := range resolver.SeasonTotals() {
+				o.ObserveInt64(storyTotal, int64(total),
+					metric.WithAttributes(attribute.String("gw2.season", season)))
+			}
+		}
+
 		for family, ts := range st.LastSuccess() {
 			o.ObserveFloat64(lastSuccess, float64(ts.Unix()),
 				metric.WithAttributes(attribute.String("gw2.family", family)))
@@ -455,7 +486,7 @@ func Register(st *store.Store, resolver Resolver) (metric.Registration, error) {
 		pvpRank, pvpRankPoints, pvpMatches,
 		itemPrice, itemSpread, itemFlipMargin,
 		wvMetaProgress, wvMetaTarget, wvObjectives, wvCompleted, wvUnclaimed,
-		lastSuccess,
+		storyCompleted, storyTotal, lastSuccess,
 	)
 }
 

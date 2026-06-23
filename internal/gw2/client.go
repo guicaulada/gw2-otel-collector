@@ -314,6 +314,44 @@ func joinInts(ids []int) string {
 	return strings.Join(parts, ",")
 }
 
+// QuestsAll fetches all quest definitions (/v2/quests?ids=all). Public, static.
+func (c *Client) QuestsAll(ctx context.Context) ([]Quest, error) {
+	var out []Quest
+	if err := c.get(ctx, "quests", "quests", url.Values{"ids": {"all"}}, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// StoriesAll fetches all story definitions (/v2/stories?ids=all). Public, static.
+func (c *Client) StoriesAll(ctx context.Context) ([]StoryDef, error) {
+	var out []StoryDef
+	if err := c.get(ctx, "stories", "stories", url.Values{"ids": {"all"}}, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// StorySeasonsAll fetches all story seasons (/v2/stories/seasons?ids=all). Public.
+func (c *Client) StorySeasonsAll(ctx context.Context) ([]StorySeason, error) {
+	var out []StorySeason
+	if err := c.get(ctx, "stories/seasons", "stories/seasons", url.Values{"ids": {"all"}}, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CharacterQuests fetches the completed/active story quest ids for a character
+// (/v2/characters/:name/quests).
+func (c *Client) CharacterQuests(ctx context.Context, name string) ([]int, error) {
+	var out []int
+	path := "characters/" + url.PathEscape(name) + "/quests"
+	if err := c.get(ctx, path, "characters/quests", nil, &out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Build fetches the current game build number (/v2/build). Public endpoint; used
 // as the cache-invalidation signal for static reference data.
 func (c *Client) Build(ctx context.Context) (int, error) {

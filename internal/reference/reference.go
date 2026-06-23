@@ -17,9 +17,11 @@ import (
 
 // data is an immutable snapshot of reference tables. Never mutate after publish.
 type data struct {
-	currencies map[int]string
-	totals     map[string]int // collection name -> total unlockable count
-	items      map[int]string // tracked item id -> name
+	currencies  map[int]string
+	totals      map[string]int // collection name -> total unlockable count
+	items       map[int]string // tracked item id -> name
+	questSeason map[int]string // quest id -> season name
+	seasonTotal map[string]int // season name -> total quests
 }
 
 // Cache holds the latest reference data and the build number it was built for.
@@ -66,6 +68,25 @@ func (c *Cache) ItemName(id int) (string, bool) {
 	return name, ok
 }
 
+// QuestSeason resolves a quest id to its story season name, if loaded.
+func (c *Cache) QuestSeason(id int) (string, bool) {
+	d := c.d.Load()
+	if d == nil {
+		return "", false
+	}
+	s, ok := d.questSeason[id]
+	return s, ok
+}
+
+// SeasonTotals returns the total quest count per story season.
+func (c *Cache) SeasonTotals() map[string]int {
+	d := c.d.Load()
+	if d == nil {
+		return nil
+	}
+	return d.seasonTotal
+}
+
 // Refresh checks the game build number and, if it changed (or nothing is loaded
 // yet), rebuilds the reference tables. Fail-soft: on error the current good data
 // is kept. Returns the error so callers can log it.
@@ -109,10 +130,48 @@ func (c *Cache) Refresh(ctx context.Context) error {
 		}
 	}
 
-	c.d.Store(&data{currencies: m, totals: totals, items: items})
+	// Story season mapping: quest -> story -> season name, and per-season totals.
+	questSeason := map[int]string{}
+	seasonTotal := map[string]int{}
+	quests, err := c.client.QuestsAll(ctx)
+	if err != nil {
+		return err
+	}
+	stories, err := c.client.StoriesAll(ctx)
+	if err != nil {
+		return err
+	}
+	seasons, err := c.client.StorySeasonsAll(ctx)
+	if err != nil {
+		return err
+	}
+	seasonName := make(map[string]string, len(seasons))
+	for _, s := range seasons {
+		seasonName[s.ID] = s.Name
+	}
+	storySeason := make(map[int]string, len(stories))
+	for _, s := range stories {
+		if name, ok := seasonName[s.Season]; ok {
+			storySeason[s.ID] = name
+		}
+	}
+	for _, q := range quests {
+		season := storySeason[q.Story]
+		if season == "" {
+			season = "Unknown"
+		}
+		questSeason[q.ID] = season
+		seasonTotal[season]++
+	}
+
+	c.d.Store(&data{
+		currencies: m, totals: totals, items: items,
+		questSeason: questSeason, seasonTotal: seasonTotal,
+	})
 	c.build.Store(int64(build))
 	c.log.Info("reference data refreshed", "build", build,
-		"currencies", len(m), "collections", len(totals), "items", len(items))
+		"currencies", len(m), "collections", len(totals), "items", len(items),
+		"quests", len(questSeason), "seasons", len(seasonTotal))
 	return nil
 }
 
