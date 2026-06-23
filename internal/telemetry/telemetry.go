@@ -15,10 +15,12 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	otellog "go.opentelemetry.io/otel/log/global"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
 	"github.com/guicaulada/gw2-otel-collector/internal/config"
 )
@@ -62,8 +64,18 @@ func Setup(ctx context.Context, cfg *config.Config) (func(context.Context) error
 	)
 	otellog.SetLoggerProvider(lp)
 
+	traceExp, err := otlptracehttp.New(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("create OTLP trace exporter: %w", err)
+	}
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithResource(res),
+		sdktrace.WithBatcher(traceExp),
+	)
+	otel.SetTracerProvider(tp)
+
 	shutdown := func(ctx context.Context) error {
-		return errors.Join(mp.Shutdown(ctx), lp.Shutdown(ctx))
+		return errors.Join(mp.Shutdown(ctx), lp.Shutdown(ctx), tp.Shutdown(ctx))
 	}
 	return shutdown, nil
 }

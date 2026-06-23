@@ -18,7 +18,9 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/time/rate"
 )
 
@@ -32,6 +34,7 @@ type Client struct {
 
 	reqDuration metric.Float64Histogram
 	reqCount    metric.Int64Counter
+	tracer      trace.Tracer
 }
 
 // Options configures a Client.
@@ -94,6 +97,7 @@ func NewClient(opts Options) (*Client, error) {
 		maxRetries:  opts.MaxRetries,
 		reqDuration: reqDuration,
 		reqCount:    reqCount,
+		tracer:      otel.Tracer("github.com/guicaulada/gw2-otel-collector/internal/gw2"),
 	}, nil
 }
 
@@ -326,8 +330,19 @@ func (c *Client) do(ctx context.Context, path, endpoint string, params url.Value
 	q.Set("v", c.schema)
 	u := fmt.Sprintf("%s/%s?%s", c.baseURL, path, q.Encode())
 
+	// CLIENT span per HTTP attempt; the sync duration histogram recorded under
+	// this span's context carries a trace exemplar.
+	ctx, span := c.tracer.Start(ctx, "GET "+endpoint, trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(
+			attribute.String("http.request.method", http.MethodGet),
+			attribute.String("gw2.endpoint", endpoint),
+		))
+	defer span.End()
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return 0, nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
@@ -338,6 +353,8 @@ func (c *Client) do(ctx context.Context, path, endpoint string, params url.Value
 	elapsed := time.Since(start).Seconds()
 
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		c.reqDuration.Record(ctx, elapsed, metric.WithAttributes(
 			attribute.String("gw2.endpoint", endpoint),
 			attribute.String("error.type", "transport"),
@@ -356,6 +373,10 @@ func (c *Client) do(ctx context.Context, path, endpoint string, params url.Value
 	)
 	c.reqDuration.Record(ctx, elapsed, attrs)
 	c.reqCount.Add(ctx, 1, attrs)
+	span.SetAttributes(attribute.Int("http.response.status_code", resp.StatusCode))
+	if resp.StatusCode >= 400 {
+		span.SetStatus(codes.Error, http.StatusText(resp.StatusCode))
+	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

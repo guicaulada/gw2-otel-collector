@@ -9,6 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
+
 	"github.com/guicaulada/gw2-otel-collector/internal/config"
 	"github.com/guicaulada/gw2-otel-collector/internal/gw2"
 	"github.com/guicaulada/gw2-otel-collector/internal/store"
@@ -255,8 +258,16 @@ func (p *Poller) run(ctx context.Context, family string, interval time.Duration,
 		defer p.wg.Done()
 		log := p.log.With("family", family, "interval", interval.String())
 
+		tracer := otel.Tracer("github.com/guicaulada/gw2-otel-collector/internal/poller")
 		poll := func() {
-			if err := fetch(ctx); err != nil {
+			pollCtx, span := tracer.Start(ctx, "poll "+family)
+			err := fetch(pollCtx)
+			if err != nil {
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
+			}
+			span.End()
+			if err != nil {
 				if ctx.Err() == nil {
 					log.Error("poll failed", "error", err)
 				}
