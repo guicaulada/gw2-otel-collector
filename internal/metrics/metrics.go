@@ -111,6 +111,82 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 	if err != nil {
 		return nil, wrap("gw2.commerce.delivery.items", err)
 	}
+	accountAP, err := meter.Int64ObservableGauge(
+		"gw2.account.achievement.points",
+		metric.WithDescription("Achievement points, by period (daily/monthly)"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.achievement.points", err)
+	}
+	luck, err := meter.Int64ObservableCounter(
+		"gw2.account.luck",
+		metric.WithDescription("Total essence of luck consumed"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.luck", err)
+	}
+	masteriesUnlocked, err := meter.Int64ObservableGauge(
+		"gw2.account.masteries.unlocked",
+		metric.WithUnit("{mastery}"),
+		metric.WithDescription("Number of trained mastery tracks"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.masteries.unlocked", err)
+	}
+	masteryEarned, err := meter.Int64ObservableCounter(
+		"gw2.account.mastery.points.earned",
+		metric.WithDescription("Mastery points earned, by region"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.mastery.points.earned", err)
+	}
+	masterySpent, err := meter.Int64ObservableGauge(
+		"gw2.account.mastery.points.spent",
+		metric.WithDescription("Mastery points spent, by region"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.mastery.points.spent", err)
+	}
+	bankUsed, err := meter.Int64ObservableGauge(
+		"gw2.account.bank.slots.used",
+		metric.WithUnit("{slot}"),
+		metric.WithDescription("Occupied bank slots"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.bank.slots.used", err)
+	}
+	bankCapacity, err := meter.Int64ObservableGauge(
+		"gw2.account.bank.slots.capacity",
+		metric.WithUnit("{slot}"),
+		metric.WithDescription("Total bank slots"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.bank.slots.capacity", err)
+	}
+	sharedUsed, err := meter.Int64ObservableGauge(
+		"gw2.account.shared_inventory.slots.used",
+		metric.WithUnit("{slot}"),
+		metric.WithDescription("Occupied shared inventory slots"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.shared_inventory.slots.used", err)
+	}
+	sharedCapacity, err := meter.Int64ObservableGauge(
+		"gw2.account.shared_inventory.slots.capacity",
+		metric.WithUnit("{slot}"),
+		metric.WithDescription("Total shared inventory slots"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.shared_inventory.slots.capacity", err)
+	}
+	materialCount, err := meter.Int64ObservableGauge(
+		"gw2.account.material.count",
+		metric.WithUnit("{item}"),
+		metric.WithDescription("Material storage count, by category"),
+	)
+	if err != nil {
+		return nil, wrap("gw2.account.material.count", err)
+	}
 	lastSuccess, err := meter.Float64ObservableGauge(
 		"gw2.poll.last_success.timestamp",
 		metric.WithUnit("s"),
@@ -125,6 +201,31 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 			o.ObserveInt64(accountAge, a.Age)
 			o.ObserveInt64(fractalLevel, int64(a.FractalLevel))
 			o.ObserveInt64(wvwRank, int64(a.WvW.Rank))
+			o.ObserveInt64(accountAP, int64(a.DailyAP),
+				metric.WithAttributes(attribute.String("gw2.period", "daily")))
+			o.ObserveInt64(accountAP, int64(a.MonthlyAP),
+				metric.WithAttributes(attribute.String("gw2.period", "monthly")))
+		}
+
+		if p := st.Progression(); p != nil {
+			o.ObserveInt64(luck, p.Luck)
+			o.ObserveInt64(masteriesUnlocked, int64(p.MasteriesCount))
+			for region, pts := range p.PointsByRegion {
+				attrs := metric.WithAttributes(attribute.String("gw2.region", region))
+				o.ObserveInt64(masteryEarned, pts.Earned, attrs)
+				o.ObserveInt64(masterySpent, pts.Spent, attrs)
+			}
+		}
+
+		if s := st.Storage(); s != nil {
+			o.ObserveInt64(bankUsed, s.BankUsed)
+			o.ObserveInt64(bankCapacity, s.BankCapacity)
+			o.ObserveInt64(sharedUsed, s.SharedUsed)
+			o.ObserveInt64(sharedCapacity, s.SharedCapacity)
+			for category, count := range s.MaterialsByCategory {
+				o.ObserveInt64(materialCount, count,
+					metric.WithAttributes(attribute.Int("gw2.material.category", category)))
+			}
 		}
 
 		if w := st.Wallet(); w != nil {
@@ -172,7 +273,10 @@ func Register(st *store.Store, namer CurrencyNamer) (metric.Registration, error)
 	return meter.RegisterCallback(callback,
 		accountAge, fractalLevel, wvwRank, charCount, walletBalance,
 		charPlaytime, charDeaths, charLevel,
-		exchangeRate, deliveryCoins, deliveryItems, lastSuccess,
+		exchangeRate, deliveryCoins, deliveryItems,
+		accountAP, luck, masteriesUnlocked, masteryEarned, masterySpent,
+		bankUsed, bankCapacity, sharedUsed, sharedCapacity, materialCount,
+		lastSuccess,
 	)
 }
 

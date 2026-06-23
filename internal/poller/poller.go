@@ -65,6 +65,58 @@ func (p *Poller) Start(ctx context.Context) {
 		return nil
 	})
 
+	p.run(ctx, "progression", p.intervals.Progression, func(ctx context.Context) error {
+		masteries, err := p.client.Masteries(ctx)
+		if err != nil {
+			return err
+		}
+		points, err := p.client.MasteryPoints(ctx)
+		if err != nil {
+			return err
+		}
+		luck, err := p.client.Luck(ctx)
+		if err != nil {
+			return err
+		}
+		byRegion := make(map[string]store.MasteryRegionPoints, len(points.Totals))
+		for _, t := range points.Totals {
+			byRegion[t.Region] = store.MasteryRegionPoints{Earned: t.Earned, Spent: t.Spent}
+		}
+		p.store.SetProgression(&store.Progression{
+			Luck:           luck,
+			MasteriesCount: len(masteries),
+			PointsByRegion: byRegion,
+		}, time.Now())
+		return nil
+	})
+
+	p.run(ctx, "storage", p.intervals.Storage, func(ctx context.Context) error {
+		bank, err := p.client.Bank(ctx)
+		if err != nil {
+			return err
+		}
+		shared, err := p.client.SharedInventory(ctx)
+		if err != nil {
+			return err
+		}
+		materials, err := p.client.Materials(ctx)
+		if err != nil {
+			return err
+		}
+		byCategory := make(map[int]int64)
+		for _, m := range materials {
+			byCategory[m.Category] += m.Count
+		}
+		p.store.SetStorage(&store.Storage{
+			BankUsed:            countFilled(bank),
+			BankCapacity:        int64(len(bank)),
+			SharedUsed:          countFilled(shared),
+			SharedCapacity:      int64(len(shared)),
+			MaterialsByCategory: byCategory,
+		}, time.Now())
+		return nil
+	})
+
 	p.run(ctx, "commerce", p.intervals.Commerce, func(ctx context.Context) error {
 		buy, err := p.client.ExchangeCoins(ctx, exchangeCoinsQuantity)
 		if err != nil {
@@ -90,6 +142,17 @@ func (p *Poller) Start(ctx context.Context) {
 
 // Wait blocks until all polling goroutines have exited.
 func (p *Poller) Wait() { p.wg.Wait() }
+
+// countFilled counts non-nil (occupied) slots in a positional bank/inventory.
+func countFilled(slots []*gw2.Slot) int64 {
+	var n int64
+	for _, s := range slots {
+		if s != nil {
+			n++
+		}
+	}
+	return n
+}
 
 // run polls once immediately, then on every tick until the context is cancelled.
 func (p *Poller) run(ctx context.Context, family string, interval time.Duration, fetch func(context.Context) error) {

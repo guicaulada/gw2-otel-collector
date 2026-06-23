@@ -157,6 +157,64 @@ func (c *Client) Delivery(ctx context.Context) (*Delivery, error) {
 	return &d, nil
 }
 
+// Masteries fetches /v2/account/masteries (trained mastery tracks).
+func (c *Client) Masteries(ctx context.Context) ([]Mastery, error) {
+	var m []Mastery
+	if err := c.get(ctx, "account/masteries", "account/masteries", nil, &m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// MasteryPoints fetches /v2/account/mastery/points (earned/spent per region).
+func (c *Client) MasteryPoints(ctx context.Context) (*MasteryPoints, error) {
+	var mp MasteryPoints
+	if err := c.get(ctx, "account/mastery/points", "account/mastery/points", nil, &mp); err != nil {
+		return nil, err
+	}
+	return &mp, nil
+}
+
+// Luck fetches /v2/account/luck and returns total essence of luck consumed.
+func (c *Client) Luck(ctx context.Context) (int64, error) {
+	var l []LuckAmount
+	if err := c.get(ctx, "account/luck", "account/luck", nil, &l); err != nil {
+		return 0, err
+	}
+	var total int64
+	for _, e := range l {
+		total += e.Value
+	}
+	return total, nil
+}
+
+// Bank fetches /v2/account/bank (positional; nil entries are empty slots).
+func (c *Client) Bank(ctx context.Context) ([]*Slot, error) {
+	var b []*Slot
+	if err := c.get(ctx, "account/bank", "account/bank", nil, &b); err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+// SharedInventory fetches /v2/account/inventory (shared inventory slots).
+func (c *Client) SharedInventory(ctx context.Context) ([]*Slot, error) {
+	var s []*Slot
+	if err := c.get(ctx, "account/inventory", "account/inventory", nil, &s); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+// Materials fetches /v2/account/materials (material storage by category).
+func (c *Client) Materials(ctx context.Context) ([]MaterialAmount, error) {
+	var m []MaterialAmount
+	if err := c.get(ctx, "account/materials", "account/materials", nil, &m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Build fetches the current game build number (/v2/build). Public endpoint; used
 // as the cache-invalidation signal for static reference data.
 func (c *Client) Build(ctx context.Context) (int, error) {

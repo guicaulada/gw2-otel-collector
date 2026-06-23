@@ -21,6 +21,26 @@ type Commerce struct {
 	DeliveryItems   int64 // distinct item stacks awaiting pickup
 }
 
+// MasteryRegionPoints is earned/spent mastery points for one region.
+type MasteryRegionPoints struct {
+	Earned int64
+	Spent  int64
+}
+
+// Progression is the derived progression snapshot.
+type Progression struct {
+	Luck           int64
+	MasteriesCount int
+	PointsByRegion map[string]MasteryRegionPoints
+}
+
+// Storage is the derived bank/material/shared-inventory snapshot.
+type Storage struct {
+	BankUsed, BankCapacity     int64
+	SharedUsed, SharedCapacity int64
+	MaterialsByCategory        map[int]int64
+}
+
 // Store is a concurrency-safe cache of the latest snapshot per family.
 type Store struct {
 	mu          sync.RWMutex
@@ -28,6 +48,8 @@ type Store struct {
 	wallet      []gw2.CurrencyAmount
 	characters  []gw2.Character
 	commerce    *Commerce
+	progression *Progression
+	storage     *Storage
 	lastSuccess map[string]time.Time
 }
 
@@ -94,6 +116,36 @@ func (s *Store) Commerce() *Commerce {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.commerce
+}
+
+// SetProgression stores the latest progression snapshot.
+func (s *Store) SetProgression(p *Progression, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.progression = p
+	s.lastSuccess["progression"] = at
+}
+
+// Progression returns the latest progression snapshot.
+func (s *Store) Progression() *Progression {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.progression
+}
+
+// SetStorage stores the latest storage snapshot.
+func (s *Store) SetStorage(st *Storage, at time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.storage = st
+	s.lastSuccess["storage"] = at
+}
+
+// Storage returns the latest storage snapshot.
+func (s *Store) Storage() *Storage {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.storage
 }
 
 // LastSuccess returns the time of the last successful poll for each family.

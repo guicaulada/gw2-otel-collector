@@ -46,6 +46,42 @@ type Delivery struct {
 	} `json:"items"`
 }
 
+// Mastery is one entry of /v2/account/masteries.
+type Mastery struct {
+	ID    int `json:"id"`
+	Level int `json:"level"`
+}
+
+// MasteryPoints is /v2/account/mastery/points: earned/spent points per region.
+type MasteryPoints struct {
+	Totals []struct {
+		Region string `json:"region"`
+		Spent  int64  `json:"spent"`
+		Earned int64  `json:"earned"`
+	} `json:"totals"`
+	Unlocked []int `json:"unlocked"`
+}
+
+// LuckAmount is one entry of /v2/account/luck (the id is the string "luck").
+type LuckAmount struct {
+	ID    string `json:"id"`
+	Value int64  `json:"value"`
+}
+
+// MaterialAmount is one entry of /v2/account/materials.
+type MaterialAmount struct {
+	ID       int   `json:"id"`
+	Category int   `json:"category"`
+	Count    int64 `json:"count"`
+}
+
+// Slot is a generic bank/inventory slot. Empty slots in the API are null and
+// decode to a nil *Slot, so counting non-nil entries gives slots used.
+type Slot struct {
+	ID    int   `json:"id"`
+	Count int64 `json:"count"`
+}
+
 // Character is the subset of a /v2/characters?ids=all overview object the
 // collector uses. The bulk overview embeds far more (equipment, tabs, recipes,
 // ...) — later slices will read those from the same response.

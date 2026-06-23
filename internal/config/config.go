@@ -39,10 +39,12 @@ type Config struct {
 
 // Intervals controls how often each endpoint family is polled.
 type Intervals struct {
-	Account    time.Duration
-	Wallet     time.Duration
-	Characters time.Duration
-	Commerce   time.Duration
+	Account     time.Duration
+	Wallet      time.Duration
+	Characters  time.Duration
+	Commerce    time.Duration
+	Progression time.Duration
+	Storage     time.Duration
 	// Reference is how often the game build number is checked to invalidate
 	// static reference data (id→name tables). Reference data changes only on a
 	// game patch, so this can be infrequent.
@@ -79,11 +81,13 @@ func FromEnv() (*Config, error) {
 		ExportInterval:  envDuration("GW2_EXPORT_INTERVAL", 30*time.Second),
 
 		Intervals: Intervals{
-			Account:    envDuration("GW2_INTERVAL_ACCOUNT", 5*time.Minute),
-			Wallet:     envDuration("GW2_INTERVAL_WALLET", 5*time.Minute),
-			Characters: envDuration("GW2_INTERVAL_CHARACTERS", 5*time.Minute),
-			Commerce:   envDuration("GW2_INTERVAL_COMMERCE", 5*time.Minute),
-			Reference:  envDuration("GW2_INTERVAL_REFERENCE", time.Hour),
+			Account:     envDuration("GW2_INTERVAL_ACCOUNT", 5*time.Minute),
+			Wallet:      envDuration("GW2_INTERVAL_WALLET", 5*time.Minute),
+			Characters:  envDuration("GW2_INTERVAL_CHARACTERS", 5*time.Minute),
+			Commerce:    envDuration("GW2_INTERVAL_COMMERCE", 5*time.Minute),
+			Progression: envDuration("GW2_INTERVAL_PROGRESSION", 10*time.Minute),
+			Storage:     envDuration("GW2_INTERVAL_STORAGE", 15*time.Minute),
+			Reference:   envDuration("GW2_INTERVAL_REFERENCE", time.Hour),
 		},
 	}, nil
 }
