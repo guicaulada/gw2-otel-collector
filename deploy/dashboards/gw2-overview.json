@@ -14,7 +14,7 @@
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "decimals": 2, "unit": "none" }, "overrides": [] },
-      "targets": [ { "refId": "A", "expr": "gw2_account_wallet_balance{gw2_currency_name=\"Coin\"} / 10000" } ]
+      "targets": [ { "refId": "A", "expr": "max(gw2_account_wallet_balance{gw2_currency_name=\"Coin\"}) / 10000" } ]
     },
     {
       "id": 2, "type": "stat", "title": "Characters",
@@ -39,13 +39,13 @@
       "id": 5, "type": "timeseries", "title": "Gem / Coin exchange rate (copper per gem)",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [ { "refId": "A", "expr": "gw2_commerce_exchange_coins_per_gem", "legendFormat": "{{gw2_direction}}" } ]
+      "targets": [ { "refId": "A", "expr": "max by (gw2_direction) (gw2_commerce_exchange_coins_per_gem)", "legendFormat": "{{gw2_direction}}" } ]
     },
     {
       "id": 6, "type": "timeseries", "title": "Wallet balances",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "targets": [ { "refId": "A", "expr": "topk(8, gw2_account_wallet_balance)", "legendFormat": "{{gw2_currency_name}}" } ]
+      "targets": [ { "refId": "A", "expr": "topk(8, max by (gw2_currency_name) (gw2_account_wallet_balance))", "legendFormat": "{{gw2_currency_name}}" } ]
     },
     {
       "id": 7, "type": "bargauge", "title": "Collection completion %",
@@ -53,15 +53,15 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 }, "overrides": [] },
       "options": { "orientation": "horizontal", "displayMode": "gradient" },
-      "targets": [ { "refId": "A", "instant": true, "expr": "100 * gw2_account_unlocks_count / gw2_account_unlocks_total", "legendFormat": "{{gw2_collection}}" } ]
+      "targets": [ { "refId": "A", "instant": true, "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / max by (gw2_collection) (gw2_account_unlocks_total)", "legendFormat": "{{gw2_collection}}" } ]
     },
     {
       "id": 8, "type": "table", "title": "Mastery points by region",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "targets": [
-        { "refId": "earned", "format": "table", "instant": true, "expr": "gw2_account_mastery_points_earned_total" },
-        { "refId": "spent", "format": "table", "instant": true, "expr": "gw2_account_mastery_points_spent" }
+        { "refId": "earned", "format": "table", "instant": true, "expr": "max by (gw2_region) (gw2_account_mastery_points_earned_total)" },
+        { "refId": "spent", "format": "table", "instant": true, "expr": "max by (gw2_region) (gw2_account_mastery_points_spent)" }
       ]
     },
     {
