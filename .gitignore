@@ -1,5 +1,6 @@
 # Binaries
 /gw2-collector
+/dashboards
 /bin/
 *.exe
 
