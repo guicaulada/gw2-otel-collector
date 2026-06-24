@@ -3,61 +3,106 @@
 An OpenTelemetry collector for **Guild Wars 2**. It polls the official
 [GW2 API v2](https://wiki.guildwars2.com/wiki/API:Main) with an account API key,
 turns the data into OpenTelemetry **metrics, logs, and traces**, and exports them
-to a backend (Prometheus + Loki + Tempo, or any OTLP target) so you can build
-Grafana dashboards that track the same things [gw2efficiency](https://gw2efficiency.com/)
-and [gw2storytracker](https://gw2storytracker.com/) surface — but in your own
-observability stack, with alerting and custom panels.
+over OTLP to a backend (Prometheus + Loki + Tempo, or Grafana Cloud). The result
+is a Grafana dashboard that tracks what [gw2efficiency](https://gw2efficiency.com/)
+and [gw2storytracker](https://gw2storytracker.com/) surface — wealth, progression,
+collections, PvP/WvW — in your own observability stack, with history you control,
+alerting, and custom panels.
 
-## Is this project worth building?
+![Overview dashboard](assets/screenshots/Overview.png)
 
-**Short answer: yes — it's a genuinely cool project, with one constraint you must
-design around.** See [`docs/viability.md`](docs/viability.md) for the full
-assessment. The headline points:
+## Why an OTel pipeline fits
 
-- **The GW2 API is snapshot-only.** It exposes *current* state (prices, balances,
-  ranks, unlock sets) and a handful of *lifetime cumulative* fields (playtime,
-  deaths, AP, PvP wins, luck). It stores **almost no history itself**. Every
-  "over time" graph — gold history, account-value curve, price charts, win-rate
-  trends — has to be built by *something that polls and persists*. That is exactly
-  what an OTel → Prometheus/Loki pipeline is for. **The collector's core value-add
-  is being the historian the API isn't.** This is a perfect fit, not a workaround.
-- **The economy and progression data is excellent.** Wallet (~70 currencies),
-  trading-post prices and your own transactions, account value, achievement points,
-  masteries, luck, playtime, collection-completion percentages — all map cleanly to
-  gauges/counters and make dense, compelling time series.
-- **What you cannot get from the API:** combat telemetry (DPS, boons, rotations —
-  that needs arcdps logs, the [gw2wingman](https://gw2wingman.nevermindcreations.de/)
-  domain), per-account WvW kills/deaths (team-level only), and PvP history beyond
-  the last 10 games. Know these blind spots up front.
+**The GW2 API is snapshot-only.** It exposes *current* state (prices, balances,
+ranks, unlock sets) and a handful of *lifetime cumulative* fields (playtime,
+deaths, AP, PvP wins, luck) — but stores almost no history itself. Every
+"over time" view (gold history, account-value curve, price charts, win-rate
+trends) has to be built by something that **polls and persists**. That is exactly
+what a metrics/logs pipeline is for, so the collector's core value-add is being
+the historian the API isn't — a clean fit, not a workaround.
 
-**Verdict:** A high-value personal-infrastructure / learning project. You essentially
-re-implement gw2efficiency's tracking inside Grafana, gaining alerting, retention you
-control, and panels those sites don't offer. The data is rich enough to be meaningful.
+The economy and progression data is rich: ~70 wallet currencies, trading-post
+prices and your own transactions, computed account value, achievement points,
+masteries, luck, playtime, and collection-completion percentages all map cleanly
+to gauges and counters.
 
-## Documentation
+## What it collects
 
-| Document | Contents |
-|---|---|
-| [`docs/viability.md`](docs/viability.md) | Full viability assessment, what's possible vs impossible, comparison to existing tools |
-| [`docs/api-reference.md`](docs/api-reference.md) | Every relevant endpoint enumerated, by family, with fields and signal mapping |
-| [`docs/api-empirical-findings.md`](docs/api-empirical-findings.md) | Results of probing every authenticated endpoint with a real key — verified shapes, real values, corrections |
-| [`docs/telemetry-design.md`](docs/telemetry-design.md) | Metric/log/trace catalog, gauge-vs-counter rules, cardinality guidance |
-| [`docs/collector-design.md`](docs/collector-design.md) | API mechanics: auth, rate limits, pagination, schema versioning, polling-interval table, self-observability |
-| [`docs/dashboards.md`](docs/dashboards.md) | Prioritized Grafana dashboard ideas mapped to endpoints and to existing community tools |
-| [`docs/architecture-research.md`](docs/architecture-research.md) | Pre-implementation research: OTel standards, architecture model, language, patterns, Grafana-stack integration, proposed project structure |
+- **Wealth & economy** — computed account value (total + per component: bank,
+  materials, shared, characters, equipped-gear runes/sigils, wallet) at buy/sell
+  basis; per-currency wallet; gem⇄coin exchange; delivery box; per-item watchlist
+  price/spread/flip-margin/supply/demand; open orders; material value by category;
+  single-level crafting profit; 24h price movers.
+- **Progression** — computed total AP, achievements done/%, masteries & mastery
+  points by region, luck → magic-find %, fractal level & augmentations, legendary
+  armory, per-character crafting, story completion % by season, Wizard's Vault, and
+  legendary/precursor collection progress.
+- **Characters** — level, playtime, deaths, profession/race, inventory used vs
+  capacity, crafting ratings; a per-character drill-down.
+- **Collections & wardrobe** — 14 unlock collections with completion %, unlocked
+  skins by type/rarity, dyes by rarity.
+- **PvP** — rank, per-profession & per-ladder W/L, season standings; the last ~10
+  games emitted as events.
+- **WvW** — public matchup data: per-team score / VP / kills / deaths / KDR / PPT,
+  objectives held by team and type, and per-map (EBG + 3 borderlands) breakdown.
+- **Events** (snapshot diff → logs) — level-ups, deaths, collection unlocks,
+  reset-cycle completions, trading-post transactions, PvP games, guild-log entries.
+  Backed by `bbolt` (diff baselines + a seen-set) for at-least-once, restart-safe
+  emission.
+- **Self-observability** — API request rate/duration (with trace exemplars) and a
+  last-successful-poll timestamp per endpoint family.
+
+Reset-cycle activity (world bosses / dungeons / raids / map chests / daily crafting)
+is tracked since reset, and traces parent a `poll <family>` span over a CLIENT span
+per API request.
+
+## Dashboard
+
+One tabbed dashboard (Grafana 13 schema-v2 `TabsLayout`) generated **as code in Go**
+via the [Grafana Foundation SDK](https://github.com/grafana/grafana-foundation-sdk)
+(`go run ./deploy/dashboards` → `deploy/dashboards/gw2.json`), auto-provisioned into
+the dev stack. A dense "command-center" design across 8 tabs — hero KPI bands with
+sparklines, composition donuts, radial gauges, threshold-coloured bars, team-coloured
+WvW, Loki **event annotations** overlaid on the time graphs, and a per-character
+drill-down variable.
+
+<details>
+<summary><b>Screenshots — all 8 tabs</b></summary>
+
+### Wealth & Economy
+![Wealth](assets/screenshots/Wealth.png)
+
+### Progression
+![Progression](assets/screenshots/Progression.png)
+
+### Collections
+![Collections](assets/screenshots/Collections.png)
+
+### Characters
+![Characters](assets/screenshots/Characters.png)
+
+### PvP
+![PvP](assets/screenshots/PvP.png)
+
+### WvW
+![WvW](assets/screenshots/WvW.png)
+
+### Collector Health
+![Health](assets/screenshots/Health.png)
+
+</details>
 
 ## Required API key scopes
 
 Create a key at [account.arena.net/applications](https://account.arena.net/applications)
-with these permissions (the project assumes all of them):
+with these permissions:
 
 `account`, `tradingpost`, `characters`, `wvw`, `pvp`, `progression`, `wallet`,
 `guilds`, `builds`, `inventories`, `unlocks`
 
-> Note: `account` is mandatory and always present. There is **no `wvw` scope** in the
-> permissions UI in the classic sense — the account's WvW *rank* is gated behind
-> `progression`; public WvW match data needs no key at all. Guild sub-resources require
-> a key belonging to the **guild leader**. See [`docs/collector-design.md`](docs/collector-design.md).
+> `account` is mandatory and always present. The account's WvW *rank* is gated behind
+> `progression`; public WvW match data needs no key. Guild sub-resources (treasury,
+> stash, log) require a key belonging to the **guild leader** — they stay empty otherwise.
 
 ## Quick start (local dev)
 
@@ -70,26 +115,21 @@ make test && make vet       # checks
 
 # Run the full local stack (Grafana LGTM) + collector:
 GW2_API_KEY=<key> make dev
-# Grafana → http://localhost:3000 — the "GW2 Account Overview" dashboard
-# auto-provisions; metrics/logs arrive within ~15s.
-
-# …or run the collector alone against an existing OTLP endpoint, e.g. a local
-# Alloy on the default :4318, or the LGTM stack exposed on host :14318:
-GW2_API_KEY=<key> OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:14318 ./gw2-collector
+# Grafana → http://localhost:3000 — the "GW2 Account" dashboard auto-provisions;
+# metrics/logs arrive within ~15s (heavier families take a minute or two).
 ```
 
-> The local LGTM stack exposes OTLP on host ports **14317/14318** (not the
-> standard 4317/4318) to avoid colliding with a local Grafana Alloy. The
-> collector's own default endpoint stays `http://localhost:4318`, so running the
-> binary with no override targets a local Alloy.
+> The local LGTM stack exposes OTLP on host ports **14317/14318** (not the standard
+> 4317/4318) to avoid colliding with a local Grafana Alloy. The collector's own
+> default endpoint stays `http://localhost:4318`.
 
 ## Production (Grafana Cloud via Alloy)
 
 The collector is egress-agnostic — it just speaks OTLP. The production path sends
 that to a local **Grafana Alloy**, which forwards to **Grafana Cloud**. The binary
-is identical to dev; only `OTEL_EXPORTER_OTLP_ENDPOINT` changes. Alloy's pipeline
-is in [`deploy/alloy/config.alloy`](deploy/alloy/config.alloy) (OTLP receiver →
-batch → OTLP/HTTP to Grafana Cloud with basic auth).
+is identical to dev; only `OTEL_EXPORTER_OTLP_ENDPOINT` changes. Alloy's pipeline is
+in [`deploy/alloy/config.alloy`](deploy/alloy/config.alloy) (OTLP receiver → batch →
+OTLP/HTTP to Grafana Cloud with basic auth).
 
 ```sh
 GW2_API_KEY=<key> \
@@ -105,9 +145,9 @@ Alloy-averse setups can skip it entirely and point `OTEL_EXPORTER_OTLP_ENDPOINT`
 
 ### Already running Alloy? (bring your own)
 
-If you already have a Grafana Alloy on this machine, **don't** use the prod
-compose (it starts its own Alloy). Just run the collector binary — its default
-endpoint is `http://localhost:4318`, so it targets your Alloy with no override:
+If you already run a Grafana Alloy on this machine, **don't** use the prod compose
+(it starts its own Alloy). Just run the binary — its default endpoint is
+`http://localhost:4318`, so it targets your Alloy with no override:
 
 ```sh
 make build
@@ -115,90 +155,54 @@ GW2_API_KEY=<key> make run      # → exports to your local Alloy on :4318
 ```
 
 Running the collector in a container instead? Point it at the host:
-`OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4318`.
-
-Your Alloy just needs an OTLP receiver wired to its export pipeline. If it
-already has `otelcol.receiver.otlp` on 4317/4318, the `gw2.*` data flows in with
-no changes; otherwise copy the receiver/batch/exporter components from
-[`deploy/alloy/config.alloy`](deploy/alloy/config.alloy). The dev LGTM stack
-(`make dev`) listens on **14317/14318** precisely so it never collides with a
-local Alloy on 4317/4318 — you can run both at once.
+`OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4318`. Your Alloy just
+needs an `otelcol.receiver.otlp` wired to its export pipeline; if it doesn't have
+one, copy the receiver/batch/exporter components from
+[`deploy/alloy/config.alloy`](deploy/alloy/config.alloy). The dev stack's
+14317/14318 ports mean you can run both at once.
 
 ## Alerting
 
 Grafana alert rules are provisioned as code from
 [`deploy/grafana/provisioning/alerting/rules.yaml`](deploy/grafana/provisioning/alerting/rules.yaml)
-(folder **GW2**): collector-not-polling and GW2-API-5xx (health), bank/shared
-near-full (storage), and cheap-gems / flip-margin (economy opportunities). They
-load automatically in the dev stack; for Grafana Cloud, import the same rules.
+(folder **GW2**), auto-loaded by the dev stack: collector-not-polling and GW2-API-5xx
+(health), bank/shared near-full (storage), and cheap-gems / flip-margin (economy
+opportunities). For Grafana Cloud, import the same rules.
 
-## Status
+## Configuration
 
-**v1 implemented and validated end-to-end against the live API + Grafana stack:**
+All configuration is environment variables (12-factor):
 
-- **Metrics** (OTel observable instruments → OTLP): account (age, fractal level, WvW rank,
-  AP), wallet (per-currency, with names), characters (playtime, deaths, level, crafting),
-  progression (luck, mastery points by region, masteries), storage (bank/shared slots,
-  materials by category), unlocks (14 collections + completion totals), commerce (gem/coin
-  exchange rate, delivery box), guild (level/members/currency/upgrades), pvp (rank, W/L),
-  plus collector self-observability (request duration/count, last-success timestamps).
-- **Logs / events** (snapshot diff → OTel logs → Loki): level-ups, deaths,
-  collection unlocks, expansion changes, and trading-post transactions — with `bbolt`
-  persistence (diff baselines + seen-set) for at-least-once, restart-safe emission.
-- **Reference cache**: id→name (currencies) and collection totals, refreshed only on
-  `/v2/build` change via a lock-free atomic-pointer swap.
-- **Dashboard**: a 12-panel "GW2 Account Overview" auto-provisioned into the dev stack.
-- **Tests**: client (retry/decode/auth), state (persistence), config, reference (build-gating).
+| Variable | Default | Purpose |
+|---|---|---|
+| `GW2_API_KEY` | *(required)* | Account API key |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4318` | OTLP target (Alloy, LGTM, Grafana Cloud) |
+| `OTEL_EXPORTER_OTLP_HEADERS` | — | Standard OTLP headers (e.g. auth for direct Cloud export) |
+| `GW2_TRACK_ITEMS` | *(empty)* | Comma-separated item IDs for the price/flip/craft watchlist |
+| `GW2_STATE_PATH` | `state.db` | Path to the `bbolt` event-state database |
+| `GW2_EXPORT_INTERVAL` | `30s` | OTLP export/flush interval |
+| `GW2_INTERVAL_<FAMILY>` | per-family | Poll cadence per endpoint family (`ACCOUNT`, `WALLET`, `VALUE`, …) |
+| `GW2_LOG_LEVEL` | `info` | `debug` / `info` / `warn` / `error` |
+| `GW2_SCHEMA_VERSION` | `latest` | Pinned GW2 API `?v=` schema version |
 
-**v2 adds:**
+## Architecture
 
-- **Traces** (OTLP → Tempo): a `poll <family>` span per cycle parenting a CLIENT span per
-  API request; the request-duration histogram carries trace exemplars.
-- **Per-item trading-post prices**: configurable watchlist (`GW2_TRACK_ITEMS`) →
-  buy/sell price, spread, and flip margin (net of the 15% tax), with item names.
-- **Wizard's Vault**: meta progress, objectives completed, and unclaimed acclaim per period.
-- **Story completion**: quest→story→season join → completion % per season (333 quests, validated).
-- **Guild internals**: treasury/stash/storage gauges + guild-log events with a watermark
-  (activates when leading a guild).
+A standalone Go daemon, egress-agnostic over OTLP. It owns its own per-family
+scheduler, a shared token-bucket rate limiter (~5 req/s, per the API's per-IP
+limit), snapshot diffing, and a build-gated reference cache (id→name tables,
+refreshed only when `/v2/build` changes, via a lock-free atomic-pointer swap).
+The same binary drives direct-OTLP → local LGTM (dev), app → Alloy → Grafana Cloud
+(prod), or direct → Grafana Cloud — only the endpoint differs. Every "over time"
+view is the collector persisting snapshots; every gold *value* is computed
+(item count × trading-post price), never fetched.
 
-See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the layout and
-[`docs/api-empirical-findings.md`](docs/api-empirical-findings.md) for verified API shapes.
+## Not possible from the API
 
-**v3 adds (community-tool parity push):**
+Combat telemetry (DPS, boons, rotations — needs arcdps logs, the
+[gw2wingman](https://gw2wingman.nevermindcreations.de/) domain), per-account WvW
+kills/captures (team-level only), PvP history beyond the last 10 games, per-character
+map-completion %, gem-store catalog prices, and global PvP leaderboards as account data.
 
-- **Account value** — total + per-component (bank/materials/shared/characters/wallet) at
-  buy/sell basis, priced against the TP (the gw2efficiency flagship), with the value curve.
-- **Progression depth** — computed total AP, achievements done/%, per-character crafting,
-  legendary armory, fractal augmentations, magic find %.
-- **Reset-cycle activity** — world bosses / dungeons / raids / map chests / daily crafting
-  completed since reset + completion events.
-- **WvW match data** — per-team score / VP / kills / deaths / KDR / PPT, objectives held.
-- **PvP depth** — per-profession & per-ladder W/L, season standings; character inventory.
-- **Market depth** — item supply/demand, open-order value.
-- **One tabbed dashboard** (Grafana 13 schema-v2 `TabsLayout`, generated as code in Go via
-  the Grafana Foundation SDK — `go run ./deploy/dashboards`) with 8 tabs: Overview, Wealth, Progression, Collections,
-  Characters, PvP, WvW, Health — auto-provisioned via the file provider. A dense
-  "command-center" design: hero KPI bands with sparklines, composition donuts, radial
-  gauges, threshold-coloured bars, team-coloured WvW (red/blue/green), Loki **event
-  annotations** overlaid on the time graphs, and a **per-character drill-down** variable.
-- Plus material-storage value by category, and WvW per-map (EBG + 3 borderlands) breakdown.
+## License
 
-**Post-v3 additions:**
-
-- **Equipped-gear value** — a dedicated `equipment` component summing the tradable
-  runes/sigils/infusions across every character's equipped gear.
-- **Material categories by name** — material-storage metrics carry the resolved category
-  name alongside the numeric id.
-- **Wardrobe breakdown** — unlocked skins by type/rarity and dyes by rarity.
-- **Legendary/precursor collections** — per-category done/total and items obtained, from the
-  achievement collections (the gw2efficiency "legendary journey" view).
-- **Crafting profit** — single-level craft economics per tracked item (ingredient buy cost vs
-  output sell revenue net of the 15% tax).
-- **Recent PvP games** — the last ~10 matches emitted as `gw2.pvp.game` events to Loki.
-- **24h price movers** — per-item sell-price change on the Wealth tab.
-
-See [`docs/feature-coverage.md`](docs/feature-coverage.md) for the full parity matrix.
-
-**Descoped / impossible from the API:** PvP leaderboards (global rankings, not account data),
-map completion %, DPS/combat (arcdps logs), gem-store prices. **Possible future:**
-farming-session deltas, multi-level (recursive) crafting cost.
+[Apache License 2.0](LICENSE).
