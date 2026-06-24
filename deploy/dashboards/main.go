@@ -60,8 +60,8 @@ func main() {
 		{"Collections", collections()},
 		{"Characters", characters()},
 		{"PvP", pvp()},
-		{"Health", health()},
 		{"WvW", wvw()},
+		{"Health", health()},
 	}
 
 	db := v2.NewDashboardBuilder("GW2 Account").
