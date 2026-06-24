@@ -117,17 +117,6 @@ type fc struct {
 	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides
 }
 
-// valueMap renames field values for display (e.g. raw API map names → friendly
-// labels). Applied to defaults, so only matching values are affected.
-func valueMap(m map[string]string) []v2.ValueMapping {
-	opts := map[string]v2.ValueMappingResult{}
-	for k, v := range m {
-		text := v
-		opts[k] = v2.ValueMappingResult{Text: &text}
-	}
-	return []v2.ValueMapping{{ValueMap: &v2.ValueMap{Type: "value", Options: opts}}}
-}
-
 func (f fc) source() v2.FieldConfigSource {
 	d := v2.FieldConfig{}
 	unit := f.unit

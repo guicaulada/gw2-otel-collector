@@ -7667,7 +7667,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "max by (gw2_map, gw2_team) (gw2_wvw_map_score)",
+                        "expr": "label_replace(label_replace(label_replace(label_replace(max by (gw2_map, gw2_team) (gw2_wvw_map_score), \"gw2_map\", \"EBG\", \"gw2_map\", \"Center\"), \"gw2_map\", \"Red BL\", \"gw2_map\", \"RedHome\"), \"gw2_map\", \"Blue BL\", \"gw2_map\", \"BlueHome\"), \"gw2_map\", \"Green BL\", \"gw2_map\", \"GreenHome\")",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -7718,25 +7718,6 @@
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "mappings": [
-                    {
-                      "type": "value",
-                      "options": {
-                        "BlueHome": {
-                          "text": "Blue BL"
-                        },
-                        "Center": {
-                          "text": "EBG"
-                        },
-                        "GreenHome": {
-                          "text": "Green BL"
-                        },
-                        "RedHome": {
-                          "text": "Red BL"
-                        }
-                      }
-                    }
-                  ],
                   "color": {
                     "mode": "palette-classic"
                   },
@@ -7820,7 +7801,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "max by (gw2_map, gw2_team) (gw2_wvw_map_kills)",
+                        "expr": "label_replace(label_replace(label_replace(label_replace(max by (gw2_map, gw2_team) (gw2_wvw_map_kills), \"gw2_map\", \"EBG\", \"gw2_map\", \"Center\"), \"gw2_map\", \"Red BL\", \"gw2_map\", \"RedHome\"), \"gw2_map\", \"Blue BL\", \"gw2_map\", \"BlueHome\"), \"gw2_map\", \"Green BL\", \"gw2_map\", \"GreenHome\")",
                         "format": "table",
                         "instant": true,
                         "range": false
@@ -7871,25 +7852,6 @@
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "mappings": [
-                    {
-                      "type": "value",
-                      "options": {
-                        "BlueHome": {
-                          "text": "Blue BL"
-                        },
-                        "Center": {
-                          "text": "EBG"
-                        },
-                        "GreenHome": {
-                          "text": "Green BL"
-                        },
-                        "RedHome": {
-                          "text": "Red BL"
-                        }
-                      }
-                    }
-                  ],
                   "color": {
                     "mode": "palette-classic"
                   },

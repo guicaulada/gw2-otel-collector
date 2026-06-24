@@ -1,9 +1,23 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/grafana/grafana-foundation-sdk/go/cog"
 	v2 "github.com/grafana/grafana-foundation-sdk/go/dashboardv2beta1"
 )
+
+// renameMaps rewrites the raw WvW map-type label values to friendly names at the
+// data level (chained label_replace), so the bar-chart axis shows them directly
+// without a display value-mapping (which leaks phantom legend entries).
+func renameMaps(expr string) string {
+	for _, m := range [][2]string{
+		{"Center", "EBG"}, {"RedHome", "Red BL"}, {"BlueHome", "Blue BL"}, {"GreenHome", "Green BL"},
+	} {
+		expr = fmt.Sprintf(`label_replace(%s, "gw2_map", %q, "gw2_map", %q)`, expr, m[1], m[0])
+	}
+	return expr
+}
 
 // shorthand for a list of prometheus targets
 func tg(instant bool, items ...ql) []cog.Builder[v2.PanelQueryKind] {
@@ -318,18 +332,13 @@ func wvw() *Grid {
 	// Per-map current standings: one bar group per map, a bar per team. Far
 	// clearer than 12 trend lines; map names relabelled (EBG + borderlands).
 	g.add(matrixBars("War score by map & team",
-		"max by (gw2_map, gw2_team) (gw2_wvw_map_score)",
-		"gw2_map", "gw2_team", "horizontal", "none", mapTeamOverrides, mapNames), 12, 8)
+		renameMaps("max by (gw2_map, gw2_team) (gw2_wvw_map_score)"),
+		"gw2_map", "gw2_team", "horizontal", "none", mapTeamOverrides, nil), 12, 8)
 	g.add(matrixBars("Kills by map & team",
-		"max by (gw2_map, gw2_team) (gw2_wvw_map_kills)",
-		"gw2_map", "gw2_team", "horizontal", "none", mapTeamOverrides, mapNames), 12, 8)
+		renameMaps("max by (gw2_map, gw2_team) (gw2_wvw_map_kills)"),
+		"gw2_map", "gw2_team", "horizontal", "none", mapTeamOverrides, nil), 12, 8)
 	return g
 }
-
-// mapNames relabels the raw API WvW map types to friendly names.
-var mapNames = valueMap(map[string]string{
-	"Center": "EBG", "RedHome": "Red BL", "BlueHome": "Blue BL", "GreenHome": "Green BL",
-})
 
 // mapTeamOverrides colours the per-map team columns (red/blue/green).
 var mapTeamOverrides = []v2.Dashboardv2beta1FieldConfigSourceOverrides{
