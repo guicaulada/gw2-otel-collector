@@ -83,8 +83,25 @@ GW2_API_KEY=<key> OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:14318 ./gw2-colle
 > collector's own default endpoint stays `http://localhost:4318`, so running the
 > binary with no override targets a local Alloy.
 
-Switching dev → Alloy → Grafana Cloud is config-only: point
-`OTEL_EXPORTER_OTLP_ENDPOINT` (and `OTEL_EXPORTER_OTLP_HEADERS` for auth) at the target.
+## Production (Grafana Cloud via Alloy)
+
+The collector is egress-agnostic — it just speaks OTLP. The production path sends
+that to a local **Grafana Alloy**, which forwards to **Grafana Cloud**. The binary
+is identical to dev; only `OTEL_EXPORTER_OTLP_ENDPOINT` changes. Alloy's pipeline
+is in [`deploy/alloy/config.alloy`](deploy/alloy/config.alloy) (OTLP receiver →
+batch → OTLP/HTTP to Grafana Cloud with basic auth).
+
+```sh
+GW2_API_KEY=<key> \
+GRAFANA_CLOUD_OTLP_ENDPOINT=https://otlp-gateway-<region>.grafana.net/otlp \
+GRAFANA_CLOUD_INSTANCE_ID=<instance-id> \
+GRAFANA_CLOUD_API_KEY=<token> \
+docker compose -f deploy/docker-compose.prod.yaml up --build
+# Alloy UI → http://localhost:12345
+```
+
+Alloy-averse setups can skip it entirely and point `OTEL_EXPORTER_OTLP_ENDPOINT`
+(plus `OTEL_EXPORTER_OTLP_HEADERS` for auth) straight at Grafana Cloud.
 
 ## Status
 

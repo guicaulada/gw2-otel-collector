@@ -1,0 +1,46 @@
+// Alloy pipeline for the production path: receive OTLP from the gw2-collector
+// and forward metrics, logs, and traces to Grafana Cloud over OTLP/HTTP with
+// basic auth. The collector binary is unchanged — it just exports to Alloy
+// instead of the local LGTM stack (see deploy/docker-compose.prod.yaml).
+//
+// Required environment variables:
+//   GRAFANA_CLOUD_OTLP_ENDPOINT  e.g. https://otlp-gateway-prod-us-east-0.grafana.net/otlp
+//   GRAFANA_CLOUD_INSTANCE_ID    the stack's numeric instance ID (basic-auth username)
+//   GRAFANA_CLOUD_API_KEY        a Grafana Cloud token with metrics/logs/traces write scope
+
+otelcol.receiver.otlp "default" {
+	grpc {
+		endpoint = "0.0.0.0:4317"
+	}
+	http {
+		endpoint = "0.0.0.0:4318"
+	}
+
+	output {
+		metrics = [otelcol.processor.batch.default.input]
+		logs    = [otelcol.processor.batch.default.input]
+		traces  = [otelcol.processor.batch.default.input]
+	}
+}
+
+// Batch before export to reduce request volume to Grafana Cloud.
+otelcol.processor.batch "default" {
+	output {
+		metrics = [otelcol.exporter.otlphttp.grafanacloud.input]
+		logs    = [otelcol.exporter.otlphttp.grafanacloud.input]
+		traces  = [otelcol.exporter.otlphttp.grafanacloud.input]
+	}
+}
+
+// Grafana Cloud uses HTTP basic auth: username = instance ID, password = token.
+otelcol.auth.basic "grafanacloud" {
+	username = sys.env("GRAFANA_CLOUD_INSTANCE_ID")
+	password = sys.env("GRAFANA_CLOUD_API_KEY")
+}
+
+otelcol.exporter.otlphttp "grafanacloud" {
+	client {
+		endpoint = sys.env("GRAFANA_CLOUD_OTLP_ENDPOINT")
+		auth     = otelcol.auth.basic.grafanacloud.handler
+	}
+}

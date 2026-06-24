@@ -1,0 +1,46 @@
+# Production-like path: the collector exports OTLP to a local Grafana Alloy,
+# which forwards to Grafana Cloud. There is no local LGTM stack — the collector
+# binary is identical to dev, only OTEL_EXPORTER_OTLP_ENDPOINT changes.
+#
+#   GW2_API_KEY=<key> \
+#   GRAFANA_CLOUD_OTLP_ENDPOINT=https://otlp-gateway-<region>.grafana.net/otlp \
+#   GRAFANA_CLOUD_INSTANCE_ID=<instance-id> \
+#   GRAFANA_CLOUD_API_KEY=<token> \
+#   docker compose -f deploy/docker-compose.prod.yaml up --build
+#
+# Alloy config lives in deploy/alloy/config.alloy; its UI is on http://localhost:12345.
+services:
+  alloy:
+    image: grafana/alloy:latest
+    container_name: gw2-alloy
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+    environment:
+      GRAFANA_CLOUD_OTLP_ENDPOINT: ${GRAFANA_CLOUD_OTLP_ENDPOINT:?set GRAFANA_CLOUD_OTLP_ENDPOINT}
+      GRAFANA_CLOUD_INSTANCE_ID: ${GRAFANA_CLOUD_INSTANCE_ID:?set GRAFANA_CLOUD_INSTANCE_ID}
+      GRAFANA_CLOUD_API_KEY: ${GRAFANA_CLOUD_API_KEY:?set GRAFANA_CLOUD_API_KEY}
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+    ports:
+      - "12345:12345" # Alloy UI
+
+  collector:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: gw2-collector
+    depends_on:
+      - alloy
+    environment:
+      GW2_API_KEY: ${GW2_API_KEY:?set GW2_API_KEY in your environment or .env}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy:4318
+      GW2_LOG_LEVEL: ${GW2_LOG_LEVEL:-info}
+      GW2_STATE_PATH: /data/state.db
+      GW2_TRACK_ITEMS: ${GW2_TRACK_ITEMS:-19684,19721,24836}
+    volumes:
+      - gw2-state:/data
+
+volumes:
+  gw2-state:
