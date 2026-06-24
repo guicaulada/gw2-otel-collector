@@ -103,6 +103,27 @@ docker compose -f deploy/docker-compose.prod.yaml up --build
 Alloy-averse setups can skip it entirely and point `OTEL_EXPORTER_OTLP_ENDPOINT`
 (plus `OTEL_EXPORTER_OTLP_HEADERS` for auth) straight at Grafana Cloud.
 
+### Already running Alloy? (bring your own)
+
+If you already have a Grafana Alloy on this machine, **don't** use the prod
+compose (it starts its own Alloy). Just run the collector binary — its default
+endpoint is `http://localhost:4318`, so it targets your Alloy with no override:
+
+```sh
+make build
+GW2_API_KEY=<key> make run      # → exports to your local Alloy on :4318
+```
+
+Running the collector in a container instead? Point it at the host:
+`OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4318`.
+
+Your Alloy just needs an OTLP receiver wired to its export pipeline. If it
+already has `otelcol.receiver.otlp` on 4317/4318, the `gw2.*` data flows in with
+no changes; otherwise copy the receiver/batch/exporter components from
+[`deploy/alloy/config.alloy`](deploy/alloy/config.alloy). The dev LGTM stack
+(`make dev`) listens on **14317/14318** precisely so it never collides with a
+local Alloy on 4317/4318 — you can run both at once.
+
 ## Alerting
 
 Grafana alert rules are provisioned as code from
