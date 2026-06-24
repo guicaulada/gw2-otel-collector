@@ -1374,8 +1374,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_item_name) (gw2_commerce_item_supply)",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "supply",
                         "range": false
                       }
                     },
@@ -1395,8 +1395,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_item_name) (gw2_commerce_item_demand)",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "demand",
                         "range": false
                       }
                     },
@@ -1405,7 +1405,34 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "gw2_item_name",
+                      "mode": "outer"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "renameByName": {
+                        "Value #A": "supply",
+                        "Value #B": "demand",
+                        "gw2_item_name": "Item"
+                      }
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
@@ -2709,8 +2736,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_region) (gw2_account_mastery_points_earned_total)",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "earned",
                         "range": false
                       }
                     },
@@ -2730,8 +2757,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_region) (gw2_account_mastery_points_spent)",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "spent",
                         "range": false
                       }
                     },
@@ -2740,7 +2767,34 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "gw2_region",
+                      "mode": "outer"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "renameByName": {
+                        "Value #A": "earned",
+                        "Value #B": "spent",
+                        "gw2_region": "Region"
+                      }
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
@@ -4584,35 +4638,24 @@
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "barchart",
+            "group": "bargauge",
             "version": "",
             "spec": {
               "options": {
-                "barWidth": 0.9,
-                "groupWidth": 0.8,
-                "legend": {
-                  "displayMode": "list",
-                  "placement": "bottom"
-                },
+                "displayMode": "gradient",
                 "orientation": "horizontal",
-                "showValue": "auto",
-                "stacking": "none",
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "desc"
+                "reduceOptions": {
+                  "calc": "lastNotNull"
                 },
-                "xTickLabelRotation": 0
+                "valueMode": "text"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
+                  "min": 0,
+                  "max": 500,
                   "color": {
-                    "mode": "palette-classic"
-                  },
-                  "custom": {
-                    "fillOpacity": 85,
-                    "gradientMode": "hue",
-                    "lineWidth": 1
+                    "mode": "continuous-GrYlRd"
                   }
                 },
                 "overrides": []
@@ -4714,8 +4757,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state=\"used\",gw2_character_name=~\"$character\"})",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "used",
                         "range": false
                       }
                     },
@@ -4735,8 +4778,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state=\"capacity\",gw2_character_name=~\"$character\"})",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "capacity",
                         "range": false
                       }
                     },
@@ -4745,7 +4788,34 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "gw2_character_name",
+                      "mode": "outer"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "renameByName": {
+                        "Value #A": "used",
+                        "Value #B": "capacity",
+                        "gw2_character_name": "Character"
+                      }
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
@@ -5419,8 +5489,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome=\"win\"})",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "wins",
                         "range": false
                       }
                     },
@@ -5440,8 +5510,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome=\"loss\"})",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "losses",
                         "range": false
                       }
                     },
@@ -5450,7 +5520,34 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "joinByField",
+                  "spec": {
+                    "id": "joinByField",
+                    "options": {
+                      "byField": "gw2_profession",
+                      "mode": "outer"
+                    }
+                  }
+                },
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "renameByName": {
+                        "Value #A": "wins",
+                        "Value #B": "losses",
+                        "gw2_profession": "Profession"
+                      }
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
@@ -5606,29 +5703,73 @@
         "kind": "Panel",
         "spec": {
           "id": 70,
-          "title": "",
+          "title": "Stalest poll",
           "description": "",
           "links": [],
           "data": {
             "kind": "QueryGroup",
             "spec": {
-              "queries": [],
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "max(time() - gw2_poll_last_success_timestamp_seconds)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
               "transformations": [],
               "queryOptions": {}
             }
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "text",
+            "group": "stat",
             "version": "",
             "spec": {
               "options": {
-                "content": "### 🩺 Collector health",
-                "mode": "markdown"
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
-                  "unit": "none"
+                  "unit": "s",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#56A64B"
+                      },
+                      {
+                        "value": 900,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 1800,
+                        "color": "#E0252A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -5640,6 +5781,148 @@
         "kind": "Panel",
         "spec": {
           "id": 71,
+          "title": "API request rate",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "sum(rate(gw2_api_requests_total[5m]))"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "reqps",
+                  "decimals": 2,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#3573D6"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-72": {
+        "kind": "Panel",
+        "spec": {
+          "id": 72,
+          "title": "API p95 latency",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "histogram_quantile(0.95, sum by (le) (rate(gw2_api_request_duration_seconds_bucket[5m])))"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "s",
+                  "decimals": 3,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#F2B01E"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-73": {
+        "kind": "Panel",
+        "spec": {
+          "id": 73,
           "title": "Seconds since last successful poll (by family)",
           "description": "",
           "links": [],
@@ -5716,10 +5999,10 @@
           }
         }
       },
-      "panel-72": {
+      "panel-74": {
         "kind": "Panel",
         "spec": {
-          "id": 72,
+          "id": 74,
           "title": "API request rate (req/s) by endpoint",
           "description": "",
           "links": [],
@@ -5788,11 +6071,11 @@
           }
         }
       },
-      "panel-73": {
+      "panel-75": {
         "kind": "Panel",
         "spec": {
-          "id": 73,
-          "title": "API request p95 latency",
+          "id": 75,
+          "title": "API request p95 latency by endpoint",
           "description": "",
           "links": [],
           "data": {
@@ -5810,8 +6093,8 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "histogram_quantile(0.95, sum by (le) (rate(gw2_api_request_duration_seconds_bucket[5m])))",
-                        "legendFormat": "p95"
+                        "expr": "histogram_quantile(0.95, sum by (le, gw2_endpoint) (rate(gw2_api_request_duration_seconds_bucket[5m])))",
+                        "legendFormat": "{{gw2_endpoint}}"
                       }
                     },
                     "refId": "A",
@@ -5860,10 +6143,10 @@
           }
         }
       },
-      "panel-74": {
+      "panel-76": {
         "kind": "Panel",
         "spec": {
-          "id": 74,
+          "id": 76,
           "title": "Recent events",
           "description": "",
           "links": [],
@@ -5915,10 +6198,10 @@
           }
         }
       },
-      "panel-75": {
+      "panel-77": {
         "kind": "Panel",
         "spec": {
-          "id": 75,
+          "id": 77,
           "title": "Home team",
           "description": "",
           "links": [],
@@ -6034,10 +6317,10 @@
           }
         }
       },
-      "panel-76": {
+      "panel-78": {
         "kind": "Panel",
         "spec": {
-          "id": 76,
+          "id": 78,
           "title": "Our score",
           "description": "",
           "links": [],
@@ -6106,10 +6389,10 @@
           }
         }
       },
-      "panel-77": {
+      "panel-79": {
         "kind": "Panel",
         "spec": {
-          "id": 77,
+          "id": 79,
           "title": "Our VP",
           "description": "",
           "links": [],
@@ -6165,150 +6448,6 @@
                       {
                         "value": null,
                         "color": "#F2B01E"
-                      }
-                    ]
-                  },
-                  "color": {
-                    "mode": "thresholds"
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-78": {
-        "kind": "Panel",
-        "spec": {
-          "id": 78,
-          "title": "Our PPT",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "max(gw2_wvw_match_ppt * on(gw2_team) group_left gw2_wvw_home_team)",
-                        "instant": true,
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                },
-                "textMode": "value"
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "none",
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#56A64B"
-                      }
-                    ]
-                  },
-                  "color": {
-                    "mode": "thresholds"
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-79": {
-        "kind": "Panel",
-        "spec": {
-          "id": 79,
-          "title": "Our kills",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "max(gw2_wvw_match_kills * on(gw2_team) group_left gw2_wvw_home_team)",
-                        "instant": true,
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                },
-                "textMode": "value"
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "none",
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#E0252A"
                       }
                     ]
                   },
@@ -6402,6 +6541,150 @@
         "kind": "Panel",
         "spec": {
           "id": 80,
+          "title": "Our PPT",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "max(gw2_wvw_match_ppt * on(gw2_team) group_left gw2_wvw_home_team)",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#56A64B"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-81": {
+        "kind": "Panel",
+        "spec": {
+          "id": 81,
+          "title": "Our kills",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "max(gw2_wvw_match_kills * on(gw2_team) group_left gw2_wvw_home_team)",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#E0252A"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-82": {
+        "kind": "Panel",
+        "spec": {
+          "id": 82,
           "title": "Our objectives",
           "description": "",
           "links": [],
@@ -6470,10 +6753,10 @@
           }
         }
       },
-      "panel-81": {
+      "panel-83": {
         "kind": "Panel",
         "spec": {
-          "id": 81,
+          "id": 83,
           "title": "War score by team",
           "description": "",
           "links": [],
@@ -6588,10 +6871,10 @@
           }
         }
       },
-      "panel-82": {
+      "panel-84": {
         "kind": "Panel",
         "spec": {
-          "id": 82,
+          "id": 84,
           "title": "Victory points by team",
           "description": "",
           "links": [],
@@ -6706,10 +6989,10 @@
           }
         }
       },
-      "panel-83": {
+      "panel-85": {
         "kind": "Panel",
         "spec": {
-          "id": 83,
+          "id": 85,
           "title": "Kills by team",
           "description": "",
           "links": [],
@@ -6824,10 +7107,10 @@
           }
         }
       },
-      "panel-84": {
+      "panel-86": {
         "kind": "Panel",
         "spec": {
-          "id": 84,
+          "id": 86,
           "title": "KDR by team",
           "description": "",
           "links": [],
@@ -6942,10 +7225,10 @@
           }
         }
       },
-      "panel-85": {
+      "panel-87": {
         "kind": "Panel",
         "spec": {
-          "id": 85,
+          "id": 87,
           "title": "PPT by team",
           "description": "",
           "links": [],
@@ -7060,10 +7343,10 @@
           }
         }
       },
-      "panel-86": {
+      "panel-88": {
         "kind": "Panel",
         "spec": {
-          "id": 86,
+          "id": 88,
           "title": "Objectives held by team \u0026 type",
           "description": "",
           "links": [],
@@ -7169,10 +7452,10 @@
           }
         }
       },
-      "panel-87": {
+      "panel-89": {
         "kind": "Panel",
         "spec": {
-          "id": 87,
+          "id": 89,
           "title": "Objectives held by type (stacked by team)",
           "description": "",
           "links": [],
@@ -7192,8 +7475,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_objective_type, gw2_team) (gw2_wvw_objectives_held)",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "{{gw2_team}}",
                         "range": false
                       }
                     },
@@ -7202,7 +7485,19 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "groupingToMatrix",
+                  "spec": {
+                    "id": "groupingToMatrix",
+                    "options": {
+                      "columnField": "gw2_team",
+                      "rowField": "gw2_objective_type",
+                      "valueField": "Value"
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
@@ -7242,8 +7537,8 @@
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Rr]ed.*"
+                      "id": "byName",
+                      "options": "red"
                     },
                     "properties": [
                       {
@@ -7257,8 +7552,8 @@
                   },
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Bb]lue.*"
+                      "id": "byName",
+                      "options": "blue"
                     },
                     "properties": [
                       {
@@ -7272,8 +7567,8 @@
                   },
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Gg]reen.*"
+                      "id": "byName",
+                      "options": "green"
                     },
                     "properties": [
                       {
@@ -7291,10 +7586,90 @@
           }
         }
       },
-      "panel-88": {
+      "panel-9": {
         "kind": "Panel",
         "spec": {
-          "id": 88,
+          "id": 9,
+          "title": "Achievements done %",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "100 * max(gw2_account_achievements_done) / clamp_min(max(gw2_account_achievements_tracked), 1)",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "min": 0,
+                  "max": 100,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#E0252A"
+                      },
+                      {
+                        "value": 40,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 75,
+                        "color": "#56A64B"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-90": {
+        "kind": "Panel",
+        "spec": {
+          "id": 90,
           "title": "Per-map score (Center = EBG)",
           "description": "",
           "links": [],
@@ -7409,10 +7784,10 @@
           }
         }
       },
-      "panel-89": {
+      "panel-91": {
         "kind": "Panel",
         "spec": {
-          "id": 89,
+          "id": 91,
           "title": "Per-map kills",
           "description": "",
           "links": [],
@@ -7522,86 +7897,6 @@
                     ]
                   }
                 ]
-              }
-            }
-          }
-        }
-      },
-      "panel-9": {
-        "kind": "Panel",
-        "spec": {
-          "id": 9,
-          "title": "Achievements done %",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "100 * max(gw2_account_achievements_done) / clamp_min(max(gw2_account_achievements_tracked), 1)",
-                        "instant": true,
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "gauge",
-            "version": "",
-            "spec": {
-              "options": {
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                },
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "percent",
-                  "min": 0,
-                  "max": 100,
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#E0252A"
-                      },
-                      {
-                        "value": 40,
-                        "color": "orange"
-                      },
-                      {
-                        "value": 75,
-                        "color": "#56A64B"
-                      }
-                    ]
-                  },
-                  "color": {
-                    "mode": "thresholds"
-                  }
-                },
-                "overrides": []
               }
             }
           }
@@ -8460,7 +8755,7 @@
           {
             "kind": "TabsLayoutTab",
             "spec": {
-              "title": "PvP \u0026 Health",
+              "title": "PvP",
               "layout": {
                 "kind": "GridLayout",
                 "spec": {
@@ -8548,8 +8843,8 @@
                       "spec": {
                         "x": 0,
                         "y": 5,
-                        "width": 6,
-                        "height": 8,
+                        "width": 8,
+                        "height": 9,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-67"
@@ -8559,10 +8854,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 6,
+                        "x": 8,
                         "y": 5,
-                        "width": 9,
-                        "height": 8,
+                        "width": 8,
+                        "height": 9,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-68"
@@ -8572,23 +8867,36 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 15,
+                        "x": 16,
                         "y": 5,
-                        "width": 9,
-                        "height": 8,
+                        "width": 8,
+                        "height": 9,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-69"
                         }
                       }
-                    },
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "kind": "TabsLayoutTab",
+            "spec": {
+              "title": "Health",
+              "layout": {
+                "kind": "GridLayout",
+                "spec": {
+                  "items": [
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
                         "x": 0,
-                        "y": 13,
-                        "width": 24,
-                        "height": 2,
+                        "y": 0,
+                        "width": 8,
+                        "height": 5,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-70"
@@ -8598,10 +8906,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 15,
+                        "x": 8,
+                        "y": 0,
                         "width": 8,
-                        "height": 9,
+                        "height": 5,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-71"
@@ -8611,10 +8919,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 8,
-                        "y": 15,
+                        "x": 16,
+                        "y": 0,
                         "width": 8,
-                        "height": 9,
+                        "height": 5,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-72"
@@ -8624,9 +8932,9 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 16,
-                        "y": 15,
-                        "width": 8,
+                        "x": 0,
+                        "y": 5,
+                        "width": 24,
                         "height": 9,
                         "element": {
                           "kind": "ElementReference",
@@ -8638,12 +8946,38 @@
                       "kind": "GridLayoutItem",
                       "spec": {
                         "x": 0,
-                        "y": 24,
-                        "width": 24,
+                        "y": 14,
+                        "width": 12,
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-74"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 14,
+                        "width": 12,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-75"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
+                        "y": 22,
+                        "width": 24,
+                        "height": 8,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-76"
                         }
                       }
                     }
@@ -8669,7 +9003,7 @@
                         "height": 5,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-75"
+                          "name": "panel-77"
                         }
                       }
                     },
@@ -8682,32 +9016,6 @@
                         "height": 5,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-76"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 8,
-                        "y": 0,
-                        "width": 4,
-                        "height": 5,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-77"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 12,
-                        "y": 0,
-                        "width": 4,
-                        "height": 5,
-                        "element": {
-                          "kind": "ElementReference",
                           "name": "panel-78"
                         }
                       }
@@ -8715,7 +9023,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 16,
+                        "x": 8,
                         "y": 0,
                         "width": 4,
                         "height": 5,
@@ -8728,7 +9036,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 20,
+                        "x": 12,
                         "y": 0,
                         "width": 4,
                         "height": 5,
@@ -8741,13 +9049,39 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
+                        "x": 16,
+                        "y": 0,
+                        "width": 4,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-81"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 20,
+                        "y": 0,
+                        "width": 4,
+                        "height": 5,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-82"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
                         "x": 0,
                         "y": 5,
                         "width": 12,
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-81"
+                          "name": "panel-83"
                         }
                       }
                     },
@@ -8760,32 +9094,6 @@
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-82"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 0,
-                        "y": 13,
-                        "width": 8,
-                        "height": 8,
-                        "element": {
-                          "kind": "ElementReference",
-                          "name": "panel-83"
-                        }
-                      }
-                    },
-                    {
-                      "kind": "GridLayoutItem",
-                      "spec": {
-                        "x": 8,
-                        "y": 13,
-                        "width": 8,
-                        "height": 8,
-                        "element": {
-                          "kind": "ElementReference",
                           "name": "panel-84"
                         }
                       }
@@ -8793,7 +9101,7 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 16,
+                        "x": 0,
                         "y": 13,
                         "width": 8,
                         "height": 8,
@@ -8806,10 +9114,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 0,
-                        "y": 21,
-                        "width": 12,
-                        "height": 10,
+                        "x": 8,
+                        "y": 13,
+                        "width": 8,
+                        "height": 8,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-86"
@@ -8819,10 +9127,10 @@
                     {
                       "kind": "GridLayoutItem",
                       "spec": {
-                        "x": 12,
-                        "y": 21,
-                        "width": 12,
-                        "height": 10,
+                        "x": 16,
+                        "y": 13,
+                        "width": 8,
+                        "height": 8,
                         "element": {
                           "kind": "ElementReference",
                           "name": "panel-87"
@@ -8833,12 +9141,38 @@
                       "kind": "GridLayoutItem",
                       "spec": {
                         "x": 0,
+                        "y": 21,
+                        "width": 12,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-88"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 12,
+                        "y": 21,
+                        "width": 12,
+                        "height": 10,
+                        "element": {
+                          "kind": "ElementReference",
+                          "name": "panel-89"
+                        }
+                      }
+                    },
+                    {
+                      "kind": "GridLayoutItem",
+                      "spec": {
+                        "x": 0,
                         "y": 31,
                         "width": 12,
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-88"
+                          "name": "panel-90"
                         }
                       }
                     },
@@ -8851,7 +9185,7 @@
                         "height": 8,
                         "element": {
                           "kind": "ElementReference",
-                          "name": "panel-89"
+                          "name": "panel-91"
                         }
                       }
                     }

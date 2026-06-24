@@ -59,7 +59,8 @@ func main() {
 		{"Progression", progression()},
 		{"Collections", collections()},
 		{"Characters", characters()},
-		{"PvP & Health", pvpOps()},
+		{"PvP", pvp()},
+		{"Health", health()},
 		{"WvW", wvw()},
 	}
 

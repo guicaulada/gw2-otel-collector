@@ -275,6 +275,15 @@ func piechart(title string, targets []cog.Builder[v2.PanelQueryKind], pie string
 
 func barchart(title string, targets []cog.Builder[v2.PanelQueryKind], orientation, stacking string,
 	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides) *v2.PanelBuilder {
+	return barchartT(title, targets, nil, orientation, stacking, overrides)
+}
+
+// barchartT is barchart with explicit transformations — used to pivot long
+// Prometheus output into the wide shape a grouped/stacked bar chart needs (one
+// x-category per row, one series per column), which avoids duplicated legends.
+func barchartT(title string, targets []cog.Builder[v2.PanelQueryKind],
+	transforms []cog.Builder[v2.TransformationKind], orientation, stacking string,
+	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides) *v2.PanelBuilder {
 	if orientation == "" {
 		orientation = "horizontal"
 	}
@@ -285,9 +294,42 @@ func barchart(title string, targets []cog.Builder[v2.PanelQueryKind], orientatio
 		"xTickLabelRotation": 0, "groupWidth": 0.8, "barWidth": 0.9,
 		"legend":  map[string]any{"displayMode": "list", "placement": "bottom"},
 		"tooltip": map[string]any{"mode": "single", "sort": "desc"}}
-	return panel("barchart", title, dataGroup(targets), opts,
+	return panel("barchart", title, dataGroup(targets, transforms...), opts,
 		fc{colorMode: "palette-classic", overrides: overrides,
 			custom: map[string]any{"fillOpacity": 85, "lineWidth": 1, "gradientMode": "hue"}})
+}
+
+// groupedBars compares several named metrics across a dimension (e.g. earned vs
+// spent by region). Each metric is one table-format target; joinByField pivots
+// them so the dimension is the x-axis and each metric is a distinct series.
+func groupedBars(title, dimField, dimName string, series []ql, orientation, stacking string,
+	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides) *v2.PanelBuilder {
+	targets := make([]cog.Builder[v2.PanelQueryKind], len(series))
+	rename := map[string]any{dimField: dimName}
+	for i, s := range series {
+		ref := string(rune('A' + i))
+		targets[i] = promTargetTable(s.expr, ref)
+		rename["Value #"+ref] = s.legend
+	}
+	transforms := []cog.Builder[v2.TransformationKind]{
+		transform("joinByField", map[string]any{"byField": dimField, "mode": "outer"}),
+		transform("organize", map[string]any{
+			"excludeByName": map[string]any{"Time": true},
+			"renameByName":  rename}),
+	}
+	return barchartT(title, targets, transforms, orientation, stacking, overrides)
+}
+
+// matrixBars pivots a single metric carrying two labels into a matrix: rowField
+// becomes the x-axis category and each colField value becomes a stacked series.
+func matrixBars(title, expr, rowField, colField, orientation, stacking string,
+	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides) *v2.PanelBuilder {
+	targets := []cog.Builder[v2.PanelQueryKind]{promTargetTable(expr, "A")}
+	transforms := []cog.Builder[v2.TransformationKind]{
+		transform("groupingToMatrix", map[string]any{
+			"columnField": colField, "rowField": rowField, "valueField": "Value"}),
+	}
+	return barchartT(title, targets, transforms, orientation, stacking, overrides)
 }
 
 func timeseries(title string, targets []cog.Builder[v2.PanelQueryKind], unit string, stack bool,
@@ -359,13 +401,6 @@ func tablePanel(title string, targets []cog.Builder[v2.PanelQueryKind],
 	return v2.NewPanelBuilder().Title(title).
 		Data(dataGroup(targets, transformations...)).
 		Visualization(viz("table", opts, fc{overrides: overrides}))
-}
-
-func textPanel(title, markdown string) *v2.PanelBuilder {
-	opts := map[string]any{"mode": "markdown", "content": markdown}
-	return v2.NewPanelBuilder().Title(title).
-		Data(v2.NewQueryGroupBuilder()).
-		Visualization(viz("text", opts, fc{}))
 }
 
 // transform builds a transformation kind from an id + options map.

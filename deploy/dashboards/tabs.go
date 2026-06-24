@@ -90,9 +90,9 @@ func wealth() *Grid {
 	g.add(ts("Tracked item prices (copper): buy vs sell",
 		tg(false, ql{"max by (gw2_item_name, gw2_side) (gw2_commerce_item_price)", "{{gw2_item_name}} {{gw2_side}}"}),
 		"", false, "bottom", nil), 12, 8)
-	g.add(barchart("Tracked item supply vs demand (units)",
-		tg(true, ql{"max by (gw2_item_name) (gw2_commerce_item_supply)", "supply"},
-			ql{"max by (gw2_item_name) (gw2_commerce_item_demand)", "demand"}),
+	g.add(groupedBars("Tracked item supply vs demand (units)", "gw2_item_name", "Item",
+		[]ql{{"max by (gw2_item_name) (gw2_commerce_item_supply)", "supply"},
+			{"max by (gw2_item_name) (gw2_commerce_item_demand)", "demand"}},
 		"", "", []v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("supply", cBlue), byName("demand", cRed)}), 12, 8)
 	g.row()
 	g.add(bargauge("Flip margin (copper, sell×0.85 − buy)",
@@ -136,9 +136,9 @@ func progression() *Grid {
 		"100 * max by (gw2_legendary_category) (gw2_legendary_items_current) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_items_max), 1)",
 		"{{gw2_legendary_category}}", "percent", fp(100), pctRamp(), "", nil), 12, 8)
 	g.row()
-	g.add(barchart("Mastery points by region (earned vs spent)",
-		tg(true, ql{"max by (gw2_region) (gw2_account_mastery_points_earned_total)", "earned"},
-			ql{"max by (gw2_region) (gw2_account_mastery_points_spent)", "spent"}),
+	g.add(groupedBars("Mastery points by region (earned vs spent)", "gw2_region", "Region",
+		[]ql{{"max by (gw2_region) (gw2_account_mastery_points_earned_total)", "earned"},
+			{"max by (gw2_region) (gw2_account_mastery_points_spent)", "spent"}},
 		"", "", []v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("earned", cGreen), byName("spent", cGold)}), 12, 8)
 	g.add(ts("Wizard's Vault objectives completed by period",
 		tg(false, ql{"max by (gw2_period) (gw2_wizardsvault_objectives_completed)", "{{gw2_period}}"}),
@@ -214,19 +214,19 @@ func characters() *Grid {
 		`max by (gw2_character_name) (gw2_character_deaths_total{gw2_character_name=~"$character"})`,
 		"{{gw2_character_name}}", "", nil, nil, "continuous-RdYlGr", nil), 8, 9)
 	g.row()
-	g.add(barchart("Crafting rating by character & discipline",
-		tg(true, ql{`max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating{gw2_character_name=~"$character"})`, "{{gw2_character_name}} · {{gw2_discipline}}"}),
-		"horizontal", "", nil), 12, 10)
-	g.add(barchart("Inventory: used vs capacity by character",
-		tg(true, ql{`max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state="used",gw2_character_name=~"$character"})`, "used"},
-			ql{`max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state="capacity",gw2_character_name=~"$character"})`, "capacity"}),
+	g.add(bargauge("Crafting rating by character & discipline",
+		`max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating{gw2_character_name=~"$character"})`,
+		"{{gw2_character_name}} · {{gw2_discipline}}", "", fp(500), nil, "continuous-GrYlRd", nil), 12, 10)
+	g.add(groupedBars("Inventory: used vs capacity by character", "gw2_character_name", "Character",
+		[]ql{{`max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state="used",gw2_character_name=~"$character"})`, "used"},
+			{`max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state="capacity",gw2_character_name=~"$character"})`, "capacity"}},
 		"horizontal", "none",
 		[]v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("used", cBlue), byName("capacity", "#444444")}), 12, 10)
 	return g
 }
 
-// ---------------------------------------------------------------- PvP & Health
-func pvpOps() *Grid {
+// ---------------------------------------------------------------- PvP
+func pvp() *Grid {
 	g := &Grid{}
 	g.add(stat("PvP rank", "max(gw2_pvp_rank)", statOpts{color: "background", thr: thr(base(cPurple))}), 4, 5)
 	g.add(stat("Rank points", "max(gw2_pvp_rank_points)", statOpts{thr: thr(base(cPurple))}), 4, 5)
@@ -239,27 +239,40 @@ func pvpOps() *Grid {
 	g.row()
 	g.add(gauge("Win rate %",
 		`100 * max(gw2_pvp_matches_total{gw2_outcome="win"}) / clamp_min(max(gw2_pvp_matches_total{gw2_outcome="win"}) + max(gw2_pvp_matches_total{gw2_outcome="loss"}), 1)`,
-		"percent", 0, 100, thr(base(cRed), at(45, "orange"), at(55, cGreen))), 6, 8)
+		"percent", 0, 100, thr(base(cRed), at(45, "orange"), at(55, cGreen))), 8, 9)
 	g.add(piechart("Wins by profession",
 		tg(true, ql{`max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome="win"})`, "{{gw2_profession}}"}),
-		"", []string{"name", "value"}, []string{"value"}, nil), 9, 8)
-	g.add(barchart("Win/Loss by profession",
-		tg(true, ql{`max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome="win"})`, "wins"},
-			ql{`max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome="loss"})`, "losses"}),
+		"", []string{"name", "value"}, []string{"value"}, nil), 8, 9)
+	g.add(groupedBars("Win/Loss by profession", "gw2_profession", "Profession",
+		[]ql{{`max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome="win"})`, "wins"},
+			{`max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome="loss"})`, "losses"}},
 		"", "normal",
-		[]v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("wins", cGreen), byName("losses", cRed)}), 9, 8)
-	g.row()
-	g.add(textPanel("", "### 🩺 Collector health"), 24, 2)
+		[]v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("wins", cGreen), byName("losses", cRed)}), 8, 9)
+	return g
+}
+
+// ---------------------------------------------------------------- Health
+func health() *Grid {
+	g := &Grid{}
+	g.add(stat("Stalest poll",
+		"max(time() - gw2_poll_last_success_timestamp_seconds)", statOpts{unit: "s",
+			thr: thr(base(cGreen), at(900, "orange"), at(1800, cRed))}), 8, 5)
+	g.add(stat("API request rate", "sum(rate(gw2_api_requests_total[5m]))",
+		statOpts{unit: "reqps", decimals: fp(2), thr: thr(base(cBlue))}), 8, 5)
+	g.add(stat("API p95 latency",
+		"histogram_quantile(0.95, sum by (le) (rate(gw2_api_request_duration_seconds_bucket[5m])))",
+		statOpts{unit: "s", decimals: fp(3), thr: thr(base(cGold))}), 8, 5)
 	g.row()
 	g.add(bargauge("Seconds since last successful poll (by family)",
 		"time() - max by (gw2_family) (gw2_poll_last_success_timestamp_seconds)",
-		"{{gw2_family}}", "s", nil, thr(base(cGreen), at(900, "orange"), at(1800, cRed)), "", nil), 8, 9)
+		"{{gw2_family}}", "s", nil, thr(base(cGreen), at(900, "orange"), at(1800, cRed)), "", nil), 24, 9)
+	g.row()
 	g.add(ts("API request rate (req/s) by endpoint",
 		tg(false, ql{"sum by (gw2_endpoint) (rate(gw2_api_requests_total[5m]))", "{{gw2_endpoint}}"}),
-		"reqps", false, "bottom", nil), 8, 9)
-	g.add(ts("API request p95 latency",
-		tg(false, ql{"histogram_quantile(0.95, sum by (le) (rate(gw2_api_request_duration_seconds_bucket[5m])))", "p95"}),
-		"s", false, "bottom", nil), 8, 9)
+		"reqps", false, "bottom", nil), 12, 8)
+	g.add(ts("API request p95 latency by endpoint",
+		tg(false, ql{"histogram_quantile(0.95, sum by (le, gw2_endpoint) (rate(gw2_api_request_duration_seconds_bucket[5m])))", "{{gw2_endpoint}}"}),
+		"s", false, "bottom", nil), 12, 8)
 	g.row()
 	g.add(logsPanel("Recent events", `{service_name="gw2-otel-collector"}`), 24, 8)
 	return g
@@ -297,9 +310,10 @@ func wvw() *Grid {
 	g.add(bargauge("Objectives held by team & type",
 		"max by (gw2_team, gw2_objective_type) (gw2_wvw_objectives_held)",
 		"{{gw2_team}} · {{gw2_objective_type}}", "", nil, nil, "continuous-GrYlRd", teamOverrides()), 12, 10)
-	g.add(barchart("Objectives held by type (stacked by team)",
-		tg(true, ql{"max by (gw2_objective_type, gw2_team) (gw2_wvw_objectives_held)", "{{gw2_team}}"}),
-		"horizontal", "normal", teamOverrides()), 12, 10)
+	g.add(matrixBars("Objectives held by type (stacked by team)",
+		"max by (gw2_objective_type, gw2_team) (gw2_wvw_objectives_held)",
+		"gw2_objective_type", "gw2_team", "horizontal", "normal",
+		[]v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("red", cRed), byName("blue", cBlue), byName("green", cGreen)}), 12, 10)
 	g.row()
 	g.add(ts("Per-map score (Center = EBG)",
 		tg(false, ql{"max by (gw2_map, gw2_team) (gw2_wvw_map_score)", "{{gw2_map}} · {{gw2_team}}"}),
