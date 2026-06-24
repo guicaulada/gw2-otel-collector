@@ -129,8 +129,8 @@ See [`docs/architecture-research.md`](docs/architecture-research.md) §7 for the
 - **WvW match data** — per-team score / VP / kills / deaths / KDR / PPT, objectives held.
 - **PvP depth** — per-profession & per-ladder W/L, season standings; character inventory.
 - **Market depth** — item supply/demand, open-order value.
-- **One tabbed dashboard** (Grafana 13 schema-v2 `TabsLayout`, generated as code in
-  `deploy/dashboards/generate.py`) with 7 tabs: Overview, Wealth, Progression, Collections,
+- **One tabbed dashboard** (Grafana 13 schema-v2 `TabsLayout`, generated as code in Go via
+  the Grafana Foundation SDK — `go run ./deploy/dashboards`) with 7 tabs: Overview, Wealth, Progression, Collections,
   Characters, PvP & Health, WvW — auto-provisioned via the file provider. A dense
   "command-center" design: hero KPI bands with sparklines, composition donuts, radial
   gauges, threshold-coloured bars, team-coloured WvW (red/blue/green), Loki **event

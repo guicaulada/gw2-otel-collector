@@ -3,6 +3,7 @@ module github.com/guicaulada/gw2-otel-collector
 go 1.26.4
 
 require (
+	github.com/grafana/grafana-foundation-sdk/go v0.0.18
 	go.etcd.io/bbolt v1.5.0
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp v0.20.0

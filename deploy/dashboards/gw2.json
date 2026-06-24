@@ -6,27 +6,10 @@
     "namespace": "default"
   },
   "spec": {
-    "title": "GW2 Account",
-    "tags": [
-      "gw2"
-    ],
-    "editable": true,
-    "preload": false,
-    "liveNow": false,
-    "cursorSync": "Off",
-    "links": [],
     "annotations": [
       {
         "kind": "AnnotationQuery",
         "spec": {
-          "name": "Annotations & Alerts",
-          "enable": true,
-          "hide": true,
-          "builtIn": true,
-          "iconColor": "rgba(0, 211, 255, 1)",
-          "legacyOptions": {
-            "type": "dashboard"
-          },
           "query": {
             "kind": "DataQuery",
             "group": "grafana",
@@ -35,16 +18,17 @@
               "name": "-- Grafana --"
             },
             "spec": {}
-          }
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations \u0026 Alerts",
+          "builtIn": true
         }
       },
       {
         "kind": "AnnotationQuery",
         "spec": {
-          "name": "GW2 events",
-          "enable": true,
-          "hide": false,
-          "iconColor": "#F2B01E",
           "query": {
             "kind": "DataQuery",
             "group": "loki",
@@ -56,62 +40,16 @@
               "expr": "{service_name=\"gw2-otel-collector\"}",
               "refId": "Anno"
             }
-          }
-        }
-      }
-    ],
-    "variables": [
-      {
-        "kind": "QueryVariable",
-        "spec": {
-          "name": "character",
-          "label": "Character",
-          "hide": "dontHide",
-          "refresh": "onDashboardLoad",
-          "skipUrlSync": false,
-          "sort": "alphabeticalAsc",
-          "multi": true,
-          "includeAll": true,
-          "allowCustomValue": false,
-          "current": {
-            "text": "All",
-            "value": "$__all"
           },
-          "options": [],
-          "regex": "",
-          "query": {
-            "kind": "DataQuery",
-            "group": "prometheus",
-            "version": "v0",
-            "datasource": {
-              "name": "prometheus"
-            },
-            "spec": {
-              "query": "label_values(gw2_character_level, gw2_character_name)",
-              "refId": "A"
-            }
-          }
+          "enable": true,
+          "hide": false,
+          "iconColor": "#F2B01E",
+          "name": "GW2 events"
         }
       }
     ],
-    "timeSettings": {
-      "from": "now-24h",
-      "to": "now",
-      "autoRefresh": "30s",
-      "autoRefreshIntervals": [
-        "5s",
-        "10s",
-        "30s",
-        "1m",
-        "5m",
-        "15m",
-        "30m",
-        "1h"
-      ],
-      "hideTimepicker": false,
-      "timezone": "browser",
-      "fiscalYearStartMonth": 0
-    },
+    "cursorSync": "Off",
+    "editable": true,
     "elements": {
       "panel-1": {
         "kind": "Panel",
@@ -156,17 +94,15 @@
                 "colorMode": "background",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -176,593 +112,8 @@
                       }
                     ]
                   },
-                  "decimals": 1
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-2": {
-        "kind": "Panel",
-        "spec": {
-          "id": 2,
-          "title": "Liquid (\u221215%)",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "(max(gw2_account_value{gw2_component=\"total\",gw2_basis=\"sell\"}) * 0.85) / 10000"
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "textMode": "value",
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "none",
                   "color": {
                     "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#F2B01E"
-                      }
-                    ]
-                  },
-                  "decimals": 1
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-3": {
-        "kind": "Panel",
-        "spec": {
-          "id": 3,
-          "title": "Gold",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "(max(gw2_account_wallet_balance{gw2_currency_name=\"Coin\"})) / 10000"
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "textMode": "value",
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#F2B01E"
-                      }
-                    ]
-                  },
-                  "decimals": 1
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-4": {
-        "kind": "Panel",
-        "spec": {
-          "id": 4,
-          "title": "Gems",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "max(gw2_account_wallet_balance{gw2_currency_name=\"Gem\"})"
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "textMode": "value",
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#8F3BB8"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-5": {
-        "kind": "Panel",
-        "spec": {
-          "id": 5,
-          "title": "Playtime",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "sum(max by (gw2_character_name) (gw2_character_playtime_seconds_total))"
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "textMode": "value",
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "s",
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#3573D6"
-                      }
-                    ]
-                  },
-                  "decimals": 0
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-6": {
-        "kind": "Panel",
-        "spec": {
-          "id": 6,
-          "title": "Characters",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "max(gw2_account_characters)"
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "stat",
-            "version": "",
-            "spec": {
-              "options": {
-                "colorMode": "value",
-                "graphMode": "area",
-                "justifyMode": "auto",
-                "textMode": "value",
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#56A64B"
-                      }
-                    ]
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-7": {
-        "kind": "Panel",
-        "spec": {
-          "id": 7,
-          "title": "Wealth composition (sell, gold)",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "(max by (gw2_component) (gw2_account_value{gw2_basis=\"sell\",gw2_component!=\"total\"})) / 10000",
-                        "legendFormat": "{{gw2_component}}",
-                        "instant": true,
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "piechart",
-            "version": "",
-            "spec": {
-              "options": {
-                "pieType": "donut",
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "desc"
-                },
-                "displayLabels": [
-                  "name",
-                  "percent"
-                ],
-                "legend": {
-                  "displayMode": "table",
-                  "placement": "right",
-                  "values": [
-                    "value",
-                    "percent"
-                  ]
-                },
-                "reduceOptions": {
-                  "calc": "lastNotNull",
-                  "values": false
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "none",
-                  "color": {
-                    "mode": "palette-classic"
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-8": {
-        "kind": "Panel",
-        "spec": {
-          "id": 8,
-          "title": "Account value over time (gold, stacked)",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "(max by (gw2_component) (gw2_account_value{gw2_basis=\"sell\",gw2_component!=\"total\"})) / 10000",
-                        "legendFormat": "{{gw2_component}}"
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "timeseries",
-            "version": "",
-            "spec": {
-              "options": {
-                "legend": {
-                  "displayMode": "table",
-                  "placement": "right",
-                  "calcs": [
-                    "lastNotNull",
-                    "max"
-                  ]
-                },
-                "tooltip": {
-                  "mode": "multi",
-                  "sort": "desc"
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "none",
-                  "custom": {
-                    "fillOpacity": 35,
-                    "showPoints": "never",
-                    "drawStyle": "line",
-                    "lineWidth": 2,
-                    "gradientMode": "opacity",
-                    "lineInterpolation": "smooth",
-                    "spanNulls": true,
-                    "stacking": {
-                      "mode": "normal"
-                    }
-                  }
-                },
-                "overrides": []
-              }
-            }
-          }
-        }
-      },
-      "panel-9": {
-        "kind": "Panel",
-        "spec": {
-          "id": 9,
-          "title": "Achievements done %",
-          "description": "",
-          "links": [],
-          "data": {
-            "kind": "QueryGroup",
-            "spec": {
-              "queries": [
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "query": {
-                      "kind": "DataQuery",
-                      "group": "prometheus",
-                      "version": "v0",
-                      "datasource": {
-                        "name": "prometheus"
-                      },
-                      "spec": {
-                        "expr": "100 * max(gw2_account_achievements_done) / clamp_min(max(gw2_account_achievements_tracked), 1)",
-                        "instant": true,
-                        "range": false
-                      }
-                    },
-                    "refId": "A",
-                    "hidden": false
-                  }
-                }
-              ],
-              "transformations": [],
-              "queryOptions": {}
-            }
-          },
-          "vizConfig": {
-            "kind": "VizConfig",
-            "group": "gauge",
-            "version": "",
-            "spec": {
-              "options": {
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true,
-                "reduceOptions": {
-                  "calc": "lastNotNull"
-                }
-              },
-              "fieldConfig": {
-                "defaults": {
-                  "unit": "percent",
-                  "min": 0,
-                  "max": 100,
-                  "color": {
-                    "mode": "thresholds"
-                  },
-                  "thresholds": {
-                    "mode": "absolute",
-                    "steps": [
-                      {
-                        "value": null,
-                        "color": "#E0252A"
-                      },
-                      {
-                        "value": 40,
-                        "color": "orange"
-                      },
-                      {
-                        "value": 75,
-                        "color": "#56A64B"
-                      }
-                    ]
                   }
                 },
                 "overrides": []
@@ -813,20 +164,17 @@
             "version": "",
             "spec": {
               "options": {
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true,
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
                   "min": 0,
                   "max": 100,
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -843,6 +191,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -893,20 +244,17 @@
             "version": "",
             "spec": {
               "options": {
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true,
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
                   "min": 0,
                   "max": 300,
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -923,6 +271,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -954,8 +305,8 @@
                       },
                       "spec": {
                         "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / clamp_min(max by (gw2_collection) (gw2_account_unlocks_total), 1)",
-                        "legendFormat": "{{gw2_collection}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_collection}}",
                         "range": false
                       }
                     },
@@ -974,19 +325,18 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "min": 0,
+                  "max": 100,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -1004,8 +354,9 @@
                       }
                     ]
                   },
-                  "min": 0,
-                  "max": 100
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -1053,13 +404,15 @@
             "version": "",
             "spec": {
               "options": {
+                "enableLogDetails": true,
                 "showTime": true,
                 "sortOrder": "Descending",
-                "wrapLogMessage": true,
-                "enableLogDetails": true
+                "wrapLogMessage": true
               },
               "fieldConfig": {
-                "defaults": {},
+                "defaults": {
+                  "unit": "none"
+                },
                 "overrides": []
               }
             }
@@ -1109,17 +462,15 @@
                 "colorMode": "background",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -1129,7 +480,9 @@
                       }
                     ]
                   },
-                  "decimals": 1
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -1141,7 +494,7 @@
         "kind": "Panel",
         "spec": {
           "id": 15,
-          "title": "Liquid (\u221215%)",
+          "title": "Liquid (−15%)",
           "description": "",
           "links": [],
           "data": {
@@ -1180,17 +533,15 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -1200,7 +551,9 @@
                       }
                     ]
                   },
-                  "decimals": 1
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -1251,17 +604,15 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -1271,7 +622,9 @@
                       }
                     ]
                   },
-                  "decimals": 1
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -1322,17 +675,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -1341,6 +691,9 @@
                         "color": "#8F3BB8"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -1392,17 +745,15 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -1412,7 +763,9 @@
                       }
                     ]
                   },
-                  "decimals": 1
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -1463,17 +816,15 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -1483,7 +834,80 @@
                       }
                     ]
                   },
-                  "decimals": 1
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Liquid (−15%)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "(max(gw2_account_value{gw2_component=\"total\",gw2_basis=\"sell\"}) * 0.85) / 10000"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#F2B01E"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -1514,8 +938,8 @@
                       },
                       "spec": {
                         "expr": "(max by (gw2_component) (gw2_account_value{gw2_basis=\"sell\",gw2_component!=\"total\"})) / 10000",
-                        "legendFormat": "{{gw2_component}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_component}}",
                         "range": false
                       }
                     },
@@ -1534,11 +958,6 @@
             "version": "",
             "spec": {
               "options": {
-                "pieType": "donut",
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "desc"
-                },
                 "displayLabels": [
                   "name",
                   "percent"
@@ -1551,9 +970,14 @@
                     "percent"
                   ]
                 },
+                "pieType": "donut",
                 "reduceOptions": {
                   "calc": "lastNotNull",
                   "values": false
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -1573,7 +997,7 @@
         "kind": "Panel",
         "spec": {
           "id": 21,
-          "title": "Account value over time (gold): buy vs sell + components",
+          "title": "Account value over time (gold): components",
           "description": "",
           "links": [],
           "data": {
@@ -1611,12 +1035,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "right",
                   "calcs": [
-                    "lastNotNull",
-                    "max"
-                  ]
+                    "lastNotNull"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -1627,12 +1050,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 35,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 35,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true,
                     "stacking": {
                       "mode": "normal"
@@ -1668,8 +1091,8 @@
                       },
                       "spec": {
                         "expr": "(max by (gw2_material_category_name) (gw2_account_material_value)) / 10000",
-                        "legendFormat": "{{gw2_material_category_name}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_material_category_name}}",
                         "range": false
                       }
                     },
@@ -1688,11 +1111,6 @@
             "version": "",
             "spec": {
               "options": {
-                "pieType": "donut",
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "desc"
-                },
                 "displayLabels": [
                   "percent"
                 ],
@@ -1703,9 +1121,14 @@
                     "value"
                   ]
                 },
+                "pieType": "donut",
                 "reduceOptions": {
                   "calc": "lastNotNull",
                   "values": false
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -1725,7 +1148,7 @@
         "kind": "Panel",
         "spec": {
           "id": 23,
-          "title": "Gem \u21c4 coin exchange (copper per gem)",
+          "title": "Gem ⇄ coin exchange (copper per gem)",
           "description": "",
           "links": [],
           "data": {
@@ -1763,11 +1186,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "bottom",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -1778,12 +1201,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -1816,8 +1239,8 @@
                       },
                       "spec": {
                         "expr": "topk(10, max by (gw2_currency_name) (gw2_account_wallet_balance))",
-                        "legendFormat": "{{gw2_currency_name}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_currency_name}}",
                         "range": false
                       }
                     },
@@ -1836,12 +1259,12 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "text",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "text"
               },
               "fieldConfig": {
                 "defaults": {
@@ -1898,11 +1321,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "bottom",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -1913,12 +1336,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -1951,8 +1374,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_item_name) (gw2_commerce_item_supply)",
-                        "legendFormat": "supply",
                         "instant": true,
+                        "legendFormat": "supply",
                         "range": false
                       }
                     },
@@ -1972,8 +1395,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_item_name) (gw2_commerce_item_demand)",
-                        "legendFormat": "demand",
                         "instant": true,
+                        "legendFormat": "demand",
                         "range": false
                       }
                     },
@@ -1992,20 +1415,20 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
-                "stacking": "none",
-                "showValue": "auto",
-                "xTickLabelRotation": 0,
-                "groupWidth": 0.8,
                 "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
                   "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
                 "tooltip": {
                   "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
@@ -2015,8 +1438,8 @@
                   },
                   "custom": {
                     "fillOpacity": 85,
-                    "lineWidth": 1,
-                    "gradientMode": "hue"
+                    "gradientMode": "hue",
+                    "lineWidth": 1
                   }
                 },
                 "overrides": [
@@ -2029,8 +1452,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -2044,8 +1467,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -2060,7 +1483,7 @@
         "kind": "Panel",
         "spec": {
           "id": 27,
-          "title": "Flip margin (copper, sell\u00d70.85 \u2212 buy)",
+          "title": "Flip margin (copper, sell×0.85 − buy)",
           "description": "",
           "links": [],
           "data": {
@@ -2079,8 +1502,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_item_name) (gw2_commerce_item_flip_margin)",
-                        "legendFormat": "{{gw2_item_name}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_item_name}}",
                         "range": false
                       }
                     },
@@ -2099,19 +1522,16 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2128,6 +1548,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2159,8 +1582,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_item_name) (gw2_commerce_craft_profit)",
-                        "legendFormat": "{{gw2_item_name}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_item_name}}",
                         "range": false
                       }
                     },
@@ -2179,19 +1602,16 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2208,6 +1628,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2239,8 +1662,8 @@
                       },
                       "spec": {
                         "expr": "(max by (gw2_item_name) (gw2_commerce_item_price{gw2_side=\"sell\"}) / max by (gw2_item_name) (gw2_commerce_item_price{gw2_side=\"sell\"} offset 24h) - 1) * 100",
-                        "legendFormat": "{{gw2_item_name}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_item_name}}",
                         "range": false
                       }
                     },
@@ -2259,19 +1682,16 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2288,6 +1708,80 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "Gold",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "(max(gw2_account_wallet_balance{gw2_currency_name=\"Coin\"})) / 10000"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "decimals": 1,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#F2B01E"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2339,17 +1833,14 @@
                 "colorMode": "background",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2358,6 +1849,9 @@
                         "color": "#F2B01E"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2409,17 +1903,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2428,6 +1919,9 @@
                         "color": "#F2B01E"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2479,17 +1973,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2498,6 +1989,9 @@
                         "color": "#F2B01E"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2549,17 +2043,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2568,6 +2059,9 @@
                         "color": "#E0252A"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2619,17 +2113,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2638,6 +2129,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2689,17 +2183,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "s",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2708,6 +2199,9 @@
                         "color": "#3573D6"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2758,20 +2252,17 @@
             "version": "",
             "spec": {
               "options": {
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true,
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
                   "min": 0,
                   "max": 100,
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2788,6 +2279,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2838,20 +2332,17 @@
             "version": "",
             "spec": {
               "options": {
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true,
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
                   "min": 0,
                   "max": 300,
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2868,6 +2359,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -2899,8 +2393,8 @@
                       },
                       "spec": {
                         "expr": "100 * max by (gw2_season) (gw2_story_quests_completed) / clamp_min(max by (gw2_season) (gw2_story_quests_total), 1)",
-                        "legendFormat": "{{gw2_season}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_season}}",
                         "range": false
                       }
                     },
@@ -2919,19 +2413,18 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "min": 0,
+                  "max": 100,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -2949,8 +2442,9 @@
                       }
                     ]
                   },
-                  "min": 0,
-                  "max": 100
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -2981,8 +2475,8 @@
                       },
                       "spec": {
                         "expr": "100 * max by (gw2_legendary_category) (gw2_legendary_collections_done) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_collections_total), 1)",
-                        "legendFormat": "{{gw2_legendary_category}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_legendary_category}}",
                         "range": false
                       }
                     },
@@ -3001,19 +2495,18 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "min": 0,
+                  "max": 100,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -3031,8 +2524,79 @@
                       }
                     ]
                   },
-                  "min": 0,
-                  "max": 100
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-4": {
+        "kind": "Panel",
+        "spec": {
+          "id": 4,
+          "title": "Gems",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "max(gw2_account_wallet_balance{gw2_currency_name=\"Gem\"})"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#8F3BB8"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -3063,8 +2627,8 @@
                       },
                       "spec": {
                         "expr": "100 * max by (gw2_legendary_category) (gw2_legendary_items_current) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_items_max), 1)",
-                        "legendFormat": "{{gw2_legendary_category}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_legendary_category}}",
                         "range": false
                       }
                     },
@@ -3083,19 +2647,18 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "min": 0,
+                  "max": 100,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -3113,8 +2676,9 @@
                       }
                     ]
                   },
-                  "min": 0,
-                  "max": 100
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -3145,8 +2709,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_region) (gw2_account_mastery_points_earned_total)",
-                        "legendFormat": "earned",
                         "instant": true,
+                        "legendFormat": "earned",
                         "range": false
                       }
                     },
@@ -3166,8 +2730,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_region) (gw2_account_mastery_points_spent)",
-                        "legendFormat": "spent",
                         "instant": true,
+                        "legendFormat": "spent",
                         "range": false
                       }
                     },
@@ -3186,20 +2750,20 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
-                "stacking": "none",
-                "showValue": "auto",
-                "xTickLabelRotation": 0,
-                "groupWidth": 0.8,
                 "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
                   "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
                 "tooltip": {
                   "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
@@ -3209,8 +2773,8 @@
                   },
                   "custom": {
                     "fillOpacity": 85,
-                    "lineWidth": 1,
-                    "gradientMode": "hue"
+                    "gradientMode": "hue",
+                    "lineWidth": 1
                   }
                 },
                 "overrides": [
@@ -3223,8 +2787,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3238,8 +2802,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#F2B01E"
+                          "fixedColor": "#F2B01E",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3292,11 +2856,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "bottom",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -3307,12 +2871,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -3345,8 +2909,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_kind) (gw2_account_reset_completed)",
-                        "legendFormat": "{{gw2_kind}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_kind}}",
                         "range": false
                       }
                     },
@@ -3365,20 +2929,20 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "vertical",
-                "stacking": "none",
-                "showValue": "auto",
-                "xTickLabelRotation": 0,
-                "groupWidth": 0.8,
                 "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
                   "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "vertical",
+                "showValue": "auto",
+                "stacking": "none",
                 "tooltip": {
                   "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
@@ -3388,8 +2952,8 @@
                   },
                   "custom": {
                     "fillOpacity": 85,
-                    "lineWidth": 1,
-                    "gradientMode": "hue"
+                    "gradientMode": "hue",
+                    "lineWidth": 1
                   }
                 },
                 "overrides": []
@@ -3441,17 +3005,14 @@
                 "colorMode": "background",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -3460,6 +3021,9 @@
                         "color": "#8F3BB8"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -3511,17 +3075,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -3530,6 +3091,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -3581,17 +3145,15 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "decimals": 1,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -3601,7 +3163,9 @@
                       }
                     ]
                   },
-                  "decimals": 1
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -3632,8 +3196,8 @@
                       },
                       "spec": {
                         "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / clamp_min(max by (gw2_collection) (gw2_account_unlocks_total), 1)",
-                        "legendFormat": "{{gw2_collection}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_collection}}",
                         "range": false
                       }
                     },
@@ -3652,19 +3216,18 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "min": 0,
+                  "max": 100,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -3682,8 +3245,9 @@
                       }
                     ]
                   },
-                  "min": 0,
-                  "max": 100
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -3714,8 +3278,8 @@
                       },
                       "spec": {
                         "expr": "sum by (gw2_skin_type) (max by (gw2_skin_type, gw2_rarity) (gw2_wardrobe_skins))",
-                        "legendFormat": "{{gw2_skin_type}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_skin_type}}",
                         "range": false
                       }
                     },
@@ -3734,11 +3298,6 @@
             "version": "",
             "spec": {
               "options": {
-                "pieType": "donut",
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "desc"
-                },
                 "displayLabels": [
                   "name",
                   "value"
@@ -3751,9 +3310,14 @@
                     "percent"
                   ]
                 },
+                "pieType": "donut",
                 "reduceOptions": {
                   "calc": "lastNotNull",
                   "values": false
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -3792,8 +3356,8 @@
                       },
                       "spec": {
                         "expr": "sum by (gw2_rarity) (max by (gw2_skin_type, gw2_rarity) (gw2_wardrobe_skins))",
-                        "legendFormat": "{{gw2_rarity}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_rarity}}",
                         "range": false
                       }
                     },
@@ -3812,11 +3376,6 @@
             "version": "",
             "spec": {
               "options": {
-                "pieType": "pie",
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "desc"
-                },
                 "displayLabels": [
                   "name",
                   "value"
@@ -3829,9 +3388,14 @@
                     "percent"
                   ]
                 },
+                "pieType": "pie",
                 "reduceOptions": {
                   "calc": "lastNotNull",
                   "values": false
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -3851,8 +3415,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#AAAAAA"
+                          "fixedColor": "#AAAAAA",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3866,8 +3430,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#AAAAAA"
+                          "fixedColor": "#AAAAAA",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3881,8 +3445,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#62A4DA"
+                          "fixedColor": "#62A4DA",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3896,8 +3460,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#1A9306"
+                          "fixedColor": "#1A9306",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3911,8 +3475,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#FCD00B"
+                          "fixedColor": "#FCD00B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3926,8 +3490,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#FFA405"
+                          "fixedColor": "#FFA405",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3941,8 +3505,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#FB3E8D"
+                          "fixedColor": "#FB3E8D",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3956,8 +3520,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#4C139D"
+                          "fixedColor": "#4C139D",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3971,8 +3535,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#8A8A8A"
+                          "fixedColor": "#8A8A8A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -3986,8 +3550,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4001,8 +3565,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#62A4DA"
+                          "fixedColor": "#62A4DA",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4016,13 +3580,84 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#FFA405"
+                          "fixedColor": "#FFA405",
+                          "mode": "fixed"
                         }
                       }
                     ]
                   }
                 ]
+              }
+            }
+          }
+        }
+      },
+      "panel-5": {
+        "kind": "Panel",
+        "spec": {
+          "id": 5,
+          "title": "Playtime",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "sum(max by (gw2_character_name) (gw2_character_playtime_seconds_total))"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "s",
+                  "decimals": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#3573D6"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
               }
             }
           }
@@ -4051,8 +3686,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_rarity) (gw2_wardrobe_dyes)",
-                        "legendFormat": "{{gw2_rarity}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_rarity}}",
                         "range": false
                       }
                     },
@@ -4071,11 +3706,6 @@
             "version": "",
             "spec": {
               "options": {
-                "pieType": "pie",
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "desc"
-                },
                 "displayLabels": [
                   "name",
                   "value"
@@ -4088,9 +3718,14 @@
                     "percent"
                   ]
                 },
+                "pieType": "pie",
                 "reduceOptions": {
                   "calc": "lastNotNull",
                   "values": false
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -4110,8 +3745,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#AAAAAA"
+                          "fixedColor": "#AAAAAA",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4125,8 +3760,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#AAAAAA"
+                          "fixedColor": "#AAAAAA",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4140,8 +3775,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#62A4DA"
+                          "fixedColor": "#62A4DA",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4155,8 +3790,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#1A9306"
+                          "fixedColor": "#1A9306",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4170,8 +3805,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#FCD00B"
+                          "fixedColor": "#FCD00B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4185,8 +3820,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#FFA405"
+                          "fixedColor": "#FFA405",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4200,8 +3835,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#FB3E8D"
+                          "fixedColor": "#FB3E8D",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4215,8 +3850,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#4C139D"
+                          "fixedColor": "#4C139D",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4230,8 +3865,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#8A8A8A"
+                          "fixedColor": "#8A8A8A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4245,8 +3880,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4260,8 +3895,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#62A4DA"
+                          "fixedColor": "#62A4DA",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4275,8 +3910,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#FFA405"
+                          "fixedColor": "#FFA405",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -4330,17 +3965,14 @@
                 "colorMode": "background",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -4349,6 +3981,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -4400,17 +4035,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "s",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -4419,6 +4051,9 @@
                         "color": "#3573D6"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -4470,17 +4105,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -4489,6 +4121,9 @@
                         "color": "#E0252A"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -4540,17 +4175,15 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "decimals": 0,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -4560,7 +4193,9 @@
                       }
                     ]
                   },
-                  "decimals": 0
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -4591,9 +4226,9 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name, gw2_character_profession, gw2_character_race) (gw2_character_level{gw2_character_name=~\"$character\"})",
+                        "format": "table",
                         "instant": true,
-                        "range": false,
-                        "format": "table"
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -4601,7 +4236,46 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "organize",
+                  "spec": {
+                    "id": "organize",
+                    "options": {
+                      "excludeByName": {
+                        "Time": true
+                      },
+                      "indexByName": {
+                        "Value": 3,
+                        "gw2_character_name": 0,
+                        "gw2_character_profession": 1,
+                        "gw2_character_race": 2
+                      },
+                      "renameByName": {
+                        "Value": "Level",
+                        "gw2_character_name": "Character",
+                        "gw2_character_profession": "Profession",
+                        "gw2_character_race": "Race"
+                      }
+                    }
+                  }
+                },
+                {
+                  "kind": "sortBy",
+                  "spec": {
+                    "id": "sortBy",
+                    "options": {
+                      "fields": {},
+                      "sort": [
+                        {
+                          "desc": true,
+                          "field": "Level"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
@@ -4611,11 +4285,13 @@
             "version": "",
             "spec": {
               "options": {
-                "showHeader": true,
-                "cellHeight": "sm"
+                "cellHeight": "sm",
+                "showHeader": true
               },
               "fieldConfig": {
-                "defaults": {},
+                "defaults": {
+                  "unit": "none"
+                },
                 "overrides": [
                   {
                     "matcher": {
@@ -4630,28 +4306,28 @@
                         }
                       },
                       {
-                        "id": "custom.width",
-                        "value": 90
-                      },
-                      {
                         "id": "thresholds",
                         "value": {
                           "mode": "absolute",
                           "steps": [
                             {
-                              "value": null,
-                              "color": "#E0252A"
+                              "color": "#E0252A",
+                              "value": null
                             },
                             {
-                              "value": 40,
-                              "color": "orange"
+                              "color": "orange",
+                              "value": 40
                             },
                             {
-                              "value": 80,
-                              "color": "#56A64B"
+                              "color": "#56A64B",
+                              "value": 80
                             }
                           ]
                         }
+                      },
+                      {
+                        "id": "custom.width",
+                        "value": 90
                       }
                     ]
                   }
@@ -4684,8 +4360,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name) (gw2_character_level{gw2_character_name=~\"$character\"})",
-                        "legendFormat": "{{gw2_character_name}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_character_name}}",
                         "range": false
                       }
                     },
@@ -4704,19 +4380,18 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
+                  "min": 0,
+                  "max": 80,
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -4734,8 +4409,9 @@
                       }
                     ]
                   },
-                  "min": 0,
-                  "max": 80
+                  "color": {
+                    "mode": "thresholds"
+                  }
                 },
                 "overrides": []
               }
@@ -4766,8 +4442,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name) (gw2_character_playtime_seconds_total{gw2_character_name=~\"$character\"}) / 3600",
-                        "legendFormat": "{{gw2_character_name}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_character_name}}",
                         "range": false
                       }
                     },
@@ -4786,12 +4462,12 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "text",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "text"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4829,8 +4505,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name) (gw2_character_deaths_total{gw2_character_name=~\"$character\"})",
-                        "legendFormat": "{{gw2_character_name}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_character_name}}",
                         "range": false
                       }
                     },
@@ -4849,12 +4525,12 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "text",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "text"
               },
               "fieldConfig": {
                 "defaults": {
@@ -4873,7 +4549,7 @@
         "kind": "Panel",
         "spec": {
           "id": 59,
-          "title": "Crafting rating by character & discipline",
+          "title": "Crafting rating by character \u0026 discipline",
           "description": "",
           "links": [],
           "data": {
@@ -4892,8 +4568,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating{gw2_character_name=~\"$character\"})",
-                        "legendFormat": "{{gw2_character_name}} \u00b7 {{gw2_discipline}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_character_name}} · {{gw2_discipline}}",
                         "range": false
                       }
                     },
@@ -4912,20 +4588,20 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
-                "stacking": "none",
-                "showValue": "auto",
-                "xTickLabelRotation": 0,
-                "groupWidth": 0.8,
                 "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
                   "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
                 "tooltip": {
                   "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
@@ -4935,8 +4611,78 @@
                   },
                   "custom": {
                     "fillOpacity": 85,
-                    "lineWidth": 1,
-                    "gradientMode": "hue"
+                    "gradientMode": "hue",
+                    "lineWidth": 1
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-6": {
+        "kind": "Panel",
+        "spec": {
+          "id": 6,
+          "title": "Characters",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "max(gw2_account_characters)"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "textMode": "value"
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#56A64B"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -4968,8 +4714,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state=\"used\",gw2_character_name=~\"$character\"})",
-                        "legendFormat": "used",
                         "instant": true,
+                        "legendFormat": "used",
                         "range": false
                       }
                     },
@@ -4989,8 +4735,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_character_name) (gw2_character_inventory_slots{gw2_state=\"capacity\",gw2_character_name=~\"$character\"})",
-                        "legendFormat": "capacity",
                         "instant": true,
+                        "legendFormat": "capacity",
                         "range": false
                       }
                     },
@@ -5009,20 +4755,20 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
-                "stacking": "none",
-                "showValue": "auto",
-                "xTickLabelRotation": 0,
-                "groupWidth": 0.8,
                 "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
                   "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
                 "tooltip": {
                   "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
@@ -5032,8 +4778,8 @@
                   },
                   "custom": {
                     "fillOpacity": 85,
-                    "lineWidth": 1,
-                    "gradientMode": "hue"
+                    "gradientMode": "hue",
+                    "lineWidth": 1
                   }
                 },
                 "overrides": [
@@ -5046,8 +4792,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -5061,8 +4807,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#444444"
+                          "fixedColor": "#444444",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -5116,17 +4862,14 @@
                 "colorMode": "background",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -5135,6 +4878,9 @@
                         "color": "#8F3BB8"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -5186,17 +4932,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -5205,6 +4948,9 @@
                         "color": "#8F3BB8"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -5256,17 +5002,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -5275,6 +5018,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -5326,17 +5072,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -5345,6 +5088,9 @@
                         "color": "#E0252A"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -5396,17 +5142,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -5415,6 +5158,9 @@
                         "color": "#3573D6"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -5466,17 +5212,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -5485,6 +5228,9 @@
                         "color": "#8A8A8A"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -5535,20 +5281,17 @@
             "version": "",
             "spec": {
               "options": {
-                "showThresholdLabels": false,
-                "showThresholdMarkers": true,
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "percent",
                   "min": 0,
                   "max": 100,
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -5565,6 +5308,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -5596,8 +5342,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome=\"win\"})",
-                        "legendFormat": "{{gw2_profession}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_profession}}",
                         "range": false
                       }
                     },
@@ -5616,11 +5362,6 @@
             "version": "",
             "spec": {
               "options": {
-                "pieType": "donut",
-                "tooltip": {
-                  "mode": "single",
-                  "sort": "desc"
-                },
                 "displayLabels": [
                   "name",
                   "value"
@@ -5632,9 +5373,14 @@
                     "value"
                   ]
                 },
+                "pieType": "donut",
                 "reduceOptions": {
                   "calc": "lastNotNull",
                   "values": false
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -5673,8 +5419,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome=\"win\"})",
-                        "legendFormat": "wins",
                         "instant": true,
+                        "legendFormat": "wins",
                         "range": false
                       }
                     },
@@ -5694,8 +5440,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_profession) (gw2_pvp_profession_matches_total{gw2_outcome=\"loss\"})",
-                        "legendFormat": "losses",
                         "instant": true,
+                        "legendFormat": "losses",
                         "range": false
                       }
                     },
@@ -5714,20 +5460,20 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
-                "stacking": "normal",
-                "showValue": "auto",
-                "xTickLabelRotation": 0,
-                "groupWidth": 0.8,
                 "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
                   "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "normal",
                 "tooltip": {
                   "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
@@ -5737,8 +5483,8 @@
                   },
                   "custom": {
                     "fillOpacity": 85,
-                    "lineWidth": 1,
-                    "gradientMode": "hue"
+                    "gradientMode": "hue",
+                    "lineWidth": 1
                   }
                 },
                 "overrides": [
@@ -5751,8 +5497,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -5766,13 +5512,91 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
                   }
                 ]
+              }
+            }
+          }
+        }
+      },
+      "panel-7": {
+        "kind": "Panel",
+        "spec": {
+          "id": 7,
+          "title": "Wealth composition (sell, gold)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "(max by (gw2_component) (gw2_account_value{gw2_basis=\"sell\",gw2_component!=\"total\"})) / 10000",
+                        "instant": true,
+                        "legendFormat": "{{gw2_component}}",
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "piechart",
+            "version": "",
+            "spec": {
+              "options": {
+                "displayLabels": [
+                  "name",
+                  "percent"
+                ],
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "values": [
+                    "value",
+                    "percent"
+                  ]
+                },
+                "pieType": "donut",
+                "reduceOptions": {
+                  "calc": "lastNotNull",
+                  "values": false
+                },
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "color": {
+                    "mode": "palette-classic"
+                  }
+                },
+                "overrides": []
               }
             }
           }
@@ -5799,11 +5623,13 @@
             "version": "",
             "spec": {
               "options": {
-                "mode": "markdown",
-                "content": "### \ud83e\ude7a Collector health"
+                "content": "### 🩺 Collector health",
+                "mode": "markdown"
               },
               "fieldConfig": {
-                "defaults": {},
+                "defaults": {
+                  "unit": "none"
+                },
                 "overrides": []
               }
             }
@@ -5833,8 +5659,8 @@
                       },
                       "spec": {
                         "expr": "time() - max by (gw2_family) (gw2_poll_last_success_timestamp_seconds)",
-                        "legendFormat": "{{gw2_family}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_family}}",
                         "range": false
                       }
                     },
@@ -5853,19 +5679,16 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "color",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "color"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "s",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -5882,6 +5705,9 @@
                         "color": "#E0252A"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -5932,11 +5758,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "bottom",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -5947,12 +5773,12 @@
                 "defaults": {
                   "unit": "reqps",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -6004,11 +5830,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "bottom",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -6019,12 +5845,12 @@
                 "defaults": {
                   "unit": "s",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -6074,13 +5900,15 @@
             "version": "",
             "spec": {
               "options": {
+                "enableLogDetails": true,
                 "showTime": true,
                 "sortOrder": "Descending",
-                "wrapLogMessage": true,
-                "enableLogDetails": true
+                "wrapLogMessage": true
               },
               "fieldConfig": {
-                "defaults": {},
+                "defaults": {
+                  "unit": "none"
+                },
                 "overrides": []
               }
             }
@@ -6110,8 +5938,8 @@
                       },
                       "spec": {
                         "expr": "gw2_wvw_home_team",
-                        "legendFormat": "{{gw2_team}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_team}}",
                         "range": false
                       }
                     },
@@ -6133,17 +5961,14 @@
                 "colorMode": "background",
                 "graphMode": "none",
                 "justifyMode": "auto",
-                "textMode": "name",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "name"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -6152,6 +5977,9 @@
                         "color": "#3573D6"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": [
@@ -6164,8 +5992,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6179,8 +6007,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6194,8 +6022,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6251,17 +6079,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -6270,6 +6095,9 @@
                         "color": "#F2B01E"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -6323,17 +6151,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -6342,6 +6167,9 @@
                         "color": "#F2B01E"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -6395,17 +6223,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -6414,6 +6239,9 @@
                         "color": "#56A64B"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -6467,17 +6295,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -6486,6 +6311,85 @@
                         "color": "#E0252A"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-8": {
+        "kind": "Panel",
+        "spec": {
+          "id": 8,
+          "title": "Account value over time (gold, stacked)",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "(max by (gw2_component) (gw2_account_value{gw2_basis=\"sell\",gw2_component!=\"total\"})) / 10000",
+                        "legendFormat": "{{gw2_component}}"
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [
+                    "lastNotNull",
+                    "max"
+                  ],
+                  "displayMode": "table",
+                  "placement": "right"
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "none",
+                  "custom": {
+                    "drawStyle": "line",
+                    "fillOpacity": 35,
+                    "gradientMode": "opacity",
+                    "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
+                    "spanNulls": true,
+                    "stacking": {
+                      "mode": "normal"
+                    }
                   }
                 },
                 "overrides": []
@@ -6539,17 +6443,14 @@
                 "colorMode": "value",
                 "graphMode": "area",
                 "justifyMode": "auto",
-                "textMode": "value",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "textMode": "value"
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
-                  "color": {
-                    "mode": "thresholds"
-                  },
                   "thresholds": {
                     "mode": "absolute",
                     "steps": [
@@ -6558,6 +6459,9 @@
                         "color": "#3573D6"
                       }
                     ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
                   }
                 },
                 "overrides": []
@@ -6608,11 +6512,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "right",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "right"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -6623,12 +6527,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 20,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 20,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -6642,8 +6546,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6657,8 +6561,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6672,8 +6576,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6726,11 +6630,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "right",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "right"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -6741,12 +6645,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 20,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 20,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -6760,8 +6664,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6775,8 +6679,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6790,8 +6694,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6844,11 +6748,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "right",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "right"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -6859,12 +6763,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -6878,8 +6782,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6893,8 +6797,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6908,8 +6812,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -6962,11 +6866,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "right",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "right"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -6977,12 +6881,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -6996,8 +6900,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7011,8 +6915,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7026,8 +6930,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7080,11 +6984,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "right",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "right"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -7095,12 +6999,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -7114,8 +7018,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7129,8 +7033,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7144,8 +7048,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7160,7 +7064,7 @@
         "kind": "Panel",
         "spec": {
           "id": 86,
-          "title": "Objectives held by team & type",
+          "title": "Objectives held by team \u0026 type",
           "description": "",
           "links": [],
           "data": {
@@ -7179,8 +7083,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_team, gw2_objective_type) (gw2_wvw_objectives_held)",
-                        "legendFormat": "{{gw2_team}} \u00b7 {{gw2_objective_type}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_team}} · {{gw2_objective_type}}",
                         "range": false
                       }
                     },
@@ -7199,12 +7103,12 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
                 "displayMode": "gradient",
-                "valueMode": "text",
+                "orientation": "horizontal",
                 "reduceOptions": {
                   "calc": "lastNotNull"
-                }
+                },
+                "valueMode": "text"
               },
               "fieldConfig": {
                 "defaults": {
@@ -7223,8 +7127,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7238,8 +7142,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7253,8 +7157,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7288,8 +7192,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_objective_type, gw2_team) (gw2_wvw_objectives_held)",
-                        "legendFormat": "{{gw2_team}}",
                         "instant": true,
+                        "legendFormat": "{{gw2_team}}",
                         "range": false
                       }
                     },
@@ -7308,20 +7212,20 @@
             "version": "",
             "spec": {
               "options": {
-                "orientation": "horizontal",
-                "stacking": "normal",
-                "showValue": "auto",
-                "xTickLabelRotation": 0,
-                "groupWidth": 0.8,
                 "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
                   "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "normal",
                 "tooltip": {
                   "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
@@ -7331,8 +7235,8 @@
                   },
                   "custom": {
                     "fillOpacity": 85,
-                    "lineWidth": 1,
-                    "gradientMode": "hue"
+                    "gradientMode": "hue",
+                    "lineWidth": 1
                   }
                 },
                 "overrides": [
@@ -7345,8 +7249,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7360,8 +7264,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7375,8 +7279,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7410,7 +7314,7 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_map, gw2_team) (gw2_wvw_map_score)",
-                        "legendFormat": "{{gw2_map}} \u00b7 {{gw2_team}}"
+                        "legendFormat": "{{gw2_map}} · {{gw2_team}}"
                       }
                     },
                     "refId": "A",
@@ -7429,11 +7333,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "bottom",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -7444,12 +7348,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -7463,8 +7367,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7478,8 +7382,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7493,8 +7397,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7528,7 +7432,7 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_map, gw2_team) (gw2_wvw_map_kills)",
-                        "legendFormat": "{{gw2_map}} \u00b7 {{gw2_team}}"
+                        "legendFormat": "{{gw2_map}} · {{gw2_team}}"
                       }
                     },
                     "refId": "A",
@@ -7547,11 +7451,11 @@
             "spec": {
               "options": {
                 "legend": {
-                  "displayMode": "table",
-                  "placement": "bottom",
                   "calcs": [
                     "lastNotNull"
-                  ]
+                  ],
+                  "displayMode": "table",
+                  "placement": "bottom"
                 },
                 "tooltip": {
                   "mode": "multi",
@@ -7562,12 +7466,12 @@
                 "defaults": {
                   "unit": "none",
                   "custom": {
-                    "fillOpacity": 12,
-                    "showPoints": "never",
                     "drawStyle": "line",
-                    "lineWidth": 2,
+                    "fillOpacity": 12,
                     "gradientMode": "opacity",
                     "lineInterpolation": "smooth",
+                    "lineWidth": 2,
+                    "showPoints": "never",
                     "spanNulls": true
                   }
                 },
@@ -7581,8 +7485,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#E0252A"
+                          "fixedColor": "#E0252A",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7596,8 +7500,8 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#3573D6"
+                          "fixedColor": "#3573D6",
+                          "mode": "fixed"
                         }
                       }
                     ]
@@ -7611,13 +7515,93 @@
                       {
                         "id": "color",
                         "value": {
-                          "mode": "fixed",
-                          "fixedColor": "#56A64B"
+                          "fixedColor": "#56A64B",
+                          "mode": "fixed"
                         }
                       }
                     ]
                   }
                 ]
+              }
+            }
+          }
+        }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "Achievements done %",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "prometheus"
+                      },
+                      "spec": {
+                        "expr": "100 * max(gw2_account_achievements_done) / clamp_min(max(gw2_account_achievements_tracked), 1)",
+                        "instant": true,
+                        "range": false
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "gauge",
+            "version": "",
+            "spec": {
+              "options": {
+                "reduceOptions": {
+                  "calc": "lastNotNull"
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "percent",
+                  "min": 0,
+                  "max": 100,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "#E0252A"
+                      },
+                      {
+                        "value": 40,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 75,
+                        "color": "#56A64B"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  }
+                },
+                "overrides": []
               }
             }
           }
@@ -8476,7 +8460,7 @@
           {
             "kind": "TabsLayoutTab",
             "spec": {
-              "title": "PvP & Health",
+              "title": "PvP \u0026 Health",
               "layout": {
                 "kind": "GridLayout",
                 "spec": {
@@ -8878,6 +8862,65 @@
           }
         ]
       }
-    }
+    },
+    "links": [],
+    "preload": false,
+    "tags": [
+      "gw2"
+    ],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-24h",
+      "to": "now",
+      "autoRefresh": "30s",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "GW2 Account",
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "character",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "label": "Character",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "prometheus",
+            "version": "v0",
+            "datasource": {
+              "name": "prometheus"
+            },
+            "spec": {
+              "query": "label_values(gw2_character_level, gw2_character_name)",
+              "refId": "A"
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "alphabeticalAsc",
+          "options": [],
+          "multi": true,
+          "includeAll": true,
+          "allowCustomValue": false
+        }
+      }
+    ]
   }
 }
