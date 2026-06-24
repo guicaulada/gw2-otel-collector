@@ -304,7 +304,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / clamp_min(max by (gw2_collection) (gw2_account_unlocks_total), 1)",
+                        "expr": "sort_desc(100 * max by (gw2_collection) (gw2_account_unlocks_count) / clamp_min(max by (gw2_collection) (gw2_account_unlocks_total), 1))",
                         "instant": true,
                         "legendFormat": "{{gw2_collection}}",
                         "range": false
@@ -1238,7 +1238,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "topk(10, max by (gw2_currency_name) (gw2_account_wallet_balance))",
+                        "expr": "sort_desc(topk(10, max by (gw2_currency_name) (gw2_account_wallet_balance)))",
                         "instant": true,
                         "legendFormat": "{{gw2_currency_name}}",
                         "range": false
@@ -1528,7 +1528,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "max by (gw2_item_name) (gw2_commerce_item_flip_margin)",
+                        "expr": "sort_desc(max by (gw2_item_name) (gw2_commerce_item_flip_margin))",
                         "instant": true,
                         "legendFormat": "{{gw2_item_name}}",
                         "range": false
@@ -1608,7 +1608,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "max by (gw2_item_name) (gw2_commerce_craft_profit)",
+                        "expr": "sort_desc(max by (gw2_item_name) (gw2_commerce_craft_profit))",
                         "instant": true,
                         "legendFormat": "{{gw2_item_name}}",
                         "range": false
@@ -1688,7 +1688,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "(max by (gw2_item_name) (gw2_commerce_item_price{gw2_side=\"sell\"}) / max by (gw2_item_name) (gw2_commerce_item_price{gw2_side=\"sell\"} offset 24h) - 1) * 100",
+                        "expr": "sort_desc((max by (gw2_item_name) (gw2_commerce_item_price{gw2_side=\"sell\"}) / max by (gw2_item_name) (gw2_commerce_item_price{gw2_side=\"sell\"} offset 24h) - 1) * 100)",
                         "instant": true,
                         "legendFormat": "{{gw2_item_name}}",
                         "range": false
@@ -2419,7 +2419,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "100 * max by (gw2_season) (gw2_story_quests_completed) / clamp_min(max by (gw2_season) (gw2_story_quests_total), 1)",
+                        "expr": "sort_desc(100 * max by (gw2_season) (gw2_story_quests_completed) / clamp_min(max by (gw2_season) (gw2_story_quests_total), 1))",
                         "instant": true,
                         "legendFormat": "{{gw2_season}}",
                         "range": false
@@ -2501,7 +2501,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "100 * max by (gw2_legendary_category) (gw2_legendary_collections_done) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_collections_total), 1)",
+                        "expr": "sort_desc(100 * max by (gw2_legendary_category) (gw2_legendary_collections_done) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_collections_total), 1))",
                         "instant": true,
                         "legendFormat": "{{gw2_legendary_category}}",
                         "range": false
@@ -2653,7 +2653,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "100 * max by (gw2_legendary_category) (gw2_legendary_items_current) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_items_max), 1)",
+                        "expr": "sort_desc(100 * max by (gw2_legendary_category) (gw2_legendary_items_current) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_items_max), 1))",
                         "instant": true,
                         "legendFormat": "{{gw2_legendary_category}}",
                         "range": false
@@ -3249,7 +3249,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "100 * max by (gw2_collection) (gw2_account_unlocks_count) / clamp_min(max by (gw2_collection) (gw2_account_unlocks_total), 1)",
+                        "expr": "sort_desc(100 * max by (gw2_collection) (gw2_account_unlocks_count) / clamp_min(max by (gw2_collection) (gw2_account_unlocks_total), 1))",
                         "instant": true,
                         "legendFormat": "{{gw2_collection}}",
                         "range": false
@@ -4413,7 +4413,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "max by (gw2_character_name) (gw2_character_level{gw2_character_name=~\"$character\"})",
+                        "expr": "sort_desc(max by (gw2_character_name) (gw2_character_level{gw2_character_name=~\"$character\"}))",
                         "instant": true,
                         "legendFormat": "{{gw2_character_name}}",
                         "range": false
@@ -4495,7 +4495,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "max by (gw2_character_name) (gw2_character_playtime_seconds_total{gw2_character_name=~\"$character\"}) / 3600",
+                        "expr": "sort_desc(max by (gw2_character_name) (gw2_character_playtime_seconds_total{gw2_character_name=~\"$character\"}) / 3600)",
                         "instant": true,
                         "legendFormat": "{{gw2_character_name}}",
                         "range": false
@@ -4558,7 +4558,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "max by (gw2_character_name) (gw2_character_deaths_total{gw2_character_name=~\"$character\"})",
+                        "expr": "sort_desc(max by (gw2_character_name) (gw2_character_deaths_total{gw2_character_name=~\"$character\"}))",
                         "instant": true,
                         "legendFormat": "{{gw2_character_name}}",
                         "range": false
@@ -4621,7 +4621,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating{gw2_character_name=~\"$character\"})",
+                        "expr": "sort_desc(max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating{gw2_character_name=~\"$character\"}))",
                         "instant": true,
                         "legendFormat": "{{gw2_character_name}} · {{gw2_discipline}}",
                         "range": false
@@ -5941,7 +5941,7 @@
                         "name": "prometheus"
                       },
                       "spec": {
-                        "expr": "time() - max by (gw2_family) (gw2_poll_last_success_timestamp_seconds)",
+                        "expr": "sort_desc(time() - max by (gw2_family) (gw2_poll_last_success_timestamp_seconds))",
                         "instant": true,
                         "legendFormat": "{{gw2_family}}",
                         "range": false
@@ -7347,7 +7347,7 @@
         "kind": "Panel",
         "spec": {
           "id": 88,
-          "title": "Objectives held by team \u0026 type",
+          "title": "Total objectives held by team (stacked by type)",
           "description": "",
           "links": [],
           "data": {
@@ -7366,8 +7366,8 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_team, gw2_objective_type) (gw2_wvw_objectives_held)",
+                        "format": "table",
                         "instant": true,
-                        "legendFormat": "{{gw2_team}} · {{gw2_objective_type}}",
                         "range": false
                       }
                     },
@@ -7376,77 +7376,56 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "groupingToMatrix",
+                  "spec": {
+                    "id": "groupingToMatrix",
+                    "options": {
+                      "columnField": "gw2_objective_type",
+                      "rowField": "gw2_team",
+                      "valueField": "Value"
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "bargauge",
+            "group": "barchart",
             "version": "",
             "spec": {
               "options": {
-                "displayMode": "gradient",
-                "orientation": "horizontal",
-                "reduceOptions": {
-                  "calc": "lastNotNull"
+                "barWidth": 0.9,
+                "groupWidth": 0.8,
+                "legend": {
+                  "displayMode": "list",
+                  "placement": "bottom"
                 },
-                "valueMode": "text"
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "normal",
+                "tooltip": {
+                  "mode": "single",
+                  "sort": "desc"
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
                   "color": {
-                    "mode": "continuous-GrYlRd"
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "fillOpacity": 85,
+                    "gradientMode": "hue",
+                    "lineWidth": 1
                   }
                 },
-                "overrides": [
-                  {
-                    "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Rr]ed.*"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "fixedColor": "#E0252A",
-                          "mode": "fixed"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Bb]lue.*"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "fixedColor": "#3573D6",
-                          "mode": "fixed"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Gg]reen.*"
-                    },
-                    "properties": [
-                      {
-                        "id": "color",
-                        "value": {
-                          "fixedColor": "#56A64B",
-                          "mode": "fixed"
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "overrides": []
               }
             }
           }

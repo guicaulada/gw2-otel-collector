@@ -386,6 +386,15 @@ func bargauge(title, expr, legend, unit string, maxv *float64, t *v2.ThresholdsC
 		opts, f)
 }
 
+// sortedBargauge is a bargauge whose bars are sorted high→low. A multi-series
+// bargauge renders one bar per series in the order Prometheus returns them, so
+// wrapping the expr in sort_desc() yields value-ordered bars while keeping the
+// per-bar gradient/threshold colouring. The expr must group by one label.
+func sortedBargauge(title, expr, legend, unit string, maxv *float64, t *v2.ThresholdsConfig,
+	colorMode string, overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides) *v2.PanelBuilder {
+	return bargauge(title, "sort_desc("+expr+")", legend, unit, maxv, t, colorMode, overrides)
+}
+
 func logsPanel(title, expr string) *v2.PanelBuilder {
 	opts := map[string]any{"showTime": true, "sortOrder": "Descending",
 		"wrapLogMessage": true, "enableLogDetails": true}

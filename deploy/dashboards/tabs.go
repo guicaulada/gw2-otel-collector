@@ -46,7 +46,7 @@ func overview() *Grid {
 		"percent", 0, 100, nil), 5, 8)
 	g.add(gauge("Magic find %", "clamp_max(max(gw2_account_luck_total) * 300 / 4295450, 300)",
 		"percent", 0, 300, thr(base(cBlue), at(150, cGold), at(250, cGreen))), 5, 8)
-	g.add(bargauge("Collection completion %",
+	g.add(sortedBargauge("Collection completion %",
 		"100 * max by (gw2_collection) (gw2_account_unlocks_count) / clamp_min(max by (gw2_collection) (gw2_account_unlocks_total), 1)",
 		"{{gw2_collection}}", "percent", fp(100), pctRamp(), "", nil), 9, 8)
 	g.row()
@@ -83,7 +83,7 @@ func wealth() *Grid {
 	g.add(ts("Gem ⇄ coin exchange (copper per gem)",
 		tg(false, ql{"max by (gw2_direction) (gw2_commerce_exchange_coins_per_gem)", "{{gw2_direction}}"}),
 		"", false, "bottom", nil), 8, 8)
-	g.add(bargauge("Wallet balances (top 10 currencies)",
+	g.add(sortedBargauge("Wallet balances (top 10 currencies)",
 		"topk(10, max by (gw2_currency_name) (gw2_account_wallet_balance))",
 		"{{gw2_currency_name}}", "", nil, nil, "", nil), 8, 8)
 	g.row()
@@ -95,13 +95,13 @@ func wealth() *Grid {
 			{"max by (gw2_item_name) (gw2_commerce_item_demand)", "demand"}},
 		"", "", []v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("supply", cBlue), byName("demand", cRed)}), 12, 8)
 	g.row()
-	g.add(bargauge("Flip margin (copper, sell×0.85 − buy)",
+	g.add(sortedBargauge("Flip margin (copper, sell×0.85 − buy)",
 		"max by (gw2_item_name) (gw2_commerce_item_flip_margin)", "{{gw2_item_name}}",
 		"", nil, profitRamp(), "", nil), 8, 8)
-	g.add(bargauge("Crafting profit (copper)",
+	g.add(sortedBargauge("Crafting profit (copper)",
 		"max by (gw2_item_name) (gw2_commerce_craft_profit)", "{{gw2_item_name}}",
 		"", nil, profitRamp(), "", nil), 8, 8)
-	g.add(bargauge("24h movers (sell-price change %)",
+	g.add(sortedBargauge("24h movers (sell-price change %)",
 		`(max by (gw2_item_name) (gw2_commerce_item_price{gw2_side="sell"}) / max by (gw2_item_name) (gw2_commerce_item_price{gw2_side="sell"} offset 24h) - 1) * 100`,
 		"{{gw2_item_name}}", "percent", nil, thr(base(cRed), at(0, cGrey), at(0.0001, cGreen)), "", nil), 8, 8)
 	return g
@@ -125,14 +125,14 @@ func progression() *Grid {
 		"percent", 0, 100, nil), 6, 8)
 	g.add(gauge("Magic find %", "clamp_max(max(gw2_account_luck_total) * 300 / 4295450, 300)",
 		"percent", 0, 300, thr(base(cBlue), at(150, cGold), at(250, cGreen))), 6, 8)
-	g.add(bargauge("Story completion % by season",
+	g.add(sortedBargauge("Story completion % by season",
 		"100 * max by (gw2_season) (gw2_story_quests_completed) / clamp_min(max by (gw2_season) (gw2_story_quests_total), 1)",
 		"{{gw2_season}}", "percent", fp(100), pctRamp(), "", nil), 12, 8)
 	g.row()
-	g.add(bargauge("Legendary collections done / total %",
+	g.add(sortedBargauge("Legendary collections done / total %",
 		"100 * max by (gw2_legendary_category) (gw2_legendary_collections_done) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_collections_total), 1)",
 		"{{gw2_legendary_category}}", "percent", fp(100), pctRamp(), "", nil), 12, 8)
-	g.add(bargauge("Legendary items obtained % (started collections)",
+	g.add(sortedBargauge("Legendary items obtained % (started collections)",
 		"100 * max by (gw2_legendary_category) (gw2_legendary_items_current) / clamp_min(max by (gw2_legendary_category) (gw2_legendary_items_max), 1)",
 		"{{gw2_legendary_category}}", "percent", fp(100), pctRamp(), "", nil), 12, 8)
 	g.row()
@@ -161,7 +161,7 @@ func collections() *Grid {
 		"100 * sum(max by (gw2_collection) (gw2_account_unlocks_count)) / clamp_min(sum(max by (gw2_collection) (gw2_account_unlocks_total)), 1)",
 		statOpts{unit: "percent", decimals: fp(1), thr: thr(base(cGold))}), 8, 5)
 	g.row()
-	g.add(bargauge("Collection completion %",
+	g.add(sortedBargauge("Collection completion %",
 		"100 * max by (gw2_collection) (gw2_account_unlocks_count) / clamp_min(max by (gw2_collection) (gw2_account_unlocks_total), 1)",
 		"{{gw2_collection}}", "percent", fp(100), pctRamp(), "", nil), 24, 10)
 	g.row()
@@ -204,17 +204,17 @@ func characters() *Grid {
 			"renameByName":  map[string]any{"gw2_character_name": "Character", "gw2_character_profession": "Profession", "gw2_character_race": "Race", "Value": "Level"}}),
 		transform("sortBy", map[string]any{"fields": map[string]any{}, "sort": []map[string]any{{"field": "Level", "desc": true}}})), 24, 9)
 	g.row()
-	g.add(bargauge("Level by character",
+	g.add(sortedBargauge("Level by character",
 		`max by (gw2_character_name) (gw2_character_level{gw2_character_name=~"$character"})`,
 		"{{gw2_character_name}}", "", fp(80), thr(base(cRed), at(40, "orange"), at(80, cGreen)), "", nil), 8, 9)
-	g.add(bargauge("Playtime by character (h)",
+	g.add(sortedBargauge("Playtime by character (h)",
 		`max by (gw2_character_name) (gw2_character_playtime_seconds_total{gw2_character_name=~"$character"}) / 3600`,
 		"{{gw2_character_name}}", "h", nil, nil, "", nil), 8, 9)
-	g.add(bargauge("Deaths by character",
+	g.add(sortedBargauge("Deaths by character",
 		`max by (gw2_character_name) (gw2_character_deaths_total{gw2_character_name=~"$character"})`,
 		"{{gw2_character_name}}", "", nil, nil, "continuous-RdYlGr", nil), 8, 9)
 	g.row()
-	g.add(bargauge("Crafting rating by character & discipline",
+	g.add(sortedBargauge("Crafting rating by character & discipline",
 		`max by (gw2_character_name, gw2_discipline) (gw2_character_crafting_rating{gw2_character_name=~"$character"})`,
 		"{{gw2_character_name}} · {{gw2_discipline}}", "", fp(500), nil, "continuous-GrYlRd", nil), 12, 10)
 	g.add(groupedBars("Inventory: used vs capacity by character", "gw2_character_name", "Character",
@@ -263,7 +263,7 @@ func health() *Grid {
 		"histogram_quantile(0.95, sum by (le) (rate(gw2_api_request_duration_seconds_bucket[5m])))",
 		statOpts{unit: "s", decimals: fp(3), thr: thr(base(cGold))}), 8, 5)
 	g.row()
-	g.add(bargauge("Seconds since last successful poll (by family)",
+	g.add(sortedBargauge("Seconds since last successful poll (by family)",
 		"time() - max by (gw2_family) (gw2_poll_last_success_timestamp_seconds)",
 		"{{gw2_family}}", "s", nil, thr(base(cGreen), at(900, "orange"), at(1800, cRed)), "", nil), 24, 9)
 	g.row()
@@ -307,9 +307,9 @@ func wvw() *Grid {
 	g.add(ts("PPT by team", tg(false, ql{"max by (gw2_team) (gw2_wvw_match_ppt)", "{{gw2_team}}"}),
 		"", false, "", teamOverrides()), 8, 8)
 	g.row()
-	g.add(bargauge("Objectives held by team & type",
+	g.add(matrixBars("Total objectives held by team (stacked by type)",
 		"max by (gw2_team, gw2_objective_type) (gw2_wvw_objectives_held)",
-		"{{gw2_team}} · {{gw2_objective_type}}", "", nil, nil, "continuous-GrYlRd", teamOverrides()), 12, 10)
+		"gw2_team", "gw2_objective_type", "horizontal", "normal", nil), 12, 10)
 	g.add(matrixBars("Objectives held by type (stacked by team)",
 		"max by (gw2_objective_type, gw2_team) (gw2_wvw_objectives_held)",
 		"gw2_objective_type", "gw2_team", "horizontal", "normal",
