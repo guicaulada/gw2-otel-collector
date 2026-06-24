@@ -1,5 +1,10 @@
 # gw2-otel-collector
 
+[![CI](https://github.com/guicaulada/gw2-otel-collector/actions/workflows/ci.yml/badge.svg)](https://github.com/guicaulada/gw2-otel-collector/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/guicaulada/gw2-otel-collector/actions/workflows/codeql.yml/badge.svg)](https://github.com/guicaulada/gw2-otel-collector/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/guicaulada/gw2-otel-collector/badge)](https://scorecard.dev/viewer/?uri=github.com/guicaulada/gw2-otel-collector)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 An OpenTelemetry collector for **Guild Wars 2**. It polls the official
 [GW2 API v2](https://wiki.guildwars2.com/wiki/API:Main) with an account API key,
 turns the data into OpenTelemetry **metrics, logs, and traces**, and exports them
