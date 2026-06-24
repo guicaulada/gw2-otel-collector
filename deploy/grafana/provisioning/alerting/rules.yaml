@@ -1,0 +1,233 @@
+# Provisioned Grafana alert rules for the GW2 collector. Each rule is a
+# Prometheus instant query (refId A) fed into a threshold expression (refId B);
+# B is the alerting condition. Datasource UID "prometheus" matches the LGTM /
+# Grafana Cloud Prometheus datasource (same UID the dashboard uses).
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: Collector health
+    folder: GW2
+    interval: 1m
+    rules:
+      - uid: gw2-collector-not-polling
+        title: Collector not polling
+        condition: B
+        for: 5m
+        noDataState: Alerting
+        execErrState: Alerting
+        labels:
+          severity: critical
+        annotations:
+          summary: The gw2-collector has not completed any poll recently
+          description: >
+            No endpoint family has reported a successful poll in over 15 minutes
+            (or the metric is absent). The collector is likely down or wedged.
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              editorMode: code
+              expr: time() - max(gw2_poll_last_success_timestamp_seconds)
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - type: query
+                  evaluator: { type: gt, params: [900] }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last, params: [] }
+
+      - uid: gw2-api-server-errors
+        title: GW2 API server errors
+        condition: B
+        for: 10m
+        noDataState: OK
+        execErrState: OK
+        labels:
+          severity: warning
+        annotations:
+          summary: The GW2 API is returning 5xx responses
+          description: Sustained 5xx error rate from the GW2 API; polling may be degraded.
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              editorMode: code
+              expr: sum(rate(gw2_api_requests_total{http_response_status_code=~"5.."}[5m]))
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - type: query
+                  evaluator: { type: gt, params: [0.1] }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last, params: [] }
+
+  - orgId: 1
+    name: Storage
+    folder: GW2
+    interval: 5m
+    rules:
+      - uid: gw2-bank-near-full
+        title: Bank nearly full
+        condition: B
+        for: 1h
+        noDataState: OK
+        execErrState: OK
+        labels:
+          severity: warning
+        annotations:
+          summary: Account bank is {{ $values.A }}% full
+          description: The account bank has little free space; deposit/clean up to avoid losing drops.
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              editorMode: code
+              expr: 100 * max(gw2_account_bank_slots_used) / clamp_min(max(gw2_account_bank_slots_capacity), 1)
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - type: query
+                  evaluator: { type: gt, params: [95] }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last, params: [] }
+
+      - uid: gw2-shared-near-full
+        title: Shared inventory nearly full
+        condition: B
+        for: 1h
+        noDataState: OK
+        execErrState: OK
+        labels:
+          severity: warning
+        annotations:
+          summary: Shared inventory is {{ $values.A }}% full
+          description: The shared inventory slots are nearly all occupied.
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              editorMode: code
+              expr: 100 * max(gw2_account_shared_inventory_slots_used) / clamp_min(max(gw2_account_shared_inventory_slots_capacity), 1)
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - type: query
+                  evaluator: { type: gt, params: [90] }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last, params: [] }
+
+  - orgId: 1
+    name: Economy
+    folder: GW2
+    interval: 5m
+    rules:
+      - uid: gw2-gems-cheap
+        title: Gems are cheap (buy opportunity)
+        condition: B
+        for: 15m
+        noDataState: OK
+        execErrState: OK
+        labels:
+          severity: info
+        annotations:
+          summary: Gems cost only {{ $values.A }} copper each
+          description: The coin→gem exchange rate is favourable for buying gems.
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              editorMode: code
+              expr: min(gw2_commerce_exchange_coins_per_gem{gw2_direction="buy_gems"})
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - type: query
+                  evaluator: { type: lt, params: [3500] }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last, params: [] }
+
+      - uid: gw2-flip-opportunity
+        title: Tracked item flip opportunity
+        condition: B
+        for: 5m
+        noDataState: OK
+        execErrState: OK
+        labels:
+          severity: info
+        annotations:
+          summary: A tracked item has a flip margin over 50 silver
+          description: One or more watchlist items can be bought and resold (net 15% tax) at a healthy margin.
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              editorMode: code
+              expr: max by (gw2_item_name) (gw2_commerce_item_flip_margin)
+          - refId: B
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              datasource: { type: __expr__, uid: __expr__ }
+              expression: A
+              conditions:
+                - type: query
+                  evaluator: { type: gt, params: [5000] }
+                  operator: { type: and }
+                  query: { params: [A] }
+                  reducer: { type: last, params: [] }

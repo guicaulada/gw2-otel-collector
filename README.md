@@ -103,6 +103,14 @@ docker compose -f deploy/docker-compose.prod.yaml up --build
 Alloy-averse setups can skip it entirely and point `OTEL_EXPORTER_OTLP_ENDPOINT`
 (plus `OTEL_EXPORTER_OTLP_HEADERS` for auth) straight at Grafana Cloud.
 
+## Alerting
+
+Grafana alert rules are provisioned as code from
+[`deploy/grafana/provisioning/alerting/rules.yaml`](deploy/grafana/provisioning/alerting/rules.yaml)
+(folder **GW2**): collector-not-polling and GW2-API-5xx (health), bank/shared
+near-full (storage), and cheap-gems / flip-margin (economy opportunities). They
+load automatically in the dev stack; for Grafana Cloud, import the same rules.
+
 ## Status
 
 **v1 implemented and validated end-to-end against the live API + Grafana stack:**

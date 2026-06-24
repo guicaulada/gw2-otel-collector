@@ -24,6 +24,8 @@ services:
       # As-code dashboard: provider config + dashboard JSON, auto-loaded on start.
       - ./grafana/provisioning/dashboards/gw2.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/gw2.yaml:ro
       - ./dashboards:/var/lib/grafana/dashboards/gw2:ro
+      # As-code alert rules.
+      - ./grafana/provisioning/alerting/rules.yaml:/otel-lgtm/grafana/conf/provisioning/alerting/rules.yaml:ro
 
   collector:
     build:
