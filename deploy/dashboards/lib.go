@@ -113,7 +113,19 @@ type fc struct {
 	colorMode string // thresholds | palette-classic | continuous-* | none
 	thr       *v2.ThresholdsConfig
 	custom    map[string]any // panel-specific (fillOpacity, stacking, cellOptions, …)
+	mappings  []v2.ValueMapping
 	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides
+}
+
+// valueMap renames field values for display (e.g. raw API map names → friendly
+// labels). Applied to defaults, so only matching values are affected.
+func valueMap(m map[string]string) []v2.ValueMapping {
+	opts := map[string]v2.ValueMappingResult{}
+	for k, v := range m {
+		text := v
+		opts[k] = v2.ValueMappingResult{Text: &text}
+	}
+	return []v2.ValueMapping{{ValueMap: &v2.ValueMap{Type: "value", Options: opts}}}
 }
 
 func (f fc) source() v2.FieldConfigSource {
@@ -140,6 +152,9 @@ func (f fc) source() v2.FieldConfigSource {
 	}
 	if f.custom != nil {
 		d.Custom = f.custom
+	}
+	if f.mappings != nil {
+		d.Mappings = f.mappings
 	}
 	overrides := f.overrides
 	if overrides == nil {
@@ -275,7 +290,7 @@ func piechart(title string, targets []cog.Builder[v2.PanelQueryKind], pie string
 
 func barchart(title string, targets []cog.Builder[v2.PanelQueryKind], orientation, stacking string,
 	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides) *v2.PanelBuilder {
-	return barchartT(title, targets, nil, orientation, stacking, overrides)
+	return barchartT(title, targets, nil, orientation, stacking, overrides, nil)
 }
 
 // barchartT is barchart with explicit transformations — used to pivot long
@@ -283,7 +298,7 @@ func barchart(title string, targets []cog.Builder[v2.PanelQueryKind], orientatio
 // x-category per row, one series per column), which avoids duplicated legends.
 func barchartT(title string, targets []cog.Builder[v2.PanelQueryKind],
 	transforms []cog.Builder[v2.TransformationKind], orientation, stacking string,
-	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides) *v2.PanelBuilder {
+	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides, mappings []v2.ValueMapping) *v2.PanelBuilder {
 	if orientation == "" {
 		orientation = "horizontal"
 	}
@@ -295,8 +310,8 @@ func barchartT(title string, targets []cog.Builder[v2.PanelQueryKind],
 		"legend":  map[string]any{"displayMode": "list", "placement": "bottom"},
 		"tooltip": map[string]any{"mode": "single", "sort": "desc"}}
 	return panel("barchart", title, dataGroup(targets, transforms...), opts,
-		fc{colorMode: "palette-classic", overrides: overrides,
-			custom: map[string]any{"fillOpacity": 85, "lineWidth": 1, "gradientMode": "hue"}})
+		fc{colorMode: "palette-classic", overrides: overrides, mappings: mappings,
+			custom: map[string]any{"fillOpacity": 90, "lineWidth": 1, "gradientMode": "none"}})
 }
 
 // groupedBars compares several named metrics across a dimension (e.g. earned vs
@@ -317,19 +332,20 @@ func groupedBars(title, dimField, dimName string, series []ql, orientation, stac
 			"excludeByName": map[string]any{"Time": true},
 			"renameByName":  rename}),
 	}
-	return barchartT(title, targets, transforms, orientation, stacking, overrides)
+	return barchartT(title, targets, transforms, orientation, stacking, overrides, nil)
 }
 
 // matrixBars pivots a single metric carrying two labels into a matrix: rowField
-// becomes the x-axis category and each colField value becomes a stacked series.
+// becomes the x-axis category and each colField value becomes a series. mappings
+// optionally relabels the row-field categories for display.
 func matrixBars(title, expr, rowField, colField, orientation, stacking string,
-	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides) *v2.PanelBuilder {
+	overrides []v2.Dashboardv2beta1FieldConfigSourceOverrides, mappings []v2.ValueMapping) *v2.PanelBuilder {
 	targets := []cog.Builder[v2.PanelQueryKind]{promTargetTable(expr, "A")}
 	transforms := []cog.Builder[v2.TransformationKind]{
 		transform("groupingToMatrix", map[string]any{
 			"columnField": colField, "rowField": rowField, "valueField": "Value"}),
 	}
-	return barchartT(title, targets, transforms, orientation, stacking, overrides)
+	return barchartT(title, targets, transforms, orientation, stacking, overrides, mappings)
 }
 
 func timeseries(title string, targets []cog.Builder[v2.PanelQueryKind], unit string, stack bool,

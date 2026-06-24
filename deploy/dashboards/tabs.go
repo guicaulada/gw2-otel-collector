@@ -309,17 +309,29 @@ func wvw() *Grid {
 	g.row()
 	g.add(matrixBars("Total objectives held by team (stacked by type)",
 		"max by (gw2_team, gw2_objective_type) (gw2_wvw_objectives_held)",
-		"gw2_team", "gw2_objective_type", "horizontal", "normal", nil), 12, 10)
+		"gw2_team", "gw2_objective_type", "horizontal", "normal", nil, nil), 12, 10)
 	g.add(matrixBars("Objectives held by type (stacked by team)",
 		"max by (gw2_objective_type, gw2_team) (gw2_wvw_objectives_held)",
 		"gw2_objective_type", "gw2_team", "horizontal", "normal",
-		[]v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("red", cRed), byName("blue", cBlue), byName("green", cGreen)}), 12, 10)
+		[]v2.Dashboardv2beta1FieldConfigSourceOverrides{byName("red", cRed), byName("blue", cBlue), byName("green", cGreen)}, nil), 12, 10)
 	g.row()
-	g.add(ts("Per-map score (Center = EBG)",
-		tg(false, ql{"max by (gw2_map, gw2_team) (gw2_wvw_map_score)", "{{gw2_map}} · {{gw2_team}}"}),
-		"", false, "bottom", teamOverrides()), 12, 8)
-	g.add(ts("Per-map kills",
-		tg(false, ql{"max by (gw2_map, gw2_team) (gw2_wvw_map_kills)", "{{gw2_map}} · {{gw2_team}}"}),
-		"", false, "bottom", teamOverrides()), 12, 8)
+	// Per-map current standings: one bar group per map, a bar per team. Far
+	// clearer than 12 trend lines; map names relabelled (EBG + borderlands).
+	g.add(matrixBars("War score by map & team",
+		"max by (gw2_map, gw2_team) (gw2_wvw_map_score)",
+		"gw2_map", "gw2_team", "horizontal", "none", mapTeamOverrides, mapNames), 12, 8)
+	g.add(matrixBars("Kills by map & team",
+		"max by (gw2_map, gw2_team) (gw2_wvw_map_kills)",
+		"gw2_map", "gw2_team", "horizontal", "none", mapTeamOverrides, mapNames), 12, 8)
 	return g
+}
+
+// mapNames relabels the raw API WvW map types to friendly names.
+var mapNames = valueMap(map[string]string{
+	"Center": "EBG", "RedHome": "Red BL", "BlueHome": "Blue BL", "GreenHome": "Green BL",
+})
+
+// mapTeamOverrides colours the per-map team columns (red/blue/green).
+var mapTeamOverrides = []v2.Dashboardv2beta1FieldConfigSourceOverrides{
+	byName("red", cRed), byName("blue", cBlue), byName("green", cGreen),
 }

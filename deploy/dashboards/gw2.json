@@ -1464,8 +1464,8 @@
                     "mode": "palette-classic"
                   },
                   "custom": {
-                    "fillOpacity": 85,
-                    "gradientMode": "hue",
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
                     "lineWidth": 1
                   }
                 },
@@ -2826,8 +2826,8 @@
                     "mode": "palette-classic"
                   },
                   "custom": {
-                    "fillOpacity": 85,
-                    "gradientMode": "hue",
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
                     "lineWidth": 1
                   }
                 },
@@ -3005,8 +3005,8 @@
                     "mode": "palette-classic"
                   },
                   "custom": {
-                    "fillOpacity": 85,
-                    "gradientMode": "hue",
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
                     "lineWidth": 1
                   }
                 },
@@ -4847,8 +4847,8 @@
                     "mode": "palette-classic"
                   },
                   "custom": {
-                    "fillOpacity": 85,
-                    "gradientMode": "hue",
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
                     "lineWidth": 1
                   }
                 },
@@ -5579,8 +5579,8 @@
                     "mode": "palette-classic"
                   },
                   "custom": {
-                    "fillOpacity": 85,
-                    "gradientMode": "hue",
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
                     "lineWidth": 1
                   }
                 },
@@ -7420,8 +7420,8 @@
                     "mode": "palette-classic"
                   },
                   "custom": {
-                    "fillOpacity": 85,
-                    "gradientMode": "hue",
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
                     "lineWidth": 1
                   }
                 },
@@ -7508,8 +7508,8 @@
                     "mode": "palette-classic"
                   },
                   "custom": {
-                    "fillOpacity": 85,
-                    "gradientMode": "hue",
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
                     "lineWidth": 1
                   }
                 },
@@ -7649,7 +7649,7 @@
         "kind": "Panel",
         "spec": {
           "id": 90,
-          "title": "Per-map score (Center = EBG)",
+          "title": "War score by map \u0026 team",
           "description": "",
           "links": [],
           "data": {
@@ -7668,7 +7668,9 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_map, gw2_team) (gw2_wvw_map_score)",
-                        "legendFormat": "{{gw2_map}} · {{gw2_team}}"
+                        "format": "table",
+                        "instant": true,
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -7676,46 +7678,79 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "groupingToMatrix",
+                  "spec": {
+                    "id": "groupingToMatrix",
+                    "options": {
+                      "columnField": "gw2_team",
+                      "rowField": "gw2_map",
+                      "valueField": "Value"
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "timeseries",
+            "group": "barchart",
             "version": "",
             "spec": {
               "options": {
+                "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "displayMode": "table",
+                  "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
                 "tooltip": {
-                  "mode": "multi",
+                  "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "BlueHome": {
+                          "text": "Blue BL"
+                        },
+                        "Center": {
+                          "text": "EBG"
+                        },
+                        "GreenHome": {
+                          "text": "Green BL"
+                        },
+                        "RedHome": {
+                          "text": "Red BL"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "palette-classic"
+                  },
                   "custom": {
-                    "drawStyle": "line",
-                    "fillOpacity": 12,
-                    "gradientMode": "opacity",
-                    "lineInterpolation": "smooth",
-                    "lineWidth": 2,
-                    "showPoints": "never",
-                    "spanNulls": true
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
+                    "lineWidth": 1
                   }
                 },
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Rr]ed.*"
+                      "id": "byName",
+                      "options": "red"
                     },
                     "properties": [
                       {
@@ -7729,8 +7764,8 @@
                   },
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Bb]lue.*"
+                      "id": "byName",
+                      "options": "blue"
                     },
                     "properties": [
                       {
@@ -7744,8 +7779,8 @@
                   },
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Gg]reen.*"
+                      "id": "byName",
+                      "options": "green"
                     },
                     "properties": [
                       {
@@ -7767,7 +7802,7 @@
         "kind": "Panel",
         "spec": {
           "id": 91,
-          "title": "Per-map kills",
+          "title": "Kills by map \u0026 team",
           "description": "",
           "links": [],
           "data": {
@@ -7786,7 +7821,9 @@
                       },
                       "spec": {
                         "expr": "max by (gw2_map, gw2_team) (gw2_wvw_map_kills)",
-                        "legendFormat": "{{gw2_map}} · {{gw2_team}}"
+                        "format": "table",
+                        "instant": true,
+                        "range": false
                       }
                     },
                     "refId": "A",
@@ -7794,46 +7831,79 @@
                   }
                 }
               ],
-              "transformations": [],
+              "transformations": [
+                {
+                  "kind": "groupingToMatrix",
+                  "spec": {
+                    "id": "groupingToMatrix",
+                    "options": {
+                      "columnField": "gw2_team",
+                      "rowField": "gw2_map",
+                      "valueField": "Value"
+                    }
+                  }
+                }
+              ],
               "queryOptions": {}
             }
           },
           "vizConfig": {
             "kind": "VizConfig",
-            "group": "timeseries",
+            "group": "barchart",
             "version": "",
             "spec": {
               "options": {
+                "barWidth": 0.9,
+                "groupWidth": 0.8,
                 "legend": {
-                  "calcs": [
-                    "lastNotNull"
-                  ],
-                  "displayMode": "table",
+                  "displayMode": "list",
                   "placement": "bottom"
                 },
+                "orientation": "horizontal",
+                "showValue": "auto",
+                "stacking": "none",
                 "tooltip": {
-                  "mode": "multi",
+                  "mode": "single",
                   "sort": "desc"
-                }
+                },
+                "xTickLabelRotation": 0
               },
               "fieldConfig": {
                 "defaults": {
                   "unit": "none",
+                  "mappings": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "BlueHome": {
+                          "text": "Blue BL"
+                        },
+                        "Center": {
+                          "text": "EBG"
+                        },
+                        "GreenHome": {
+                          "text": "Green BL"
+                        },
+                        "RedHome": {
+                          "text": "Red BL"
+                        }
+                      }
+                    }
+                  ],
+                  "color": {
+                    "mode": "palette-classic"
+                  },
                   "custom": {
-                    "drawStyle": "line",
-                    "fillOpacity": 12,
-                    "gradientMode": "opacity",
-                    "lineInterpolation": "smooth",
-                    "lineWidth": 2,
-                    "showPoints": "never",
-                    "spanNulls": true
+                    "fillOpacity": 90,
+                    "gradientMode": "none",
+                    "lineWidth": 1
                   }
                 },
                 "overrides": [
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Rr]ed.*"
+                      "id": "byName",
+                      "options": "red"
                     },
                     "properties": [
                       {
@@ -7847,8 +7917,8 @@
                   },
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Bb]lue.*"
+                      "id": "byName",
+                      "options": "blue"
                     },
                     "properties": [
                       {
@@ -7862,8 +7932,8 @@
                   },
                   {
                     "matcher": {
-                      "id": "byRegexp",
-                      "options": ".*[Gg]reen.*"
+                      "id": "byName",
+                      "options": "green"
                     },
                     "properties": [
                       {
